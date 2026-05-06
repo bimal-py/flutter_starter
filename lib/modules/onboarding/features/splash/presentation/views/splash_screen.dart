@@ -27,23 +27,27 @@ class _SplashView extends StatelessWidget {
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (context, state) {
         if (!state.status.isSuccess) return;
-        final hasSeenOnboarding =
-            context.read<AppSettingCubit>().state.hasSeenOnboarding;
+        final hasSeenOnboarding = context
+            .read<AppSettingCubit>()
+            .state
+            .hasSeenOnboarding;
         context.goNamed(
           hasSeenOnboarding ? Routes.dashboard.name : Routes.onboarding.name,
         );
       },
       child: Scaffold(
         body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
-              const SplashLogo(),
-              const Spacer(),
-              const SplashProgress(),
-              SizedBox(height: 24.h),
-            ],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Spacer(),
+                const SplashLogo(),
+                const Spacer(),
+                const SplashProgress(),
+                SizedBox(height: 24.h),
+              ],
+            ),
           ),
         ),
       ),
