@@ -1,0 +1,123 @@
+name: flutter_starter
+description: "Opinionated Flutter starter with feature-first architecture, BLoC, get_it/injectable DI, go_router, flutter_scale_kit, Firebase, sharing, and QR."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_bloc: ^9.1.1
+  bloc_concurrency: ^0.3.0
+  hydrated_bloc: ^11.0.0
+  equatable: ^2.0.8
+  stream_transform: ^2.1.1
+
+  # Dependency injection
+  get_it: ^9.2.1
+  injectable: ^3.0.0
+
+  # Routing
+  go_router: ^17.2.2
+
+  # Sizing (responsive scaling)
+  flutter_scale_kit: ^1.5.2
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.5
+  flutter_secure_storage: ^10.0.0
+  path_provider: ^2.1.5
+
+  # Env
+  flutter_dotenv: ^6.0.1
+
+  # Firebase (optional — only initialised when firebase_options.dart is present)
+  firebase_core: ^4.3.0
+  firebase_analytics: ^12.1.0
+  firebase_crashlytics: ^5.0.6
+
+  # UI
+  flutter_svg: ^2.2.4
+  cached_network_image: ^3.4.1
+  lucide_icons_flutter: ^3.1.13
+  skeletonizer: ^2.1.3
+  loader_overlay: ^5.0.0
+  fluttertoast: ^9.0.0
+
+  # Material 3 color science (transitively pinned by Flutter SDK; the `any`
+  # constraint avoids fighting that pin while declaring the direct usage).
+  material_color_utilities: any
+
+  # QR
+  qr_flutter: ^4.1.0
+  image_gallery_saver_plus: ^4.0.1
+
+  # Native integrations
+  device_info_plus: ^12.4.0
+  package_info_plus: ^9.0.1
+  permission_handler: ^12.0.1
+  connectivity_plus: ^7.1.1
+  url_launcher: ^6.3.2
+  share_plus: ^12.0.2
+  flutter_inappwebview: ^6.1.5
+  in_app_review: ^2.0.11
+
+  # Utils
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.13.1
+  injectable_generator: ^3.0.2
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/images/
+    - assets/images/logos/
+
+  # Inter is the default Latin face. NotoSansDevanagari is paired for
+  # Nepali/Hindi via per-language scaling — see lib/core/text/font_scale.dart.
+  # Drop or replace either family to suit your app.
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/inter/Inter-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/inter/Inter-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/inter/Inter-Light.ttf
+          weight: 300
+        - asset: assets/fonts/inter/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/inter/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/inter/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/inter/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/inter/Inter-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/inter/Inter-Black.ttf
+          weight: 900
+
+    - family: NotoSansDevanagari
+      fonts:
+        - asset: assets/fonts/noto_sans_devanagari/NotoSansDevanagari-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/noto_sans_devanagari/NotoSansDevanagari-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/noto_sans_devanagari/NotoSansDevanagari-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/noto_sans_devanagari/NotoSansDevanagari-Bold.ttf
+          weight: 700
