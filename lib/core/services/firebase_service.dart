@@ -3,6 +3,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_starter/core/utils/constants/env_config.dart';
+import 'package:flutter_starter/core/utils/helpers/helpers.dart';
 
 // To enable Firebase:
 //   1. Run `dart pub global activate flutterfire_cli` (one-time install).
@@ -23,6 +24,8 @@ import 'package:flutter_starter/core/utils/constants/env_config.dart';
 class FirebaseService {
   FirebaseService._();
 
+  static final CustomLogger _log = CustomLogger(title: 'Firebase');
+
   static bool _initialised = false;
   static bool get isInitialised => _initialised;
 
@@ -37,7 +40,7 @@ class FirebaseService {
       _initialised = true;
       return true;
     } catch (e, st) {
-      debugPrint('[Firebase] init failed: $e\n$st');
+      _log.e('init failed: $e\n$st');
       return false;
     }
   }
