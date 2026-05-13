@@ -12,6 +12,15 @@
 import 'package:connectivity_plus/connectivity_plus.dart' as _i895;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:flutter_starter/core/di/service_module.dart' as _i592;
+import 'package:flutter_starter/core/network/dio/config/dio_config.dart'
+    as _i588;
+import 'package:flutter_starter/core/network/dio/dio_client.dart' as _i438;
+import 'package:flutter_starter/core/network/dio/interceptors/logout_interceptor.dart'
+    as _i373;
+import 'package:flutter_starter/core/network/service/remote_service.dart'
+    as _i439;
+import 'package:flutter_starter/core/network/service/remote_service_impl.dart'
+    as _i29;
 import 'package:flutter_starter/modules/onboarding/features/splash/presentation/bloc/splash/splash_bloc.dart'
     as _i158;
 import 'package:get_it/get_it.dart' as _i174;
@@ -26,12 +35,19 @@ extension GetItInjectableX on _i174.GetIt {
   }) async {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final serviceModule = _$ServiceModule();
+    gh.factory<_i588.DioConfig>(() => _i588.DioConfig());
     gh.factory<_i158.SplashBloc>(() => _i158.SplashBloc());
     gh.singleton<_i558.FlutterSecureStorage>(() => serviceModule.secureStorage);
     gh.singleton<_i895.Connectivity>(() => serviceModule.connectivity);
     await gh.singletonAsync<_i460.SharedPreferences>(
       () => serviceModule.sharedPreferences,
       preResolve: true,
+    );
+    gh.singleton<_i373.LogoutInterceptor>(() => _i373.LogoutInterceptor());
+    gh.factory<_i438.DioClient>(() => _i438.DioClient(gh<_i588.DioConfig>()));
+    gh.factory<_i439.RemoteService>(
+      () =>
+          _i29.RemoteServiceImpl(gh<_i438.DioClient>(), gh<_i588.DioConfig>()),
     );
     return this;
   }
