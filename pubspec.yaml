@@ -41,6 +41,10 @@ dependencies:
   # HTTP / API (delete with lib/core/network/ if the app has no API)
   dio: ^5.9.2
 
+  # Notifications (delete with lib/modules/notifications/ if unused)
+  flutter_local_notifications: ^19.4.2
+  timezone: ^0.10.1
+
   # Firebase (optional — only initialised when firebase_options.dart is present)
   firebase_core: ^4.3.0
   firebase_analytics: ^12.1.0
