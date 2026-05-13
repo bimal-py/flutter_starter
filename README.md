@@ -1,938 +1,640 @@
 # Flutter Starter
 
-**A production-ready Flutter starter** — architecture, theming, DI, routing, storage, and the boring integrations are already wired up.
-**Clone it. Rename it. Build your feature.**
+Opinionated Flutter starter with feature-first architecture, Material 3 theming, a removable network/notifications/FCM stack, and a built-in theme playground end users can use to customize the app.
 
-[![Flutter](https://img.shields.io/badge/Flutter-%E2%89%A53.11.5-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Material 3](https://img.shields.io/badge/Material%203-6750A4)](https://m3.material.io)
-[![BLoC](https://img.shields.io/badge/state-flutter__bloc-1389FD)](https://bloclibrary.dev)
-[![go_router](https://img.shields.io/badge/routing-go__router-7e57c2)](https://pub.dev/packages/go_router)
+```
+flutter pub get
+dart run build_runner build
+flutter run
+```
+
+`.env` lives at the project root and is loaded by `flutter_dotenv` (see [.env.example](.env.example)).
 
 ---
 
 ## Table of contents
 
-### Getting started
-- [What this gives you](#what-this-gives-you)
-- [Two ways to use this starter](#two-ways-to-use-this-starter)
-- [Quick start](#quick-start)
-- [Make it your own](#make-it-your-own)
-- [Migrate into an existing project](#migrate-into-an-existing-project)
-
-### Project structure
-- [How the app starts](#how-the-app-starts)
-- [Where features live](#where-features-live)
-- [A feature's anatomy](#a-features-anatomy)
-
-### FAQ
-- [FAQ — quick answers](#faq--quick-answers)
-
-### Daily use
-- [Daily commands](#daily-commands)
-- [Add a new feature](#add-a-new-feature)
-- [Add an API layer](#add-an-api-layer)
-
-### Subsystems
-- [State management](#state-management--cubit-by-default-bloc-when-you-need-events)
-- [Dependency injection](#dependency-injection--annotate-generate-resolve)
-- [Routing](#routing--typed-enum--gorouter)
-- [Theming](#theming--seed--harmonized-accent-via-brandpalette)
-- [Responsive sizing](#responsive-sizing--never-hard-code-pixel-values)
-- [Multi-language text scaling](#multi-language-text-scaling)
-- [Constants & env](#constants--env--three-files-three-lifetimes)
-- [Local storage](#local-storage--hive-hydratedbloc-or-secure-storage)
-- [Toasts & messages](#toasts--messages--customsnackbar)
-- [Firebase (optional)](#firebase-optional--opt-in-no-op-until-you-enable-it)
-- [Built-in integrations](#built-in-integrations--share-qr-webview-rate-report)
-
-### Shipping
-- [Build & release](#build--release)
-- [Troubleshooting](#troubleshooting)
-- [Before shipping](#before-shipping)
+- [Architecture at a glance](#architecture-at-a-glance)
+- [Theme](#theme)
+- [Localization & per-locale fonts](#localization--per-locale-fonts)
+- [State management (BLoC)](#state-management-bloc)
+- [Dependency injection](#dependency-injection)
+- [Routing](#routing)
+- [Responsive sizing](#responsive-sizing)
+- [Storage](#storage)
+- [Toasts](#toasts)
+- [Network / API layer](#network--api-layer) *(removable)*
+- [Notifications](#notifications) *(removable, package-swappable)*
+- [FCM (push)](#fcm-push) *(removable)*
+- [Firebase](#firebase) *(opt-in)*
+- [Onboarding replay](#onboarding-replay)
+- [Removability cheat sheet](#removability-cheat-sheet)
+- [Build & ship](#build--ship)
 
 ---
 
-## What this gives you
-
-A boring, opinionated Flutter app skeleton so you can skip the first week of every project. Pick the bits you need, delete the rest.
-
-- **Architecture** — `core/` + `common/` + feature `modules/` with one import rule
-- **State** — `flutter_bloc` (Cubit by default, Bloc when you need events) + `hydrated_bloc`
-- **DI** — `get_it` + `injectable` (annotation-driven codegen)
-- **Routing** — `go_router` driven by a typed `Routes` enum
-- **Theming** — Material 3 from a seed + harmonized accent, built on `material_color_utilities`
-- **Responsive sizing** — `flutter_scale_kit` (`.w` `.h` `.r` `.sp`)
-- **Storage** — Hive · HydratedBloc · Secure Storage (each for a specific job)
-- **Env & config** — three files, three lifetimes (constants / urls / env)
-- **Toasts** — `CustomSnackbar` (success / error / info) — context-free, survives navigation
-- **Optional Firebase** — opt-in, no-op until you flip the flag
-- **Built-in** — Share · QR · WebView · in-app review · permissions · connectivity
-
-> First run shows: **Splash → Onboarding → Dashboard** (Home + Settings tabs). The Settings tab demos every built-in integration so you can copy and adapt.
-
-> **No HTTP client included.** Plug in `dio` or `http` next to [`EnvConfig`](lib/core/utils/constants/env_config.dart). See [Add an API layer](#add-an-api-layer).
-
----
-
-## Two ways to use this starter
-
-You can either **start a fresh project from this repo** (recommended) or **migrate the structure into an existing project**.
-
-```
-┌─ Starting a new app?       → Quick start                (5 minutes)
-└─ Already have an app?      → Migrate into existing      (incremental)
-```
-
----
-
-## Quick start
-
-For a brand-new app:
-
-```sh
-git clone https://github.com/bimal-py/flutter_starter.git my_app
-cd my_app
-
-cp .env_example .env                                       # 1. env file
-flutter pub get                                            # 2. packages
-dart run build_runner build --delete-conflicting-outputs   # 3. DI codegen (required)
-cd ios && pod install && cd ..                             # 4. iOS only
-flutter run                                                # 5. go
-```
-
-All `.env` keys are optional — leave them blank for now.
-
-> ⚠️ `.env` ships **inside** the binary. Use it for OAuth client IDs, API URLs, and obfuscation-tier keys — not real secrets.
-
-After it's running, jump to [Make it your own](#make-it-your-own).
-
----
-
-## Make it your own
-
-### 1 · Cut the git history and rename the package
-
-```sh
-rm -rf .git && git init                              # fresh history
-dart pub global activate rename                      # one-time
-rename setBundleId  --value com.yourco.myapp         # iOS + Android IDs
-rename setAppName   --value "My App"                 # display name
-flutter pub get
-```
-
-The [`rename`](https://pub.dev/packages/rename) tool also rewrites every `package:flutter_starter/...` import for you.
-
-<details>
-<summary>Prefer to do it manually?</summary>
-
-- `pubspec.yaml` → `name: flutter_starter` → `name: my_app`
-- Find/replace `package:flutter_starter/` → `package:my_app/` across `lib/` and `test/`
-- iOS bundle ID in `ios/Runner.xcodeproj/project.pbxproj`
-- Android `applicationId` in `android/app/build.gradle`
-- Display name in `ios/Runner/Info.plist` (`CFBundleDisplayName`) and `android/app/src/main/AndroidManifest.xml` (`android:label`)
-
-</details>
-
-### 2 · Replace brand identity
-
-| File | What to change |
-| --- | --- |
-| [`lib/core/utils/constants/app_constants.dart`](lib/core/utils/constants/app_constants.dart) | `appName`, `appIosAppId`, `appAndroidPackageId` |
-| [`lib/core/utils/constants/app_urls.dart`](lib/core/utils/constants/app_urls.dart) | Privacy / terms / support email |
-| [`lib/core/theme/colors/app_colors.dart`](lib/core/theme/colors/app_colors.dart) | `seed` (drives the M3 palette) and `accent` (harmonized brand accent) |
-| [`assets/images/logos/`](assets/images/logos/) | Replace `app_logo.png` and `app_logo.svg` |
-
-### 3 · Strip what you don't need
-
-Each `lib/modules/<feature>/` folder is independent. Delete the folders you won't use (e.g. `qr/`, `website_view/`, `device_info/`, `package_info/`) and remove their routes from [`lib/core/router/app_router.dart`](lib/core/router/app_router.dart).
-
-### 4 · Optional polish
-
-- **Fonts** — Inter and NotoSansDevanagari ship by default. Swap or remove in [`pubspec.yaml`](pubspec.yaml).
-- **Firebase** — see [Firebase (optional)](#firebase-optional--opt-in-no-op-until-you-enable-it).
-- **App icons + splash** — [`flutter_launcher_icons`](https://pub.dev/packages/flutter_launcher_icons) + [`flutter_native_splash`](https://pub.dev/packages/flutter_native_splash).
-
----
-
-## Migrate into an existing project
-
-Already have an app? You don't need to clone the repo. Bring the pieces over in this order — each step is independent and your app keeps building between steps.
-
-### 1 · Add the core dependencies
-
-Copy the relevant entries from this repo's [`pubspec.yaml`](pubspec.yaml) into yours:
-
-```yaml
-# state + DI + routing
-flutter_bloc: ^...
-hydrated_bloc: ^...
-get_it: ^...
-injectable: ^...
-go_router: ^...
-
-# sizing + theming + storage + env
-flutter_scale_kit: ^...
-hive_ce: ^...
-flutter_secure_storage: ^...
-flutter_dotenv: ^...
-
-dev_dependencies:
-  build_runner: ^...
-  injectable_generator: ^...
-```
-
-### 2 · Copy `lib/core/` and `lib/common/`
-
-These are framework-level — they don't import any feature modules, so they drop in cleanly. Run a find/replace from `package:flutter_starter/` to `package:<your_app>/` after copying.
-
-### 3 · Adopt one subsystem at a time
-
-Pick what's painful in your current project and migrate just that piece. Suggested order:
-
-1. **Routing** — copy [`lib/core/router/`](lib/core/router/) and switch to `Routes` enum + `GoRouter`.
-2. **Theming** — copy [`lib/core/theme/`](lib/core/theme/) and use [`ThemeConfig`](lib/core/config/theme_config.dart) in your `MaterialApp`.
-3. **DI** — copy [`lib/core/di/`](lib/core/di/), annotate your classes, run `build_runner`.
-4. **Storage** — copy [`lib/app/hive_bootstrap.dart`](lib/app/hive_bootstrap.dart) and the helpers in `core/utils/helpers/`.
-5. **Sizing** — wrap your root in `ScaleKit(...)` (see [`main.dart`](lib/main.dart)) and start using `.w` / `.h` / `.r` / `.sp`.
-
-### 4 · Reorganise existing features into `modules/`
-
-Move each feature into a `lib/modules/<feature>/` folder following [the layout](#where-features-live). Delete the old paths once nothing imports from them.
-
-### 5 · Replace your `main.dart`
-
-Mirror this repo's [`main.dart`](lib/main.dart) so init order is right: env → HydratedBloc → Hive → DI → Firebase → `runApp`.
-
----
-
-## How the app starts
-
-[`lib/main.dart`](lib/main.dart) does these in order — order matters:
-
-1. Load `.env` → `EnvHelper.init()`
-2. Set up `HydratedBloc` storage
-3. Open all Hive boxes (in parallel)
-4. Attach `Bloc.observer` for debug logs
-5. Lock orientation to portrait
-6. Run DI codegen output → `configureDependencyInjection()`
-7. Init Firebase (no-op if disabled)
-8. `runApp(StarterApp)`
-
-[`StarterApp`](lib/app/app.dart) wraps the tree with a global loader, provides app-wide blocs ([`GlobalBlocConfig`](lib/app/global_bloc_config.dart)), and builds the `MaterialApp.router`.
-
----
-
-## Where features live
+## Architecture at a glance
 
 ```
 lib/
-├── main.dart       bootstrap
-├── app/            composition root — wires modules together
-├── core/           framework code — does NOT import modules/
-├── common/         shared widgets — does NOT import modules/
-└── modules/        features (one folder per feature)
+├── main.dart                  app bootstrap; one line per optional module
+├── app/                       composition root (StarterApp, BlocProviders)
+├── core/                      framework — imports no module
+│   ├── di/                    get_it + injectable
+│   ├── errors/                AppException, AppErrorStrings (domain failures)
+│   ├── network/               Dio + interceptors + ApiErrorStrings (deletable)
+│   ├── router/                go_router config
+│   ├── services/              Firebase service (opt-in)
+│   ├── theme/                 everything theme: sources, cubit, extension, typography
+│   └── utils/                 EnvConfig, constants, helpers
+├── common/                    shared widgets / bloc observer
+└── modules/                   features (one folder per)
+    ├── app_setting/           HydratedCubit for onboarding flag
+    ├── notifications/         local notifications (deletable)
+    ├── fcm/                   push (deletable)
+    └── …feature modules
 ```
 
-**The one import rule:** `modules/` may import `core/` and `common/`. **Modules cannot import other modules.** Only `lib/app/` knows about every module.
-
-If two features share code, lift the shared piece into `common/` (widgets) or `core/` (services / utilities). Don't reach across modules.
-
-<details>
-<summary>Inside <code>core/</code> and <code>modules/</code></summary>
-
-```
-core/
-├── config/theme_config.dart       theme entry
-├── di/                            injection.dart, service_module.dart
-├── errors/                        AppException
-├── router/                        Routes enum + GoRouter
-├── services/                      firebase_service, share_service
-├── text/                          AppText (per-language scale)
-├── theme/                         colors, components, light/dark
-│   └── colors/brand_palette.dart  reusable M3 palette generator
-└── utils/                         constants, extensions, helpers
-                                   └── helpers/custom_snackbar.dart
-
-modules/
-├── theme/                  ThemeCubit
-├── app_setting/            AppSettingCubit
-├── onboarding/             splash + onboarding screens
-├── dashboard/              bottom-nav shell
-├── home/                   Home tab
-├── settings/               Settings tab
-├── device_info/            device info screen
-├── package_info/           package info screen
-├── qr/                     QR popup
-└── website_view/           WebView wrapper
-```
-
-</details>
-
-### A feature's anatomy
-
-```
-lib/modules/<feature>/
-├── <feature>.dart                  barrel — public API of the module
-├── data/repository/                data sources (local / remote)
-├── domain/
-│   ├── entity/                     plain models
-│   └── repository/                 abstract interfaces
-├── utils/<feature>_hive.dart       only if it owns a Hive box
-└── presentation/
-    ├── cubit/ or bloc/             state
-    ├── views/                      full screens (one widget = one route)
-    └── widgets/                    feature-local components composed by views
-```
-
-The barrel (`<feature>.dart`) is what `app/` and other places import from. Everything else is internal.
-
-**`views/` vs `widgets/`** — every feature's presentation layer follows the same split:
-
-- `views/` holds screen-level widgets (the things `GoRouter` builds — `HomeScreen`, `SettingsScreen`, `OnboardingScreen`, etc.). One file per route.
-- `widgets/` holds the smaller composable pieces that screens render (e.g. `HomeHeroBanner`, `SettingsThemePicker`, `OnboardingPage`). Keep these small and named after the feature so they don't collide across modules.
-- A `widgets/widgets.dart` barrel re-exports them for the screen to import.
-
-If a widget is needed by **two modules**, lift it into [`lib/common/widgets/`](lib/common/widgets/) — modules cannot import each other. (`InfoRowTile`, used by both `device_info` and `package_info`, lives there for exactly this reason.)
+Rule of thumb: `modules/` may import `core/` and `common/`. `core/` may not import `modules/`.
 
 ---
 
-## FAQ — quick answers
+## Theme
 
-Quick answers to the questions every new contributor asks. Read these once and you'll skip a lot of digging.
+The theme system has three layers:
 
-<details>
-<summary><strong>Cubit or Bloc — which one do I use?</strong></summary>
+1. **Developer source** — what your app code wires at startup. Defaults to `SeedOnlySource(seed: AppColors.seed, accent: AppColors.accent)`.
+2. **User override** — what the in-app playground writes. When set, wins over the developer's source. Cleared via "Reset".
+3. **Variants** — light / dark / system (extensible via `ThemeVariant.custom(name)`).
 
-Reach for **Cubit by default**. A Cubit is a Bloc without the event class — you call methods directly. Use a full `Bloc` only when you actually benefit from an event stream: debouncing, ordering, replay, or multi-step flows. See [State management](#state-management--cubit-by-default-bloc-when-you-need-events).
-</details>
+All theming flows through `lib/core/theme/`:
 
-<details>
-<summary><strong>Where do I put a new screen / feature?</strong></summary>
-
-Inside `lib/modules/<feature>/`. One folder per feature. It owns its `data/`, `domain/`, `presentation/` and exposes a single barrel file (`<feature>.dart`). Walk through [Add a new feature](#add-a-new-feature) once and the pattern sticks.
-</details>
-
-<details>
-<summary><strong>Where does a new widget go — <code>views/</code> or <code>widgets/</code>?</strong></summary>
-
-- **`views/`** — full screens (anything `GoRouter` builds). One file per route.
-- **`widgets/`** — smaller components composed by views, scoped to one feature. Re-exported via a `widgets.dart` barrel.
-- **`lib/common/widgets/`** — widgets shared across **two or more modules**. Modules cannot import each other, so anything reused must live here.
-
-See [A feature's anatomy](#a-features-anatomy).
-</details>
-
-<details>
-<summary><strong>Can a module import another module?</strong></summary>
-
-No. **Modules cannot import other modules.** Modules import only `core/` and `common/`. If two features share code, lift the shared piece into `common/` (widgets) or `core/` (services). Only `lib/app/` knows about every module.
-</details>
-
-<details>
-<summary><strong>I added <code>@injectable</code> and got "X is not registered" — what do I do?</strong></summary>
-
-Run codegen:
-
-```sh
-dart run build_runner build --delete-conflicting-outputs
+```
+core/theme/
+├── app_theme_builder.dart     compose(source, deviceSchemes, locale, fonts) → {light, dark}
+├── colors/                    AppColors (seed + accent), BrandPalette
+├── component_themes/          AppBar/Button/Card/Input/etc. theme builders
+├── cubit/                     ThemeCubit + ThemeState
+├── extension/                 CustomThemeExtension (38 semantic colors)
+├── source/                    sealed ThemeSource family
+├── typography/                AppTextStyle + LocalizedFonts + AppText
+└── variant/                   sealed ThemeVariant
 ```
 
-The DI graph lives in `lib/core/di/injection.config.dart` (generated). It only updates when you re-run the generator.
-</details>
+### Setup
 
-<details>
-<summary><strong>Where do constants / URLs / env vars go?</strong></summary>
-
-Three files, three lifetimes:
-
-| File | What goes here |
-| --- | --- |
-| [`app_constants.dart`](lib/core/utils/constants/app_constants.dart) | App identity (changes once) |
-| [`app_urls.dart`](lib/core/utils/constants/app_urls.dart) | Static external URLs |
-| [`env_config.dart`](lib/core/utils/constants/env_config.dart) | Anything from `.env` (changes per environment) |
-
-Never call `EnvHelper.get('SOME_KEY')` directly — add a typed getter to `EnvConfig`.
-</details>
-
-<details>
-<summary><strong>Hive vs HydratedBloc vs Secure Storage — which one?</strong></summary>
-
-| Use case | What |
-| --- | --- |
-| Structured data, lists, models | **Hive** (a box per feature) |
-| Small flags persisted with bloc state | **HydratedBloc** auto-syncs your bloc state |
-| Tokens, passwords | **`SecureStorageHelper`** (OS keychain) |
-
-Full guide: [Local storage](#local-storage--hive-hydratedbloc-or-secure-storage).
-</details>
-
-<details>
-<summary><strong>How do I show a snack / toast?</strong></summary>
-
-Use `CustomSnackbar` — context-free and survives route changes. From any `BuildContext`:
+Edit [lib/core/theme/colors/app_colors.dart](lib/core/theme/colors/app_colors.dart):
 
 ```dart
-context.showSuccessToast('Saved');
-context.showErrorToast('Something broke');
-context.showInfoToast('Heads up');
+class AppColors {
+  AppColors._();
+  static const Color seed = Color(0xFF1B3A6B);   // your brand
+  static const Color accent = Color(0xFFC8A96B); // optional, harmonized to seed
+}
 ```
 
-Or call directly: `CustomSnackbar.show(type: ToastType.success, message: '...')`. See [Toasts & messages](#toasts--messages--customsnackbar).
-</details>
-
-<details>
-<summary><strong>How do I theme the app or change the seed color?</strong></summary>
-
-Edit two lines in [`app_colors.dart`](lib/core/theme/colors/app_colors.dart):
+That's it for the seed-based default. To opt into device wallpaper colors (Android 12+), set the developer source explicitly when instantiating `ThemeCubit` in [lib/app/global_bloc_config.dart](lib/app/global_bloc_config.dart):
 
 ```dart
-static const Color seed = Color(0xFF1B3A6B);   // primary brand color
-static const Color accent = Color(0xFFC8A96B); // harmonized to seed
+BlocProvider<ThemeCubit>(
+  create: (_) => ThemeCubit(
+    developerSource: DynamicDeviceSource(fallbackSeed: AppColors.seed),
+  ),
+),
 ```
 
-Both feed [`BrandPalette`](lib/core/theme/colors/brand_palette.dart), a thin wrapper around `material_color_utilities` that builds the light + dark `ColorScheme` and harmonizes the accent toward the seed. For brand-specific colors that don't fit in `ColorScheme` (e.g. shimmer base, premium gold), add a field to [`CustomThemeExtension`](lib/core/theme/extension/custom_theme_extension.dart). See [Theming](#theming--seed--harmonized-accent-via-brandpalette).
-</details>
+`DynamicColorBuilder` is already wired in [lib/app/app.dart](lib/app/app.dart) — the source picks it up automatically.
 
-<details>
-<summary><strong>How do I navigate between screens?</strong></summary>
+### Use
+
+In any widget:
 
 ```dart
-context.pushNamed(Routes.deviceInfo.name);
-context.goNamed(Routes.dashboard.name);
-context.pushNamed(Routes.websiteView.name, extra: 'https://flutter.dev');
+final scheme = Theme.of(context).colorScheme;             // Material roles
+final ext = Theme.of(context).extension<CustomThemeExtension>()!;  // semantic
+Container(color: scheme.primaryContainer);
+Container(color: ext.success);                            // status colors
+Container(color: ext.brandAccent);
+Text('Hi', style: context.textTheme.titleMedium);
 ```
 
-To add a route: add an entry to the [`Routes`](lib/core/router/routes.dart) enum, then a matching `GoRoute` in [`app_router.dart`](lib/core/router/app_router.dart). Nested routes use **relative** paths (no leading `/`).
-</details>
+`context.colorScheme` and `context.textTheme` are extension getters defined in [lib/core/utils/extensions/](lib/core/utils/extensions/).
 
-<details>
-<summary><strong>Why doesn't my theme change show up?</strong></summary>
+### Five ThemeSource variants
 
-Use **hot restart** (`R`), not hot reload (`r`). Theme changes are picked up on a fresh build only.
-</details>
+| Variant | When to use | Example |
+|---|---|---|
+| `SeedOnlySource` | Default. Pick one brand color; Material 3 derives the rest. | `SeedOnlySource(seed: ..., accent: ...)` |
+| `SeedWithOverridesSource` | Seed + override specific Material roles. | `SeedWithOverridesSource(seed: ..., lightSchemeOverrides: {'primary': Colors.purple})` |
+| `FullCustomSource` | Hand every color and TextTheme entry. | `FullCustomSource.builder().withLight(scheme: ..., extension: ...).withDark(...).build()` |
+| `DynamicDeviceSource` | Use device wallpaper colors (Android 12+). | `DynamicDeviceSource(fallbackSeed: ...)` |
+| `FromImageSource` | Extract dominant color from an image. | `FromImageSource(imageRef: FileImageRef(path), fallbackSeed: ...)` |
 
-<details>
-<summary><strong>Can I drop Firebase entirely?</strong></summary>
+`SupportedBrightness` on the source declares which modes a source can render (`light` only, `dark` only, or `both`). The cubit respects it.
 
-Yes — it's opt-in. The build is green out of the box without Firebase. Set `FIREBASE_ENABLED=false` (or leave it blank) and skip [`flutterfire configure`](#firebase-optional--opt-in-no-op-until-you-enable-it).
-</details>
+### Theme playground (end-user customization)
 
-<details>
-<summary><strong>Why no HTTP client?</strong></summary>
+Settings → "Customize theme" opens a screen where the user picks brightness + source + seed color. Writes to `ThemeCubit.userOverride`; clicking Reset restores the developer's source. No code needed — it's already wired.
 
-Different projects want different ones. Plug in `dio` or `http` next to [`EnvConfig`](lib/core/utils/constants/env_config.dart). Walkthrough: [Add an API layer](#add-an-api-layer).
-</details>
+### CustomThemeExtension
 
-<details>
-<summary><strong>Why is text smaller in Nepali / Hindi / Arabic?</strong></summary>
+For colors not in Material's `ColorScheme` (status colors beyond `error`, shimmer base/highlight, input backgrounds, gradient stops, ratings, etc.). 38 semantic fields. See [lib/core/theme/extension/custom_theme_extension.dart](lib/core/theme/extension/custom_theme_extension.dart).
 
-Some scripts render visually smaller than Latin at the same `fontSize`. Use [`AppText`](lib/core/text/app_text.dart) instead of `Text` for body content — it applies per-language scale factors from [`font_scale.dart`](lib/core/text/font_scale.dart). See [Multi-language text scaling](#multi-language-text-scaling).
-</details>
+Add new fields by editing that file: add the property, update `copyWith` and `lerp`, then add the default value in `lightDefault` and `darkDefault`.
+
+### Remove
+
+Theme is non-removable — it's how the app draws. To remove just the playground:
+- Delete [lib/modules/settings/presentation/views/theme_playground_screen.dart](lib/modules/settings/presentation/views/theme_playground_screen.dart).
+- Delete [lib/modules/settings/presentation/widgets/settings_theme_playground_tile.dart](lib/modules/settings/presentation/widgets/settings_theme_playground_tile.dart).
+- Remove the `themePlayground` route from [lib/core/router/routes.dart](lib/core/router/routes.dart) and [app_router.dart](lib/core/router/app_router.dart).
+- Remove `flutter_colorpicker` from [pubspec.yaml](pubspec.yaml).
+
+To remove Material You device-color support:
+- Stop using `DynamicDeviceSource` anywhere.
+- Remove `DynamicColorBuilder` wrap in [lib/app/app.dart](lib/app/app.dart) (call `AppThemeBuilder.compose` directly without device schemes).
+- Remove `dynamic_color` from [pubspec.yaml](pubspec.yaml).
 
 ---
 
-## Daily commands
+## Localization & per-locale fonts
 
-```sh
-flutter run                                              # run the app
-dart run build_runner build --delete-conflicting-outputs # after adding @injectable
-dart run build_runner watch --delete-conflicting-outputs # auto-regen on save
-flutter analyze                                          # lint
-flutter test                                             # tests
-dart format lib test                                     # format
-flutter clean                                            # if anything's weird
+Some scripts (Devanagari, Bengali, Arabic) render visually smaller than Latin at the same `fontSize`. [`LocalizedFonts`](lib/core/theme/typography/localized_fonts.dart) maps locale → `AppFont(family, scale)` and the active TextTheme bakes them in.
+
+### Setup
+
+Add font files to `assets/fonts/` (e.g. download Mukta from Google Fonts), then declare them in [pubspec.yaml](pubspec.yaml):
+
+```yaml
+fonts:
+  - family: Mukta
+    fonts:
+      - asset: assets/fonts/Mukta/Mukta-Regular.ttf
+        weight: 400
+      ...
+```
+
+Edit `LocalizedFonts.defaults()` to wire the new family:
+
+```dart
+factory LocalizedFonts.defaults() => const LocalizedFonts(
+  defaultFont: AppFont(family: 'Inter', scale: 1.0),
+  byLocale: {
+    'ne': AppFont(family: 'Mukta', scale: 1.10),
+    'hi': AppFont(family: 'Mukta', scale: 1.10),
+    // add yours here
+  },
+);
+```
+
+### Use
+
+The `TextTheme` from `Theme.of(context)` already carries the right family + scale. Use `context.textTheme.bodyMedium` etc. — don't hard-code `TextStyle(fontSize: 16)`.
+
+If you need raw access to the AppFont:
+
+```dart
+final font = LocalizedFonts.defaults().resolve(Localizations.maybeLocaleOf(context));
+```
+
+### Remove
+
+Drop the entry from `LocalizedFonts.defaults()` and the asset from `pubspec.yaml`. Nothing else changes.
+
+---
+
+## State management (BLoC)
+
+Default to `Cubit`. Use `Bloc` when state transitions naturally come from typed events.
+
+App-wide cubits live in [lib/app/global_bloc_config.dart](lib/app/global_bloc_config.dart):
+
+```dart
+BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+BlocProvider<AppSettingCubit>(create: (_) => AppSettingCubit()),
+```
+
+These are instantiated inline (not via DI) because they're tied to the app lifecycle. HydratedCubit persists their state automatically.
+
+### Setup
+
+```dart
+class CounterCubit extends Cubit<int> {
+  CounterCubit() : super(0);
+  void increment() => emit(state + 1);
+}
+```
+
+Provide it at the right scope (feature-local prefers `BlocProvider` near the screen; truly global goes in `global_bloc_config.dart`).
+
+### Use
+
+```dart
+context.read<CounterCubit>().increment();      // fire
+BlocBuilder<CounterCubit, int>(builder: ...);   // observe
+```
+
+For persisted state extend `HydratedCubit<T>` and implement `toJson`/`fromJson`. Storage is initialized in `main.dart`.
+
+---
+
+## Dependency injection
+
+`get_it` + `injectable` (codegen).
+
+### Setup
+
+Annotate a class:
+
+```dart
+@Injectable(as: MyRepository)  // bind interface → impl
+class MyRepositoryImpl implements MyRepository { … }
+
+@singleton    // single instance, created at init
+class MyService { … }
+
+@injectable   // new instance per resolve
+class MyHandler { … }
+```
+
+Then run `dart run build_runner build` to regenerate [lib/core/di/injection.config.dart](lib/core/di/injection.config.dart). `configureDependencyInjection()` is already called from `main.dart`.
+
+### Use
+
+```dart
+final repo = getIt<MyRepository>();
+```
+
+For cross-cutting platform singletons (FlutterSecureStorage, Connectivity, etc.), see [lib/core/di/service_module.dart](lib/core/di/service_module.dart).
+
+`ThemeCubit` and `AppSettingCubit` are NOT in DI — they're created inline in `BlocProvider.create:`. If you need a cubit that's also a service, you can still register it with `@injectable` like any other class.
+
+---
+
+## Routing
+
+`go_router` with a typed `Routes` enum.
+
+### Setup
+
+Add to [lib/core/router/routes.dart](lib/core/router/routes.dart):
+
+```dart
+enum Routes {
+  …
+  profile(name: 'profile', path: 'profile'),
+}
+```
+
+Register in [lib/core/router/app_router.dart](lib/core/router/app_router.dart):
+
+```dart
+GoRoute(
+  name: Routes.profile.name,
+  path: Routes.profile.path,
+  builder: (context, state) => const ProfileScreen(),
+),
+```
+
+### Use
+
+```dart
+context.goNamed(Routes.profile.name);
+context.pushNamed(Routes.profile.name, extra: someObject);
 ```
 
 ---
 
-## State management — Cubit by default, Bloc when you need events
+## Responsive sizing
 
-This starter uses `flutter_bloc`, but **reach for `Cubit` first**. A Cubit is a Bloc without the event class — you call methods directly. Use a full `Bloc` only when you actually benefit from an event stream (debouncing, ordering, complex transitions, replay).
-
-| Use a... | When you have... |
-| --- | --- |
-| `Cubit` | Simple state — load, toggle, submit. The default. |
-| `Bloc` | An event stream worth modeling explicitly (search debounce, paginated lists, multi-step flows). |
-| `HydratedCubit` / `HydratedBloc` | State that must survive app restarts (theme, "has seen onboarding"). |
-
-```dart
-// Read once
-final mode = context.read<ThemeCubit>().state.themeMode;
-
-// Rebuild on change
-BlocBuilder<ThemeCubit, ThemeModeState>(
-  builder: (context, state) => Switch(value: state.isDark, onChanged: ...),
-);
-
-// React without rebuilding (snackbars, navigation)
-BlocListener<SplashBloc, SplashState>(listener: ..., child: ...);
-```
-
-**Where to provide:**
-
-| Scope | Where |
-| --- | --- |
-| App-wide (theme, auth, current user) | [`GlobalBlocConfig`](lib/app/global_bloc_config.dart) — resolved from `getIt` |
-| Screen-only (form, list) | `BlocProvider` at the screen root |
-
-For persisted state, see [`ThemeCubit`](lib/modules/theme/blocs/theme/theme_cubit.dart) — a small `HydratedCubit` example with `fromJson` / `toJson`.
-
-## Dependency injection — annotate, generate, resolve
-
-```dart
-@injectable           // new instance per resolve
-@lazySingleton        // one instance, created on first resolve
-@singleton            // one instance, created at startup
-```
-
-After adding an annotation:
-
-```sh
-dart run build_runner build --delete-conflicting-outputs
-```
-
-Resolve anywhere:
-
-```dart
-final cubit = getIt<ThemeCubit>();
-```
-
-For third-party classes you can't annotate (e.g. `SharedPreferences`), register them in [`ServiceModule`](lib/core/di/service_module.dart). Use `@preResolve` for async deps that must be ready before `runApp`.
-
-**Inject** things you'd mock in tests (repos, network clients).
-**Don't inject** stateless utility helpers.
-
-## Routing — typed enum + GoRouter
-
-Two files own routing:
-
-- [`routes.dart`](lib/core/router/routes.dart) — the `Routes` enum (single source of truth)
-- [`app_router.dart`](lib/core/router/app_router.dart) — the `GoRouter` config
-
-```dart
-context.pushNamed(Routes.deviceInfo.name);
-context.goNamed(Routes.dashboard.name);
-context.pushNamed(Routes.websiteView.name, extra: 'https://flutter.dev');
-```
-
-To add a route: add an entry to the enum, then a matching `GoRoute` in `app_router.dart`. Nested routes use **relative** paths (no leading `/`).
-
-## Theming — seed + harmonized accent via `BrandPalette`
-
-Two lines drive the entire scheme:
-
-```dart
-// lib/core/theme/colors/app_colors.dart
-static const Color seed = Color(0xFF1B3A6B);   // primary brand color
-static const Color accent = Color(0xFFC8A96B); // optional, harmonized to seed
-```
-
-Both feed [`BrandPalette`](lib/core/theme/colors/brand_palette.dart) — a thin wrapper around `material_color_utilities` (the same package that powers `ColorScheme.fromSeed`). It generates:
-
-- A full Material 3 [`ColorScheme`](lib/core/theme/light_theme.dart) for light + dark, including all the modern surface roles (`surfaceContainer`, `surfaceContainerHigh`, `surfaceDim`, etc.).
-- A harmonized accent — `accent` is shifted up to 15° in hue toward `seed` via `Blend.harmonize`, so the two colors read as belonging to the same family no matter what brand colors you pick.
-- Direct tonal access if you need it: `palette.primaryTone(95, brightness: ...)`, `palette.neutralTone(20, brightness: ...)`.
-
-`BrandPalette` is **self-contained** (no app-specific imports) — copy `brand_palette.dart` into another Flutter project as-is.
-
-```dart
-final brand = BrandPalette(
-  seed: const Color(0xFF1B3A6B),
-  accent: const Color(0xFFC8A96B), // optional
-  contrastLevel: 0.0,              // -1.0 to 1.0
-  variant: DynamicSchemeVariant.tonalSpot, // or vibrant, expressive, content...
-);
-
-MaterialApp(
-  theme: ThemeData.from(colorScheme: brand.light),
-  darkTheme: ThemeData.from(colorScheme: brand.dark),
-);
-```
-
-**Customizing further:**
-
-- **Restyle a component everywhere?** Edit the matching file in [`core/theme/component_themes/`](lib/core/theme/component_themes/) — don't wrap widgets in custom variants.
-- **Need a color outside `ColorScheme`?** Add a field to [`CustomThemeExtension`](lib/core/theme/extension/custom_theme_extension.dart). It ships with `brandAccent` (the harmonized accent) and `brandAccentMuted` (translucent variant for halos and subtle fills), exposed via `Theme.of(context).extension<CustomThemeExtension>()!`.
-
-> ⚠️ **Don't override `color:` on text styles in widget code.** Material 3 components (`ListTile`, `AppBar`, `Card`, etc.) apply `colorScheme.onSurface` automatically — overriding `color` per-Text fights that and produces unreadable titles. If you need a custom weight, use `textTheme.titleSmall?.copyWith(fontWeight: ...)` and let color flow through.
-
-The Settings tab demos light / dark / system switching, persisted across launches.
-
-## Responsive sizing — never hard-code pixel values
-
-Use the extensions from `flutter_scale_kit` (vendored at [`lib/core/scale_size/`](lib/core/scale_size/)):
-
-| | Use for |
-| --- | --- |
-| `.w` / `.h` | width / height |
-| `.r` | radius, square sizes (icon size) |
-| `.sp` | font size |
-| `.sw` / `.sh` | % of screen width / height |
-| `.spClamp(min, max)` etc. | clamped variants — won't grow / shrink past bounds |
+`flutter_scale_kit` extension methods on `num`:
 
 ```dart
 EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h)
 BorderRadius.circular(12.r)
-fontSize: 14.spClamp(12, 16)
+Text(style: TextStyle(fontSize: 14.sp))
+fontSize: 16.spClamp(12, 20)   // clamps when device font scale is extreme
 ```
 
-Design dimensions are set in [`main.dart`](lib/main.dart) (`425 × 691`).
-
-## Multi-language text scaling
-
-Some scripts (Devanagari, Bengali, Arabic) render visually smaller than Latin at the same `fontSize`. Two pieces handle that:
-
-1. Per-language scale factors in [`font_scale.dart`](lib/core/text/font_scale.dart):
-
-   ```dart
-   static const Map<String, double> _scales = {
-     'ne': 1.10,
-     'bn': 1.10,
-     'ar': 1.05,
-   };
-   ```
-
-2. Use [`AppText`](lib/core/text/app_text.dart) (drop-in replacement for `Text`) for body content — it applies the active scale automatically.
-
-## Constants & env — three files, three lifetimes
-
-| File | What goes here |
-| --- | --- |
-| [`app_constants.dart`](lib/core/utils/constants/app_constants.dart) | App identity (name, store IDs, Hive box names) — changes once per app |
-| [`app_urls.dart`](lib/core/utils/constants/app_urls.dart) | Static external URLs (download, privacy, support email) |
-| [`env_config.dart`](lib/core/utils/constants/env_config.dart) | Everything from `.env` (API base, auth keys, OAuth IDs) — changes per environment |
-
-**Rule:** never call `EnvHelper.get('SOME_KEY')` directly. Add a typed getter to [`EnvConfig`](lib/core/utils/constants/env_config.dart) and use that:
-
-```dart
-// ❌ Don't
-final url = EnvHelper.get('API_BASE_URL');
-
-// ✅ Do
-final url = EnvConfig.apiBaseUrl;
-```
-
-`EnvConfig.authKey` automatically picks `PROD_AUTH_KEY` in release builds and `DEV_AUTH_KEY` otherwise.
-
-## Local storage — Hive, HydratedBloc, or Secure Storage?
-
-| Use case | What |
-| --- | --- |
-| Structured data, lists, models | **Hive** (a box per feature) |
-| Small flags persisted with bloc state (theme, "first run") | **HydratedBloc** auto-syncs your bloc state |
-| Tokens, passwords | [**`SecureStorageHelper`**](lib/core/utils/helpers/secure_storage_helper.dart) — OS keychain |
-
-**Hive — adding a feature box** (only if your module needs structured local data):
-
-1. Create `lib/modules/<feature>/utils/<feature>_hive.dart`:
-
-   ```dart
-   class FeatureHiveBoxNameKeys {
-     static const String dataBoxName = 'feature_data';
-   }
-
-   extension FeatureBoxExtension on HiveInterface {
-     Future<Box<dynamic>> openFeatureBox() =>
-         Hive.openBox(FeatureHiveBoxNameKeys.dataBoxName);
-
-     Box<dynamic> get featureBox =>
-         Hive.box(FeatureHiveBoxNameKeys.dataBoxName);
-
-     Future<int> clearFeatureBox() => featureBox.clear();
-   }
-   ```
-
-2. Register the open + clear in [`hive_bootstrap.dart`](lib/app/hive_bootstrap.dart):
-
-   ```dart
-   final _boxOpeners = [
-     () => Hive.openAppBox(),
-     () => Hive.openFeatureBox(),    // ← add
-   ];
-   final _boxClearers = [
-     () => Hive.clearAppBox(),
-     () => Hive.clearFeatureBox(),   // ← add
-   ];
-   ```
-
-`main.dart` only ever calls `Hive.openAllBoxes()`. For "log out", call `Hive.clearAllBoxes()`.
-
-**Secure storage:**
-
-```dart
-await SecureStorageHelper.instance.write('access_token', token);
-final token = await SecureStorageHelper.instance.read('access_token');
-```
-
-## Toasts & messages — `CustomSnackbar`
-
-The starter does **not** use `ScaffoldMessenger.showSnackBar(...)`. Instead, [`CustomSnackbar`](lib/core/utils/helpers/custom_snackbar.dart) wraps `fluttertoast` with three semantic types — `success`, `error`, `info`. It works without a `Scaffold` in scope, survives navigation between routes, and auto-cancels the previous toast.
-
-**From any `BuildContext`:**
-
-```dart
-context.showSuccessToast('Saved');
-context.showErrorToast('Network failed');
-context.showInfoToast('Heads up');
-```
-
-**Without a context** (e.g. from a service or input formatter):
-
-```dart
-CustomSnackbar.show(type: ToastType.error, message: 'Invalid input');
-CustomSnackbar.cancel(); // dismiss any visible toast
-```
-
-To restyle, edit `_backgroundFor(...)` in `custom_snackbar.dart` or pass `backgroundColor` / `textColor` per call.
-
-## Firebase (optional) — opt-in, no-op until you enable it
-
-The starter does **not** initialise Firebase by default — the build is green out of the box.
-
-```sh
-# 1. Install the CLI (one time)
-dart pub global activate flutterfire_cli
-
-# 2. Configure (creates lib/firebase_options.dart, gitignored)
-flutterfire configure
-
-# 3. In lib/core/services/firebase_service.dart, uncomment:
-#    - the firebase_options import
-#    - the `options:` line in Firebase.initializeApp(...)
-
-# 4. In .env:
-FIREBASE_ENABLED=true
-
-# 5. Run
-flutter run
-```
-
-Crashlytics is enabled in **release builds only**. Analytics logs `app_open` automatically.
-
-## Built-in integrations — Share, QR, WebView, Rate, Report
-
-All wired up and demo'd in the Settings tab — copy the call sites as templates.
-
-```dart
-// Sharing
-await ShareService.shareText(context: context, text: 'Hello: $url');
-await ShareService.shareFiles(context: context, filePaths: [path]);
-await ShareService.shareImageBytes(context: context, bytes: png, fileName: 'qr.png');
-
-// QR popup
-QrPopup.show(context, qrData: AppUrls.appDownload, fileName: AppConstants.appAndroidPackageId);
-
-// WebView
-context.pushNamed(Routes.websiteView.name, extra: 'https://flutter.dev');
-
-// Rate
-final review = InAppReview.instance;
-if (await review.isAvailable()) {
-  await review.requestReview();
-} else {
-  await review.openStoreListing(appStoreId: AppConstants.appIosAppId);
-}
-
-// Report (mailto)
-await const UrlHelper().sendEmail(to: AppUrls.supportEmail, subject: 'Report');
-```
-
-[`PermissionHelper`](lib/core/utils/helpers/permission_helper.dart) handles iOS limited photos and Android ≤ 9 storage. Modern Android needs nothing.
+`ScaleKitBuilder` is wired at the root in `main.dart` with a 425×691 design size — edit there if your designs target a different reference.
 
 ---
 
-## Add a new feature
+## Storage
 
-Walk through this once and the pattern sticks. Example: a `reminders` feature.
+Three tools, each for one thing:
 
-### 1 · Create the folder
+- **HydratedBloc** for cubit/bloc state. Automatic. Initialized in `main.dart`.
+- **Hive** for structured app data (objects with adapters). Open boxes in [lib/app/hive_bootstrap.dart](lib/app/hive_bootstrap.dart).
+- **flutter_secure_storage** for tokens / secrets. Reach via `SecureStorageHelper.instance` ([lib/core/utils/helpers/secure_storage_helper.dart](lib/core/utils/helpers/secure_storage_helper.dart)).
 
-```
-lib/modules/reminders/
-├── reminders.dart                       barrel
-├── data/repository/local/...
-├── domain/
-│   ├── entity/reminder.dart
-│   └── repository/reminders_repository.dart
-├── utils/reminders_hive.dart            (only if it owns a Hive box)
-└── presentation/
-    ├── cubit/
-    │   ├── reminders_cubit.dart
-    │   └── reminders_state.dart
-    ├── views/reminders_screen.dart
-    └── widgets/...
-```
+`shared_preferences` is included for libraries that need it (e.g. `dynamic_color`), but app code should reach for one of the above.
 
-### 2 · Build the cubit
+---
+
+## Toasts
+
+`CustomSnackbar` (fluttertoast-backed):
 
 ```dart
-@injectable
-class RemindersCubit extends Cubit<RemindersState> {
-  RemindersCubit(this._repo) : super(const RemindersState());
-  final RemindersRepository _repo;
-
-  Future<void> load() async {
-    emit(state.copyWith(loading: true));
-    final items = await _repo.getAll();
-    emit(state.copyWith(loading: false, items: items));
-  }
-}
+CustomSnackbar.success(context, 'Saved');
+CustomSnackbar.error(context, 'Could not save');
+CustomSnackbar.info(context, 'Heads up');
 ```
 
-### 3 · Register the repository
+Prefer this over `ScaffoldMessenger.of(context).showSnackBar(...)` — consistent style across screens.
+
+---
+
+## Network / API layer
+
+Path: [lib/core/network/](lib/core/network/). Dio-backed. Removable.
+
+### Setup
+
+Set `API_BASE_URL` in `.env`:
+
+```env
+API_BASE_URL=https://api.example.com
+```
+
+The `RemoteService` is registered via `@Injectable` — `dart run build_runner build` puts it in DI.
+
+### Use
+
+In a repository:
 
 ```dart
-@LazySingleton(as: RemindersRepository)
-class RemindersLocalRepository implements RemindersRepository { ... }
-```
+@LazySingleton(as: ProfileRepository)
+class ProfileRepositoryImpl implements ProfileRepository {
+  ProfileRepositoryImpl(this._remote);
+  final RemoteService _remote;
 
-### 4 · Regenerate DI
-
-```sh
-dart run build_runner build --delete-conflicting-outputs
-```
-
-### 5 · Wire the screen
-
-```dart
-class RemindersScreen extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<RemindersCubit>()..load(),
-      child: const _RemindersView(),
+  Future<Profile> fetch() async {
+    final data = await _remote.get(
+      endpoint: 'me',
+      authRequired: true,
+      accessToken: () => SecureStorageHelper.instance.read('access_token'),
     );
+    if (data is! Map<String, dynamic>) {
+      throw const ServerException(message: AppErrorStrings.invalidResponseShape);
+    }
+    return Profile.fromJson(data);
   }
 }
 ```
 
-### 6 · Register the route
+The `RemoteService` exposes `get/post/put/patch/delete`. Files in `post`/`put`/`patch` go as multipart automatically.
+
+Wire token refresh by setting `refreshTokenCallback` on `RemoteServiceImpl`:
 
 ```dart
-// routes.dart
-reminders(name: 'reminders', path: 'reminders'),
-
-// app_router.dart (inside dashboard's `routes:`)
-GoRoute(
-  name: Routes.reminders.name,
-  path: Routes.reminders.path,
-  builder: (_, __) => const RemindersScreen(),
-),
+(getIt<RemoteService>() as RemoteServiceImpl).refreshTokenCallback = () async {
+  // call refresh endpoint, persist new tokens, return new access token
+};
 ```
 
-### 7 · (If using Hive) register the box
+### Error model
 
-See [Local storage](#local-storage--hive-hydratedbloc-or-secure-storage).
-
-### 8 · Navigate
-
-```dart
-context.pushNamed(Routes.reminders.name);
+```
+DioException → DioExceptionUtil.handleError → ApiErrorStrings.x
+                                            ↓
+                              throw ServerException(message: ...)
 ```
 
-That's the whole cycle: folder → state → DI → route → navigate.
+In repositories:
+- **Wire failures** (network down, 401, 500) come from `RemoteService` as `ServerException(message: ApiErrorStrings.x)`.
+- **Shape failures** (2xx but body is malformed) — throw `ServerException(message: AppErrorStrings.invalidResponseShape)` yourself.
+- **Feature-specific failures** — declare `lib/modules/<feature>/utils/<feature>_error_strings.dart` and throw with its constants.
+
+### Remove
+
+If your app has no API:
+- Delete `lib/core/network/`.
+- Remove `dio` from `pubspec.yaml`.
+- Remove `API_BASE_URL` from `.env`.
+- `dart run build_runner build` to drop the generated registrations.
+
+`AppErrorStrings` stays in `core/errors/` — domain failures happen regardless of HTTP.
 
 ---
 
-## Add an API layer
+## Notifications
 
-The starter ships with no HTTP client — pick what fits.
+Path: [lib/modules/notifications/](lib/modules/notifications/). Local notifications, FCM-independent.
 
-<details>
-<summary>Recommended: Dio</summary>
+### Pluggable provider
 
-```sh
-flutter pub add dio
-flutter pub add pretty_dio_logger
-```
+`NotificationService` (public singleton) delegates to a `NotificationProvider`. The default is `FlutterLocalNotificationsProvider`. To swap packages (e.g. to `awesome_notifications`), implement the interface and pass it at init — no other call sites change.
+
+### Setup
+
+Already wired — `await NotificationService.instance.initialize()` in `main.dart`.
+
+Native config needed for the feature to work end-to-end (not auto-applied):
+- **Android**: `POST_NOTIFICATIONS` permission, `RECEIVE_BOOT_COMPLETED` for scheduled notifications, `flutter_local_notifications` receiver entries. Provide a monochrome `@drawable/ic_notification`.
+- **iOS**: usage description in `Info.plist` if you use action categories; `UNUserNotificationCenter` delegate in `AppDelegate.swift`.
+
+### Use
 
 ```dart
-@lazySingleton
-class ApiClient {
-  ApiClient() : _dio = Dio(BaseOptions(
-    baseUrl: EnvConfig.apiBaseUrl,
-    headers: {'Authorization': 'Bearer ${EnvConfig.authKey}'},
-  ));
+final granted = await NotificationService.instance.requestPermissions();
 
-  final Dio _dio;
+await NotificationService.instance.show(
+  NotificationPayload(
+    id: 42,
+    title: 'Reminder',
+    body: 'You have a meeting at 3pm',
+    channel: NotificationChannels.highPriorityChannelId,
+    priority: NotificationPriority.high,
+  ),
+);
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    final res = await _dio.post(AuthEndpoints.login, data: {
-      'email': email, 'password': password,
-    });
-    return res.data as Map<String, dynamic>;
-  }
+await NotificationService.instance.schedule(
+  NotificationPayload(id: 43, title: 'Wake up', body: ''),
+  DateTime.now().add(const Duration(hours: 8)),
+);
+
+NotificationService.instance.onTap.listen((event) {
+  // navigate based on event.payload.data
+});
+```
+
+Define your own channels:
+
+```dart
+await NotificationService.instance.initialize(
+  additionalChannels: [
+    NotificationChannel(
+      id: 'reminders',
+      name: 'Reminders',
+      description: 'Daily reminders',
+      importance: NotificationPriority.high,
+    ),
+  ],
+);
+```
+
+### Swap the provider
+
+```dart
+class AwesomeNotificationsProvider implements NotificationProvider { … }
+
+await NotificationService.instance.initialize(
+  provider: AwesomeNotificationsProvider(),
+);
+```
+
+### Remove
+
+- Delete `lib/modules/notifications/`.
+- Remove `await NotificationService.instance.initialize();` from `main.dart`.
+- Remove `flutter_local_notifications` and `timezone` from `pubspec.yaml`.
+- If FCM is also installed, delete `lib/modules/fcm/integrations/notifications_bridge.dart`.
+
+---
+
+## FCM (push)
+
+Path: [lib/modules/fcm/](lib/modules/fcm/). Depends on Firebase. Independent of Notifications (an optional bridge lives in `integrations/`).
+
+### Setup
+
+1. Configure Firebase (see [Firebase](#firebase) below).
+2. `FIREBASE_ENABLED=true` in `.env`.
+3. Already wired in `main.dart`:
+   ```dart
+   FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);   // line 1
+   await FcmService.instance.initialize(                          // line 2
+     onForegroundMessage: buildNotificationBridge(),
+   );
+   ```
+4. Native config:
+   - **iOS**: APNs key/cert in Firebase console, Push Notifications capability in Xcode, Background Modes → Remote notifications.
+   - **Android**: `google-services.json` (pulled by `flutterfire configure`).
+
+When `FIREBASE_ENABLED=false`, both lines no-op.
+
+### Use
+
+```dart
+final token = await FcmService.instance.getToken();
+
+await FcmService.instance.subscribeToTopic('news');
+
+if (await FcmService.instance.shouldSyncToken(token: token!, userId: '42')) {
+  // POST it to your backend
+  await FcmService.instance.markTokenSynced(token: token, userId: '42');
 }
+
+FcmService.instance.onMessageOpenedApp.listen((msg) {
+  // navigate based on msg.data
+});
 ```
 
-Add endpoint paths next to [`env_config.dart`](lib/core/utils/constants/env_config.dart):
+### Bridge to notifications (when both modules are present)
+
+`buildNotificationBridge()` turns foreground FCM payloads into local notifications. Customize per app:
 
 ```dart
-class AuthEndpoints {
-  AuthEndpoints._();
-  static const String login = '/auth/login';
-  static const String refresh = '/auth/refresh';
-}
+await FcmService.instance.initialize(
+  onForegroundMessage: buildNotificationBridge(
+    defaultChannel: NotificationChannels.highPriorityChannelId,
+    idResolver: (msg) => msg.data['orderId'].hashCode,
+  ),
+);
 ```
 
-Translate package errors into [`AppException`](lib/core/errors/exceptions.dart) at the repository boundary — UI code never sees `DioException`.
+### Remove
 
-</details>
+- Delete `lib/modules/fcm/`.
+- Remove both FCM lines from `main.dart`.
+- Remove `firebase_messaging` from `pubspec.yaml`.
+- `dart run build_runner build`.
+
+To remove the bridge but keep FCM:
+- Delete `lib/modules/fcm/integrations/notifications_bridge.dart`.
+- Pass `onForegroundMessage: null` in `main.dart`.
 
 ---
 
-## Build & release
+## Firebase
 
-```sh
-flutter build apk --release           # Android APK
-flutter build appbundle --release     # Android Play Store bundle
-flutter build ipa --release           # iOS archive
+Opt-in. Without enabling, the app builds and runs without any Firebase code executing.
+
+### Setup
+
+1. `dart pub global activate flutterfire_cli`.
+2. `flutterfire configure` — generates `lib/firebase_options.dart` (gitignored).
+3. Uncomment the import + `options:` line in [lib/core/services/firebase_service.dart](lib/core/services/firebase_service.dart).
+4. `FIREBASE_ENABLED=true` in `.env`.
+
+### Use
+
+Already wired in `main.dart` — Crashlytics + Analytics come up in release builds only.
+
+```dart
+FirebaseAnalytics.instance.logEvent(name: 'add_to_cart', parameters: {...});
+FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
 ```
 
-App icons + splash:
+### Remove
 
-- [`flutter_launcher_icons`](https://pub.dev/packages/flutter_launcher_icons)
-- [`flutter_native_splash`](https://pub.dev/packages/flutter_native_splash)
-
-For Android signing, set up `android/key.properties` per the [official guide](https://docs.flutter.dev/deployment/android#signing-the-app).
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-| --- | --- |
-| `Type 'X' not found` after pulling code | `dart run build_runner build --delete-conflicting-outputs` |
-| `MissingPluginException` after adding a package | `flutter clean && flutter pub get && cd ios && pod install` |
-| `Box hasn't been opened` | Forgot to register it in [`hive_bootstrap.dart`](lib/app/hive_bootstrap.dart) |
-| iOS pod errors | `cd ios && pod repo update && pod install` |
-| Theme changes not appearing | Use **hot restart** (`R`), not hot reload |
-| `getIt<X> is not registered` | Missing `@injectable`, or you forgot build_runner |
-| Anything weird | `flutter clean && flutter pub get && dart run build_runner build --delete-conflicting-outputs` |
+- Delete [lib/core/services/firebase_service.dart](lib/core/services/firebase_service.dart) (and `lib/modules/fcm/` if used).
+- Remove the two `FirebaseService.…` calls from `main.dart`.
+- Remove `firebase_core`, `firebase_analytics`, `firebase_crashlytics`, `firebase_messaging` from `pubspec.yaml`.
+- Remove `FIREBASE_ENABLED` from `.env`.
+- Delete `lib/firebase_options.dart` if generated.
 
 ---
 
-## Before shipping
+## Onboarding replay
 
-- [ ] Replace `appName`, `appIosAppId`, `appAndroidPackageId` in [`app_constants.dart`](lib/core/utils/constants/app_constants.dart)
-- [ ] Replace placeholder URLs in [`app_urls.dart`](lib/core/utils/constants/app_urls.dart)
-- [ ] Update bundle / package ID in `ios/Runner.xcodeproj` and `android/app/build.gradle`
-- [ ] Set `API_BASE_URL` and `PROD_AUTH_KEY` in `.env`
-- [ ] Replace the seed color in [`app_colors.dart`](lib/core/theme/colors/app_colors.dart)
-- [ ] Replace `assets/images/logos/app_logo.*` with your logo
-- [ ] Add app icons + splash assets
-- [ ] Pick a font (or keep Inter / NotoSansDevanagari)
-- [ ] Set up Android release signing
-- [ ] Wire up Firebase (optional)
-- [ ] `flutter analyze` clean
-- [ ] Test on a low-end Android and a small iPhone
+`AppSettingCubit` holds `showOnboardingAtAppOpen` (default `true`). When true on next app launch, the splash routes to onboarding.
+
+### Use
+
+End users replay onboarding from Settings → "Show app tour again". The tile calls:
+
+```dart
+context.read<AppSettingCubit>().requestOnboardingReplay();
+context.goNamed(Routes.onboarding.name);
+```
+
+Completing onboarding (last page or Skip) calls `markOnboardingComplete()` which flips the flag back to `false`.
+
+### Customize
+
+Edit the carousel pages in [lib/modules/onboarding/presentation/views/onboarding_screen.dart](lib/modules/onboarding/presentation/views/onboarding_screen.dart). The replay flow needs no changes.
 
 ---
 
-<div align="center">
+## Removability cheat sheet
 
-Built by **[Bimal Khatri](https://github.com/bimal-py)** · Issues and PRs welcome
+| Feature | Delete | Remove from main.dart | Remove from pubspec | Remove from .env |
+|---|---|---|---|---|
+| Notifications | `lib/modules/notifications/` | `NotificationService.instance.initialize()` | `flutter_local_notifications`, `timezone` | — |
+| FCM | `lib/modules/fcm/` | both FCM lines | `firebase_messaging` | — |
+| Network/API | `lib/core/network/` | — | `dio` | `API_BASE_URL` |
+| Firebase (all) | `lib/core/services/firebase_service.dart` + `lib/modules/fcm/` | all Firebase + FCM lines | `firebase_*` | `FIREBASE_ENABLED` |
+| Theme playground | playground screen + tile | — | `flutter_colorpicker` | — |
+| Device dynamic color | unwrap `DynamicColorBuilder` in app.dart | — | `dynamic_color` | — |
 
-If this saved you a weekend, ⭐ the repo on [GitHub](https://github.com/bimal-py/flutter_starter).
+Run `dart run build_runner build` after any module deletion to drop generated registrations.
 
-</div>
+---
+
+## Build & ship
+
+```
+flutter build apk --release
+flutter build ipa --release          # then ship through Xcode/Transporter
+```
+
+Before shipping:
+- Rename the package (search for `flutter_starter` in `pubspec.yaml`, Android `applicationId`, iOS `PRODUCT_BUNDLE_IDENTIFIER`).
+- Replace the seed + accent in `AppColors`.
+- Drop unused modules per the cheat sheet above.
+- `flutter analyze && flutter test` clean.
+- Smoke-test the playground reset, theme picker, and onboarding replay.
