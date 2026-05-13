@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_starter/app/app.dart';
 import 'package:flutter_starter/app/hive_bootstrap.dart';
 import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/fcm/fcm.dart';
 import 'package:flutter_starter/modules/notifications/notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -12,6 +14,8 @@ import 'package:path_provider/path_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Optional. Delete lib/modules/fcm/ + this line to remove push notifications.
+  FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
   await initializeEnvHelper();
   await _setupHydratedStorage();
   await _initializeHive();
@@ -25,6 +29,11 @@ Future<void> main() async {
 
   // Optional. No-op unless FIREBASE_ENABLED=true in .env AND firebase_options.dart has been generated. See firebase_service.dart.
   await FirebaseService.init();
+
+  // Optional. No-op when FIREBASE_ENABLED=false. Bridge requires Notifications.
+  await FcmService.instance.initialize(
+    onForegroundMessage: buildNotificationBridge(),
+  );
 
   runApp(
     const ScaleKitBuilder(
