@@ -27,12 +27,12 @@ class _SplashView extends StatelessWidget {
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (context, state) {
         if (!state.status.isSuccess) return;
-        final hasSeenOnboarding = context
+        final showOnboarding = context
             .read<AppSettingCubit>()
             .state
-            .hasSeenOnboarding;
+            .showOnboardingAtAppOpen;
         context.goNamed(
-          hasSeenOnboarding ? Routes.dashboard.name : Routes.onboarding.name,
+          showOnboarding ? Routes.onboarding.name : Routes.dashboard.name,
         );
       },
       child: Scaffold(

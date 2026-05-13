@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/theme/theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SettingsThemePicker extends StatelessWidget {

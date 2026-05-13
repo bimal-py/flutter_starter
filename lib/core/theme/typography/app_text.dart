@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_starter/core/text/font_scale.dart';
+import 'package:flutter_starter/core/theme/typography/font_scale.dart';
 
 /// Drop-in [Text] replacement that applies a per-language font scale so text
 /// renders at consistent visual size across scripts.
-///
-/// Use this everywhere you'd write `Text(...)` in the app. The scale is
-/// configured in [AppTextScale].
 class AppText extends StatelessWidget {
   const AppText(
     this.data, {

@@ -40,7 +40,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _next() {
     if (_index == _pages.length - 1) {
-      context.read<AppSettingCubit>().markOnboardingSeen();
+      context.read<AppSettingCubit>().markOnboardingComplete();
       context.goNamed(Routes.dashboard.name);
       return;
     }
@@ -69,7 +69,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: EdgeInsets.all(8.r),
                 child: TextButton(
                   onPressed: () {
-                    context.read<AppSettingCubit>().markOnboardingSeen();
+                    context.read<AppSettingCubit>().markOnboardingComplete();
                     context.goNamed(Routes.dashboard.name);
                   },
                   child: const Text('Skip'),
