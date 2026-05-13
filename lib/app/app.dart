@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/app/global_bloc_config.dart';
@@ -20,23 +21,34 @@ class _StarterAppView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThemeCubit, ThemeModeState>(
+    return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, themeState) {
-        return MaterialApp.router(
-          title: AppConstants.appName,
-          debugShowCheckedModeBanner: false,
-          theme: ThemeConfigs.lightTheme(context: context),
-          darkTheme: ThemeConfigs.darkTheme(context: context),
-          themeMode: themeState.themeMode,
-          routerConfig: router,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: MediaQuery.of(
-                context,
-              ).textScaler.clamp(maxScaleFactor: 1.2),
-            ),
-            child: child!,
-          ),
+        return DynamicColorBuilder(
+          builder: (deviceLight, deviceDark) {
+            final composed = AppThemeBuilder.compose(
+              context: context,
+              source: themeState.effectiveSource,
+              deviceLightScheme: deviceLight,
+              deviceDarkScheme: deviceDark,
+              fonts: LocalizedFonts.defaults(),
+            );
+            return MaterialApp.router(
+              title: AppConstants.appName,
+              debugShowCheckedModeBanner: false,
+              theme: composed.light,
+              darkTheme: composed.dark,
+              themeMode: themeState.variant.toThemeMode(),
+              routerConfig: router,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: MediaQuery.of(
+                    context,
+                  ).textScaler.clamp(maxScaleFactor: 1.2),
+                ),
+                child: child!,
+              ),
+            );
+          },
         );
       },
     );

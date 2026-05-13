@@ -8,8 +8,9 @@ class SettingsThemePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThemeCubit, ThemeModeState>(
+    return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, state) {
+        final activeMode = state.variant.toThemeMode();
         return Container(
           padding: EdgeInsets.all(4.r),
           decoration: BoxDecoration(
@@ -23,8 +24,10 @@ class SettingsThemePicker extends StatelessWidget {
                 Expanded(
                   child: _ThemeOption(
                     mode: mode,
-                    selected: state.themeMode == mode,
-                    onTap: () => context.read<ThemeCubit>().setMode(mode),
+                    selected: activeMode == mode,
+                    onTap: () => context
+                        .read<ThemeCubit>()
+                        .setVariant(_variantFor(mode)),
                   ),
                 ),
             ],
@@ -33,6 +36,12 @@ class SettingsThemePicker extends StatelessWidget {
       },
     );
   }
+
+  ThemeVariant _variantFor(ThemeMode mode) => switch (mode) {
+        ThemeMode.light => ThemeVariant.light,
+        ThemeMode.dark => ThemeVariant.dark,
+        ThemeMode.system => ThemeVariant.system,
+      };
 }
 
 class _ThemeOption extends StatelessWidget {

@@ -1,24 +1,54 @@
 part of 'theme_cubit.dart';
 
-class ThemeModeState extends Equatable {
-  const ThemeModeState({this.themeMode = ThemeMode.system});
+class ThemeState extends Equatable {
+  const ThemeState({
+    this.variant = ThemeVariant.system,
+    required this.developerSource,
+    this.userOverride,
+  });
 
-  final ThemeMode themeMode;
+  final ThemeVariant variant;
+  final ThemeSource developerSource;
+  final ThemeSource? userOverride;
 
-  ThemeModeState copyWith({ThemeMode? themeMode}) =>
-      ThemeModeState(themeMode: themeMode ?? this.themeMode);
+  /// The source that actually drives AppThemeBuilder.compose. UserOverride
+  /// wins when set; otherwise falls back to the developer's wired source.
+  ThemeSource get effectiveSource => userOverride ?? developerSource;
 
-  Map<String, dynamic> toJson() => {'themeMode': themeMode.name};
+  /// True when the end user has applied a playground override.
+  bool get hasUserOverride => userOverride != null;
 
-  factory ThemeModeState.fromJson(Map<String, dynamic> json) {
-    final raw = json['themeMode'] as String?;
-    final mode = ThemeMode.values.firstWhere(
-      (m) => m.name == raw,
-      orElse: () => ThemeMode.system,
-    );
-    return ThemeModeState(themeMode: mode);
-  }
+  ThemeState copyWith({
+    ThemeVariant? variant,
+    ThemeSource? developerSource,
+    ThemeSource? userOverride,
+  }) =>
+      ThemeState(
+        variant: variant ?? this.variant,
+        developerSource: developerSource ?? this.developerSource,
+        userOverride: userOverride ?? this.userOverride,
+      );
+
+  ThemeState clearUserOverride() => ThemeState(
+        variant: variant,
+        developerSource: developerSource,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'variant': variant.id,
+        'developerSource': developerSource.toJson(),
+        if (userOverride != null) 'userOverride': userOverride!.toJson(),
+      };
+
+  factory ThemeState.fromJson(Map<String, dynamic> json) => ThemeState(
+        variant: ThemeVariant.fromId(json['variant'] as String?),
+        developerSource:
+            themeSourceFromJson(json['developerSource'] as Map<String, dynamic>?),
+        userOverride: json['userOverride'] is Map<String, dynamic>
+            ? themeSourceFromJson(json['userOverride'] as Map<String, dynamic>)
+            : null,
+      );
 
   @override
-  List<Object?> get props => [themeMode];
+  List<Object?> get props => [variant, developerSource, userOverride];
 }

@@ -28,6 +28,10 @@ dependencies:
   # Sizing (responsive scaling)
   flutter_scale_kit: ^1.5.2
 
+  # Theming
+  dynamic_color: ^1.7.0
+  flutter_colorpicker: ^1.1.0
+
   # Local storage
   hive: ^2.2.3
   hive_flutter: ^1.1.0
