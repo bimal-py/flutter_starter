@@ -1,5 +1,3 @@
-/// Thrown by infrastructure (storage, platform). Catch in repositories and
-/// translate into a [Failure].
 class AppException implements Exception {
   const AppException({required this.message, this.code});
 
@@ -12,4 +10,16 @@ class AppException implements Exception {
 
 class CacheException extends AppException {
   const CacheException({required super.message, super.code});
+}
+
+class ServerException extends AppException {
+  const ServerException({required super.message, super.code});
+}
+
+class AuthenticationException extends AppException {
+  const AuthenticationException({required super.message, super.code});
+}
+
+class ParseException extends AppException {
+  const ParseException({required super.message, super.code});
 }
