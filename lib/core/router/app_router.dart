@@ -36,6 +36,13 @@ final GoRouter router = GoRouter(
           name: Routes.settings.name,
           path: Routes.settings.path,
           builder: (context, state) => const SettingsScreen(),
+          routes: [
+            GoRoute(
+              name: Routes.themePlayground.name,
+              path: Routes.themePlayground.path,
+              builder: (context, state) => const ThemePlaygroundScreen(),
+            ),
+          ],
         ),
         GoRoute(
           name: Routes.deviceInfo.name,

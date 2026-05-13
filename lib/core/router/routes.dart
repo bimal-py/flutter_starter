@@ -5,6 +5,7 @@ enum Routes {
   onboarding(name: 'onboarding', path: '/onboarding'),
   dashboard(name: 'dashboard', path: '/dashboard'),
   settings(name: 'settings', path: 'settings'),
+  themePlayground(name: 'theme-playground', path: 'theme-playground'),
   deviceInfo(name: 'device-info', path: 'device-info'),
   packageInfo(name: 'package-info', path: 'package-info'),
   websiteView(name: 'website-view', path: 'website-view');
