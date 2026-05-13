@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_starter/core/theme/typography/font_scale.dart';
 
-/// Drop-in [Text] replacement that applies a per-language font scale so text
-/// renders at consistent visual size across scripts.
+/// Thin [Text] wrapper kept for API stability. The theme now carries per-
+/// locale font family + scale via [LocalizedFonts], so no extra work is needed
+/// here — prefer using TextTheme styles (e.g. `context.textTheme.bodyMedium`)
+/// directly so the configured family/scale flows through automatically.
 class AppText extends StatelessWidget {
   const AppText(
     this.data, {
@@ -28,25 +29,15 @@ class AppText extends StatelessWidget {
   final String? semanticsLabel;
 
   @override
-  Widget build(BuildContext context) {
-    final lang = Localizations.maybeLocaleOf(context)?.languageCode;
-    final scale = AppTextScale.of(lang);
-
-    final base = style ?? DefaultTextStyle.of(context).style;
-    final scaledStyle = (scale != 1.0 && base.fontSize != null)
-        ? base.copyWith(fontSize: base.fontSize! * scale)
-        : style;
-
-    return Text(
-      data,
-      style: scaledStyle,
-      textAlign: textAlign,
-      textDirection: textDirection,
-      maxLines: maxLines,
-      overflow: overflow,
-      softWrap: softWrap,
-      textScaler: textScaler,
-      semanticsLabel: semanticsLabel,
-    );
-  }
+  Widget build(BuildContext context) => Text(
+        data,
+        style: style,
+        textAlign: textAlign,
+        textDirection: textDirection,
+        maxLines: maxLines,
+        overflow: overflow,
+        softWrap: softWrap,
+        textScaler: textScaler,
+        semanticsLabel: semanticsLabel,
+      );
 }
