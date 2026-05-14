@@ -20,9 +20,10 @@ class QrPopup extends StatefulWidget {
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black54,
       builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
+        // Use Dialog's defaults — surfaceContainerHigh + elevation 6 + tonal
+        // overlay — so the popup picks up the same Material treatment as
+        // ConfirmationDialog instead of a flat hand-rolled surface.
         insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
         child: QrPopup(qrData: qrData, fileName: fileName),
       ),
@@ -45,8 +46,7 @@ class _QrPopupState extends State<QrPopup> {
     setState(() => _saving = true);
 
     try {
-      final hasPermission =
-          await PermissionHelper.requestGalleryPermission(context);
+      final hasPermission = await GalleryPermission.ensure(context);
       if (!hasPermission) return;
 
       final bytes = await _capture.captureQrImage(qrKey: _qrKey);
@@ -59,13 +59,22 @@ class _QrPopupState extends State<QrPopup> {
 
       if (!mounted) return;
       if (ok) {
-        context.showSuccessToast('QR saved to gallery');
+        CustomSnackbar.show(
+          type: ToastType.success,
+          message: 'QR saved to gallery',
+        );
       } else {
-        context.showErrorToast('Failed to save QR');
+        CustomSnackbar.show(
+          type: ToastType.error,
+          message: 'Failed to save QR',
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      context.showErrorToast('Save failed: $e');
+      CustomSnackbar.show(
+        type: ToastType.error,
+        message: AppErrorHandler.getErrorMessage(e),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -89,7 +98,10 @@ class _QrPopupState extends State<QrPopup> {
       );
     } catch (e) {
       if (!mounted) return;
-      context.showErrorToast('Share failed: $e');
+      CustomSnackbar.show(
+        type: ToastType.error,
+        message: AppErrorHandler.getErrorMessage(e),
+      );
     } finally {
       if (mounted) setState(() => _sharing = false);
     }
@@ -98,68 +110,65 @@ class _QrPopupState extends State<QrPopup> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surface,
-      borderRadius: BorderRadius.circular(20.r),
-      child: Padding(
-        padding: EdgeInsets.all(20.r),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Share app QR',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+    return Padding(
+      padding: EdgeInsets.all(20.r),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Share app QR',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(LucideIcons.x),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(LucideIcons.x),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          QrImageWidget(qrKey: _qrKey, qrData: widget.qrData),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _saving ? null : _save,
+                  icon: _saving
+                      ? SizedBox(
+                          width: 16.r,
+                          height: 16.r,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(LucideIcons.download),
+                  label: Text(_saving ? 'Saving…' : 'Save'),
                 ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            QrImageWidget(qrKey: _qrKey, qrData: widget.qrData),
-            SizedBox(height: 20.h),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _saving ? null : _save,
-                    icon: _saving
-                        ? SizedBox(
-                            width: 16.r,
-                            height: 16.r,
-                            child:
-                                const CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(LucideIcons.download),
-                    label: Text(_saving ? 'Saving…' : 'Save'),
-                  ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _sharing ? null : _share,
+                  icon: _sharing
+                      ? SizedBox(
+                          width: 16.r,
+                          height: 16.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: scheme.onPrimary,
+                          ),
+                        )
+                      : const Icon(LucideIcons.share2),
+                  label: Text(_sharing ? 'Sharing…' : 'Share'),
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _sharing ? null : _share,
-                    icon: _sharing
-                        ? SizedBox(
-                            width: 16.r,
-                            height: 16.r,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: scheme.onPrimary,
-                            ),
-                          )
-                        : const Icon(LucideIcons.share2),
-                    label: Text(_sharing ? 'Sharing…' : 'Share'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

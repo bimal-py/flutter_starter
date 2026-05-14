@@ -52,7 +52,10 @@ class SettingsShareFeedbackGroup extends StatelessWidget {
       }
     } catch (_) {
       if (context.mounted) {
-        context.showErrorToast('Could not open store listing');
+        CustomSnackbar.show(
+          type: ToastType.error,
+          message: 'Could not open store listing',
+        );
       }
     }
   }
@@ -63,10 +66,13 @@ class SettingsShareFeedbackGroup extends StatelessWidget {
         to: AppUrls.supportEmail,
         subject: 'Report from user (${AppConstants.appName})',
       );
-    } on AppException catch (e) {
-      if (context.mounted) context.showErrorToast(e.message);
     } catch (e) {
-      if (context.mounted) context.showErrorToast('$e');
+      if (context.mounted) {
+        CustomSnackbar.show(
+          type: ToastType.error,
+          message: AppErrorHandler.getErrorMessage(e),
+        );
+      }
     }
   }
 }

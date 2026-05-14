@@ -16,7 +16,6 @@ class OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final brand = Theme.of(context).extension<CustomThemeExtension>()!;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Column(
@@ -30,7 +29,7 @@ class OnboardingPage extends StatelessWidget {
                 height: 168.r,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: brand.brandAccentMuted,
+                  color: colorScheme.tertiaryContainer,
                 ),
               ),
               Container(

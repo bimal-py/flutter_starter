@@ -8,7 +8,6 @@ class HomeHeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final brand = Theme.of(context).extension<CustomThemeExtension>()!;
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 22.h),
       decoration: BoxDecoration(
@@ -20,13 +19,13 @@ class HomeHeroBanner extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(12.r),
             decoration: BoxDecoration(
-              color: brand.brandAccent.withValues(alpha: 0.22),
+              color: colorScheme.tertiary.withValues(alpha: 0.22),
               shape: BoxShape.circle,
             ),
             child: Icon(
               LucideIcons.sparkles,
               size: 24.r,
-              color: brand.brandAccent,
+              color: colorScheme.tertiary,
             ),
           ),
           SizedBox(width: 14.w),

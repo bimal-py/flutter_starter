@@ -51,10 +51,7 @@ class AppThemeBuilder {
               scheme: palette.light,
               brightness: Brightness.light,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.fromPalette(
-                palette,
-                brightness: Brightness.light,
-              ),
+              fallback: () => CustomThemeExtension.lightDefault(),
             ),
             font: font,
           ),
@@ -65,10 +62,7 @@ class AppThemeBuilder {
               scheme: palette.dark,
               brightness: Brightness.dark,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.fromPalette(
-                palette,
-                brightness: Brightness.dark,
-              ),
+              fallback: () => CustomThemeExtension.darkDefault(),
             ),
             font: font,
           ),
@@ -93,10 +87,7 @@ class AppThemeBuilder {
               scheme: lightScheme,
               brightness: Brightness.light,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.lightDefault(
-                lightScheme,
-                brandAccent: palette.harmonizedAccent,
-              ),
+              fallback: () => CustomThemeExtension.lightDefault(),
             ),
             font: font,
           ),
@@ -107,10 +98,7 @@ class AppThemeBuilder {
               scheme: darkScheme,
               brightness: Brightness.dark,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.darkDefault(
-                darkScheme,
-                brandAccent: palette.harmonizedAccent,
-              ),
+              fallback: () => CustomThemeExtension.darkDefault(),
             ),
             font: font,
           ),
@@ -134,14 +122,14 @@ class AppThemeBuilder {
               scheme: l,
               brightness: Brightness.light,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.lightDefault(l),
+              fallback: () => CustomThemeExtension.lightDefault(),
             );
         final dExt = darkExtension ??
             _resolveExtension(
               scheme: d,
               brightness: Brightness.dark,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.darkDefault(d),
+              fallback: () => CustomThemeExtension.darkDefault(),
             );
         final overrideFont =
             fontFamily != null ? AppFont(family: fontFamily) : font;
@@ -174,7 +162,7 @@ class AppThemeBuilder {
               scheme: l,
               brightness: Brightness.light,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.lightDefault(l),
+              fallback: () => CustomThemeExtension.lightDefault(),
             ),
             font: font,
           ),
@@ -185,7 +173,7 @@ class AppThemeBuilder {
               scheme: d,
               brightness: Brightness.dark,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.darkDefault(d),
+              fallback: () => CustomThemeExtension.darkDefault(),
             ),
             font: font,
           ),
@@ -204,10 +192,7 @@ class AppThemeBuilder {
               scheme: palette.light,
               brightness: Brightness.light,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.fromPalette(
-                palette,
-                brightness: Brightness.light,
-              ),
+              fallback: () => CustomThemeExtension.lightDefault(),
             ),
             font: font,
           ),
@@ -218,10 +203,7 @@ class AppThemeBuilder {
               scheme: palette.dark,
               brightness: Brightness.dark,
               builder: extensionBuilder,
-              fallback: () => CustomThemeExtension.fromPalette(
-                palette,
-                brightness: Brightness.dark,
-              ),
+              fallback: () => CustomThemeExtension.darkDefault(),
             ),
             font: font,
           ),

@@ -7,11 +7,13 @@ enum ToastType { success, error, info }
 /// `ScaffoldMessenger.showSnackBar(...)` so messages render without needing a
 /// Scaffold in scope and survive navigation between routes.
 ///
-/// Use directly:
 /// ```dart
 /// CustomSnackbar.show(type: ToastType.success, message: 'Saved');
+/// CustomSnackbar.show(
+///   type: ToastType.error,
+///   message: AppErrorHandler.getErrorMessage(e),
+/// );
 /// ```
-/// Or via the [BuildContext] extensions: `context.showSuccessToast(...)`.
 class CustomSnackbar {
   CustomSnackbar._();
 

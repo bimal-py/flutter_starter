@@ -8,7 +8,6 @@ class SettingsAppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final brand = Theme.of(context).extension<CustomThemeExtension>()!;
     return Container(
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
@@ -22,12 +21,12 @@ class SettingsAppCard extends StatelessWidget {
             width: 56.r,
             height: 56.r,
             decoration: BoxDecoration(
-              color: brand.brandAccentMuted,
+              color: colorScheme.tertiaryContainer,
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
               LucideIcons.layers,
-              color: brand.brandAccent,
+              color: colorScheme.onTertiaryContainer,
               size: 28.r,
             ),
           ),

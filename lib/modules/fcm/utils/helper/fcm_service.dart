@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/fcm/domain/entity/fcm_remote_message.dart';
 import 'package:flutter_starter/modules/fcm/utils/constants/fcm_constants.dart';
@@ -82,6 +83,22 @@ class FcmService {
     _initialized = false;
   }
 
+  /// Preferred entry point for prompting notification permission once the
+  /// app has UI context — runs the unified [NotificationPermission.ensure]
+  /// flow (native prompt on first call, app-settings dialog on later denials).
+  ///
+  /// Returns `true` when notifications end up enabled at the OS level. The
+  /// FCM-specific authorization status is also refreshed afterwards so
+  /// subsequent calls to [getNotificationSettings] see the new value.
+  Future<bool> ensureNotificationPermission(BuildContext context) async {
+    if (!isSupported) return false;
+    final granted = await NotificationPermission.ensure(context);
+    await _storage.markPermissionPrompted();
+    return granted;
+  }
+
+  /// Headless permission request — for callers without a [BuildContext]
+  /// (e.g. background isolates). Prefer [ensureNotificationPermission].
   Future<FcmPermissionStatus?> requestPermissionIfNeeded() async {
     if (!isSupported) return null;
 

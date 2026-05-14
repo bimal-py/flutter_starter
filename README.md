@@ -29,6 +29,8 @@ flutter run
   - [Responsive sizing](#responsive-sizing)
   - [Storage](#storage)
   - [Toasts](#toasts)
+  - [Confirmation dialog](#confirmation-dialog)
+  - [Permissions](#permissions)
   - [Network / API layer](#network--api-layer) *(removable)*
   - [Auth](#auth) *(removable, backend-swappable)*
   - [Notifications](#notifications) *(removable, package-swappable)*
@@ -47,7 +49,7 @@ flutter run
 
 | Capability | Path | Optional? |
 |---|---|---|
-| Material 3 theming + 38-field semantic extension | [`lib/core/theme/`](lib/core/theme/) | No (core) |
+| Material 3 theming + 3-field semantic extension | [`lib/core/theme/`](lib/core/theme/) | No (core) |
 | Brand-style preset themes (Christmas / Ocean / …) | [`lib/core/theme/source/theme_presets.dart`](lib/core/theme/source/theme_presets.dart) | No (replace list) |
 | End-user theme playground (seed / image / dynamic device colors) | [`lib/modules/settings/`](lib/modules/settings/) | Removable |
 | Per-locale fonts + scale | [`lib/core/theme/typography/`](lib/core/theme/typography/) | No (replace map) |
@@ -642,13 +644,19 @@ Quick decision tree for *where* to put a new helper:
 
 ## Theme
 
-The theme system has three layers:
+### Mental model
 
-1. **Developer source** — what your app code wires at startup. Defaults to `SeedOnlySource(seed: AppColors.seed, accent: AppColors.accent)`.
-2. **User override** — what the in-app playground writes. When set, wins over the developer's source. Cleared via Reset.
-3. **Variants** — light / dark / system (extensible via `ThemeVariant.custom(name)`).
+The active theme is the product of **two independent axes**:
 
-All theming flows through [`lib/core/theme/`](lib/core/theme/).
+```
+brightness variant  ×  palette source  =  rendered ThemeData
+   (light / dark)        (seed / preset / image / dynamic)
+```
+
+- **`ThemeVariant`** = brightness mode. Built-ins: `light`, `dark`, `system`. Maps directly to Flutter's `ThemeMode`.
+- **`ThemeSource`** = the palette. The seed (or image, or device colors) that Material 3 expands into a full `ColorScheme`. Presets like *Christmas* / *Ocean* are just named `ThemeSource` instances — each one renders a light AND a dark scheme.
+
+So *Christmas + Dark* is a valid combination — same Christmas seed, dark-brightness scheme. There's no flat list of `[light, dark, christmas, ocean]`; that would conflate the two axes.
 
 ### Setup
 
@@ -658,11 +666,11 @@ Edit [`lib/core/theme/colors/app_colors.dart`](lib/core/theme/colors/app_colors.
 class AppColors {
   AppColors._();
   static const Color seed = Color(0xFF1B3A6B);   // your brand
-  static const Color accent = Color(0xFFC8A96B); // optional, harmonized to seed
+  static const Color accent = Color(0xFFC8A96B); // optional; nudges tertiary
 }
 ```
 
-To opt into device wallpaper colors (Android 12+), wire a different default source in [`lib/app/global_bloc_config.dart`](lib/app/global_bloc_config.dart):
+`seed` drives every `ColorScheme` role; `accent` (optional) gets harmonized into the seed's hue family and influences `scheme.tertiary`. To opt into device wallpaper colors (Android 12+), swap the default source in [`lib/app/global_bloc_config.dart`](lib/app/global_bloc_config.dart):
 
 ```dart
 BlocProvider<ThemeCubit>(
@@ -675,52 +683,105 @@ BlocProvider<ThemeCubit>(
 ### Use
 
 ```dart
-final scheme = Theme.of(context).colorScheme;
-final ext = Theme.of(context).extension<CustomThemeExtension>()!;
-Container(color: scheme.primaryContainer);
-Container(color: ext.success);
-Container(color: ext.brandAccent);
+// Material 3 ColorScheme — prefer this. It already covers primary, secondary,
+// tertiary, error, surface variants and their on/container roles.
+Container(color: context.colorScheme.primaryContainer);
+Container(color: context.colorScheme.tertiaryContainer);
+Icon(Icons.bolt, color: context.colorScheme.onTertiaryContainer);
+
+// Domain colors Material doesn't ship.
+Icon(Icons.check, color: context.customTheme.success);
+
 Text('Hi', style: context.textTheme.titleMedium);
 ```
 
-### ThemeSource variants
+### ThemeSource — what palette to render
 
-| Variant | When to use |
+| Source | When to use |
 |---|---|
-| `SeedOnlySource` | Default. Pick one brand color; Material 3 derives the rest. |
+| `SeedOnlySource` | Default. One brand color; Material derives the rest. |
 | `SeedWithOverridesSource` | Seed + override specific Material roles. |
 | `FullCustomSource` | Hand every color and TextTheme entry. |
-| `DynamicDeviceSource` | Use device wallpaper colors (Android 12+). |
-| `FromImageSource` | Extract dominant color from an image (camera, gallery, asset). |
+| `DynamicDeviceSource` | Device wallpaper colors (Android 12+). |
+| `FromImageSource` | Extract a dominant color from an image. |
 
 ### Preset themes (Christmas / Ocean / Sunset / …)
+
+Presets are **named `ThemeSource` instances** — a palette, not a brightness. Each preset renders both a light AND a dark scheme; the user's current `ThemeVariant` decides which is shown.
 
 [`lib/core/theme/source/theme_presets.dart`](lib/core/theme/source/theme_presets.dart) ships six seasonal/brand looks. Replace with your own from `main.dart` before MaterialApp builds:
 
 ```dart
 ThemePresets.register([
-  ThemePreset(id: 'brand-a', label: 'Brand A',
-              swatch: Color(0xFF…),
-              source: SeedOnlySource(seed: Color(0xFF…), accent: Color(0xFF…))),
+  ThemePreset(
+    id: 'brand-a',
+    label: 'Brand A',
+    swatch: Color(0xFF…),
+    source: SeedOnlySource(seed: Color(0xFF…), accent: Color(0xFF…)),
+  ),
 ]);
 ```
 
 The playground picks them up automatically.
 
-### CustomThemeExtension — surviving scheme changes
+### Adding a new brightness variant
 
-When you customize semantic colors (success, brandAccent, gradient stops, …) and use dynamic device colors or image-derived seeds, your tweaks would be lost the moment the scheme changes. Wire a builder so they re-apply against any scheme:
+If you need something beyond light/dark/system — say an AMOLED black mode — use the open-ended `ThemeVariant.custom`:
+
+```dart
+const amoled = ThemeVariant.custom('amoled', brightness: Brightness.dark);
+
+context.read<ThemeCubit>().setVariant(amoled);
+```
+
+The cubit persists `custom:amoled`. Render-time, the variant just picks `ThemeMode.dark`; if you want AMOLED-specific surface overrides, branch in your `extensionBuilder` or use `SeedWithOverridesSource`.
+
+### CustomThemeExtension — domain colors only
+
+Use [`CustomThemeExtension`](lib/core/theme/extension/custom_theme_extension.dart) **only** for semantic colors Material 3's `ColorScheme` doesn't already model. The starter ships three:
+
+| Field | Used by |
+|---|---|
+| `success` | `ConfirmationDialog` success accent, status chips |
+| `warning` | `ConfirmationDialog` warning accent |
+| `info` | `ConfirmationDialog` info accent |
+
+For everything else — brand accent, dialog surfaces, banners, chip backgrounds, borders — use the appropriate `ColorScheme` role. A quick mapping:
+
+| Want… | Use |
+|---|---|
+| Brand accent color | `colorScheme.tertiary` |
+| Brand accent background (muted) | `colorScheme.tertiaryContainer` |
+| Foreground on accent background | `colorScheme.onTertiaryContainer` |
+| Dialog / card surface | `colorScheme.surfaceContainerHigh` |
+| Subtle surface | `colorScheme.surfaceContainerLow` |
+| Borders / dividers | `colorScheme.outlineVariant` / `colorScheme.outline` |
+
+**Access:**
+
+```dart
+Icon(Icons.check_circle, color: context.customTheme.success);
+Container(color: context.customTheme.warning);
+```
+
+**Add a new field** (only if Material truly doesn't already have one — most cases don't):
+
+1. Add `final Color shimmerBase;` + the constructor `required this.shimmerBase`.
+2. Default it in `lightDefault` and `darkDefault`.
+3. Add the param to `copyWith` and the corresponding line in `lerp`.
+4. Read it: `context.customTheme.shimmerBase`.
+
+**Overriding the defaults** for your brand (e.g. a different success green): wire `extensionBuilder` on `ThemeCubit` so the override survives palette / brightness changes:
 
 ```dart
 BlocProvider<ThemeCubit>(
   create: (_) => ThemeCubit(
     extensionBuilder: (scheme, brightness) =>
         (brightness == Brightness.dark
-            ? CustomThemeExtension.darkDefault(scheme)
-            : CustomThemeExtension.lightDefault(scheme))
+            ? CustomThemeExtension.darkDefault()
+            : CustomThemeExtension.lightDefault())
         .copyWith(
-          heroGradientStart: scheme.tertiary,    // your tweaks
-          ratingActive: const Color(0xFFFEA500),
+          success: const Color(0xFF00875A),   // your brand success
         ),
   ),
 ),
@@ -974,15 +1035,100 @@ Three tools, one job each:
 
 ---
 
-## Toasts
+## Toasts & error messages
+
+Path: [`lib/core/utils/helpers/custom_snackbar.dart`](lib/core/utils/helpers/custom_snackbar.dart). Context-free toast helper backed by `fluttertoast`. Survives route transitions, doesn't need a `Scaffold`. Prefer this over `ScaffoldMessenger.showSnackBar`.
 
 ```dart
-CustomSnackbar.success(context, 'Saved');
-CustomSnackbar.error(context, 'Could not save');
-CustomSnackbar.info(context, 'Heads up');
+CustomSnackbar.show(type: ToastType.success, message: 'Saved');
+CustomSnackbar.show(type: ToastType.info, message: 'Heads up');
 ```
 
-Prefer this over `ScaffoldMessenger.showSnackBar`.
+Call `CustomSnackbar.show` directly — don't wrap it in `context.showXxxToast` extensions. The explicit `type:` argument is easy to scan, and toasts don't actually need a `BuildContext`.
+
+### Showing a caught error
+
+Pipe the caught error through [`AppErrorHandler`](lib/core/errors/error_handler.dart) so the toast shows a user-friendly message instead of leaking the raw exception:
+
+```dart
+try {
+  await something();
+} catch (e) {
+  if (!mounted) return;
+  CustomSnackbar.show(
+    type: ToastType.error,
+    message: AppErrorHandler.getErrorMessage(e),
+  );
+}
+```
+
+`AppErrorHandler.getErrorMessage` returns:
+- `e.message` when `e is AppException` (or one of its subclasses: `CacheException`, `ServerException`, `AuthenticationException`, `ParseException`)
+- `AppErrorStrings.noInternetConnection` when `e is SocketException`
+- `AppErrorStrings.somethingWentWrong` otherwise
+
+To get a specific error message through, throw `AppException(message: '…')` (or a subclass) from your repository / use case — the handler will surface its `message` verbatim.
+
+---
+
+## Confirmation dialog
+
+Path: [`lib/core/utils/helpers/dialog/`](lib/core/utils/helpers/dialog/). A Material `AlertDialog` wrapper with a typed accent icon and a `Future<bool>` return.
+
+```dart
+final ok = await DialogUtils.showConfirmationDialog(
+  context,
+  title: 'Delete project?',
+  message: 'This cannot be undone.',
+  confirmText: 'Delete',
+  dialogType: DialogType.danger,   // info | success | warning | danger | question
+);
+if (ok) { /* ... */ }
+```
+
+`DialogType.danger` recolors the confirm button to `colorScheme.error`. Set `showCancelButton: false` for single-action dialogs.
+
+---
+
+## Permissions
+
+Path: [`lib/core/utils/helpers/permission/`](lib/core/utils/helpers/permission/). Unified flow for any runtime permission.
+
+The flow:
+1. Already granted → return `true`.
+2. First time (`isDenied`) → call the native system prompt.
+3. Still denied (or `isPermanentlyDenied`) → show the confirmation dialog asking to open app settings; on confirm, call `openAppSettings()` and re-check the status when the user returns.
+
+### Built-in wrappers
+
+```dart
+// Notifications (FCM + local — same OS permission)
+final granted = await NotificationPermission.ensure(context);
+
+// Gallery (iOS photosAddOnly; Android storage on SDK ≤ 28; no-op on Android ≥ 10)
+final ok = await GalleryPermission.ensure(context);
+```
+
+Call these on demand — at the moment the user takes an action that needs the permission (toggling a setting, tapping "Save to gallery"), not at app startup.
+
+### Custom permission
+
+```dart
+final granted = await PermissionFlow.ensure(
+  context,
+  permission: Permission.camera,
+  settingsDialogTitle: 'Camera access needed',
+  settingsDialogMessage:
+      '${AppConstants.appName} needs camera access to scan QR codes. '
+      'Enable it in Settings.',
+  dialogType: DialogType.info,
+);
+```
+
+Don't forget to declare the permission in:
+- **Android** — `android/app/src/main/AndroidManifest.xml` (`<uses-permission ...>`). `POST_NOTIFICATIONS` is already declared.
+- **iOS** — `ios/Runner/Info.plist` with the matching `NS*UsageDescription` key.
+- **iOS Podfile** — `permission_handler` only compiles in permission groups whose `PERMISSION_X=1` flag is listed in the `post_install` block of [`ios/Podfile`](ios/Podfile). The starter ships flags for `NOTIFICATIONS`, `PHOTOS`, `CAMERA`, `MICROPHONE`. Add a new flag (e.g. `PERMISSION_LOCATION_WHENINUSE=1`) before requesting that permission, or the call will silently no-op. Run `cd ios && pod install` after editing. See the [permission_handler docs](https://pub.dev/packages/permission_handler#setup) for the full flag list.
 
 ---
 
@@ -1478,14 +1624,24 @@ Path: [`lib/modules/notifications/`](lib/modules/notifications/). Local notifica
 
 Already wired — `await NotificationService.instance.initialize()` in `main.dart`.
 
-Native config (not auto-applied):
-- **Android**: `POST_NOTIFICATIONS` permission, `RECEIVE_BOOT_COMPLETED` for scheduled, `flutter_local_notifications` receiver entries. Add a monochrome `@drawable/ic_notification`.
+Native config:
+- **Android**: `POST_NOTIFICATIONS` already declared in `AndroidManifest.xml`. Add `RECEIVE_BOOT_COMPLETED` for scheduled, `flutter_local_notifications` receiver entries, and a monochrome `@drawable/ic_notification` if you need them.
 - **iOS**: usage description in `Info.plist` if you use action categories; `UNUserNotificationCenter` delegate in `AppDelegate.swift`.
+
+### Permission
+
+Use the unified flow — same OS permission as FCM, gets the settings-dialog fallback for free:
+
+```dart
+final granted = await NotificationPermission.ensure(context);
+```
+
+See [Permissions](#permissions). Skip `NotificationService.instance.requestPermissions()` unless you specifically want the plugin-level call without the dialog flow.
 
 ### Use
 
 ```dart
-final granted = await NotificationService.instance.requestPermissions();
+await NotificationService.instance.show(
 
 await NotificationService.instance.show(
   NotificationPayload(
@@ -1583,6 +1739,17 @@ FCM data values are strings, so `actions` ships as a JSON-encoded array:
 - `android.priority: "high"` wakes a killed Android device and triggers the handler. Without it, data-only messages get throttled in Doze.
 - iOS action buttons require `DarwinNotificationCategory` instances registered up-front (the `channel` doubles as `categoryIdentifier`). Android action buttons are dynamic — they work out of the box.
 - iOS background delivery for data-only messages is unreliable by design. For reliable iOS background, send a `notification` payload + `content_available: true`.
+
+### Permission
+
+FCM delivery requires the OS notification permission. Use the unified flow:
+
+```dart
+final granted = await FcmService.instance.ensureNotificationPermission(context);
+// equivalent to: await NotificationPermission.ensure(context);
+```
+
+For headless contexts (background isolates, etc.) `FcmService.instance.requestPermissionIfNeeded()` still works — but prefer the context-aware call when UI is available.
 
 ### Use
 

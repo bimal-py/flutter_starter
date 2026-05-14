@@ -45,12 +45,11 @@ class _OverrideStatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    final ext = Theme.of(context).extension<CustomThemeExtension>();
     return Container(
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         color: hasOverride
-            ? ext?.brandAccentMuted ?? scheme.primaryContainer
+            ? scheme.primaryContainer
             : scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: scheme.outlineVariant),
@@ -309,7 +308,10 @@ class _SourcePickerState extends State<_SourcePicker> {
           );
     } catch (e) {
       if (!mounted) return;
-      context.showErrorToast('Could not pick image: $e');
+      CustomSnackbar.show(
+        type: ToastType.error,
+        message: AppErrorHandler.getErrorMessage(e),
+      );
     } finally {
       if (mounted) setState(() => _picking = false);
     }
