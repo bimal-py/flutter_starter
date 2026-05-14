@@ -14,6 +14,16 @@ class ComposedThemes {
   final ThemeData dark;
 }
 
+/// Builds a [CustomThemeExtension] for an arbitrary [ColorScheme] +
+/// brightness pair. Wire one of these into [ThemeCubit] when domain colors
+/// (success/info gradients/etc.) need to follow whatever scheme is active —
+/// including dynamic device colors, image-seeded schemes, and presets — instead
+/// of being frozen at whatever the seed was when the app launched.
+typedef ThemeExtensionBuilder = CustomThemeExtension Function(
+  ColorScheme scheme,
+  Brightness brightness,
+);
+
 /// Single composer that turns a [ThemeSource] (plus device schemes from
 /// `DynamicColorBuilder` and the active locale) into a {light, dark} pair.
 /// MaterialApp wiring lives in `lib/app/app.dart`.
@@ -26,6 +36,7 @@ class AppThemeBuilder {
     ColorScheme? deviceLightScheme,
     ColorScheme? deviceDarkScheme,
     required LocalizedFonts fonts,
+    ThemeExtensionBuilder? extensionBuilder,
   }) {
     final font = fonts.resolve(Localizations.maybeLocaleOf(context));
 
@@ -36,18 +47,28 @@ class AppThemeBuilder {
           light: _buildOne(
             context: context,
             scheme: palette.light,
-            extension: CustomThemeExtension.fromPalette(
-              palette,
+            extension: _resolveExtension(
+              scheme: palette.light,
               brightness: Brightness.light,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.fromPalette(
+                palette,
+                brightness: Brightness.light,
+              ),
             ),
             font: font,
           ),
           dark: _buildOne(
             context: context,
             scheme: palette.dark,
-            extension: CustomThemeExtension.fromPalette(
-              palette,
+            extension: _resolveExtension(
+              scheme: palette.dark,
               brightness: Brightness.dark,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.fromPalette(
+                palette,
+                brightness: Brightness.dark,
+              ),
             ),
             font: font,
           ),
@@ -68,18 +89,28 @@ class AppThemeBuilder {
           light: _buildOne(
             context: context,
             scheme: lightScheme,
-            extension: CustomThemeExtension.lightDefault(
-              lightScheme,
-              brandAccent: palette.harmonizedAccent,
+            extension: _resolveExtension(
+              scheme: lightScheme,
+              brightness: Brightness.light,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.lightDefault(
+                lightScheme,
+                brandAccent: palette.harmonizedAccent,
+              ),
             ),
             font: font,
           ),
           dark: _buildOne(
             context: context,
             scheme: darkScheme,
-            extension: CustomThemeExtension.darkDefault(
-              darkScheme,
-              brandAccent: palette.harmonizedAccent,
+            extension: _resolveExtension(
+              scheme: darkScheme,
+              brightness: Brightness.dark,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.darkDefault(
+                darkScheme,
+                brandAccent: palette.harmonizedAccent,
+              ),
             ),
             font: font,
           ),
@@ -96,8 +127,22 @@ class AppThemeBuilder {
         // Fill missing brightness by mirroring the supplied one.
         final l = lightScheme ?? darkScheme!;
         final d = darkScheme ?? lightScheme!;
-        final lExt = lightExtension ?? CustomThemeExtension.lightDefault(l);
-        final dExt = darkExtension ?? CustomThemeExtension.darkDefault(d);
+        // Developer-supplied extensions on FullCustomSource win — those were
+        // chosen deliberately. Otherwise fall back to the builder, then defaults.
+        final lExt = lightExtension ??
+            _resolveExtension(
+              scheme: l,
+              brightness: Brightness.light,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.lightDefault(l),
+            );
+        final dExt = darkExtension ??
+            _resolveExtension(
+              scheme: d,
+              brightness: Brightness.dark,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.darkDefault(d),
+            );
         final overrideFont =
             fontFamily != null ? AppFont(family: fontFamily) : font;
         return ComposedThemes(
@@ -125,13 +170,23 @@ class AppThemeBuilder {
           light: _buildOne(
             context: context,
             scheme: l,
-            extension: CustomThemeExtension.lightDefault(l),
+            extension: _resolveExtension(
+              scheme: l,
+              brightness: Brightness.light,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.lightDefault(l),
+            ),
             font: font,
           ),
           dark: _buildOne(
             context: context,
             scheme: d,
-            extension: CustomThemeExtension.darkDefault(d),
+            extension: _resolveExtension(
+              scheme: d,
+              brightness: Brightness.dark,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.darkDefault(d),
+            ),
             font: font,
           ),
         );
@@ -145,23 +200,47 @@ class AppThemeBuilder {
           light: _buildOne(
             context: context,
             scheme: palette.light,
-            extension: CustomThemeExtension.fromPalette(
-              palette,
+            extension: _resolveExtension(
+              scheme: palette.light,
               brightness: Brightness.light,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.fromPalette(
+                palette,
+                brightness: Brightness.light,
+              ),
             ),
             font: font,
           ),
           dark: _buildOne(
             context: context,
             scheme: palette.dark,
-            extension: CustomThemeExtension.fromPalette(
-              palette,
+            extension: _resolveExtension(
+              scheme: palette.dark,
               brightness: Brightness.dark,
+              builder: extensionBuilder,
+              fallback: () => CustomThemeExtension.fromPalette(
+                palette,
+                brightness: Brightness.dark,
+              ),
             ),
             font: font,
           ),
         );
     }
+  }
+
+  /// Routes extension construction through the developer's [builder] when
+  /// supplied; otherwise builds the source-specific default. Centralising this
+  /// is what lets a developer-customised extension follow *any* scheme — seed,
+  /// preset, dynamic, image-derived — instead of being frozen at app start.
+  static CustomThemeExtension _resolveExtension({
+    required ColorScheme scheme,
+    required Brightness brightness,
+    required CustomThemeExtension Function() fallback,
+    ThemeExtensionBuilder? builder,
+  }) {
+    if (builder != null) return builder(scheme, brightness);
+    return fallback();
   }
 
   /// Defaults used when no source has been wired yet.

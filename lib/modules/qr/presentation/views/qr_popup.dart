@@ -97,8 +97,9 @@ class _QrPopupState extends State<QrPopup> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: scheme.surface,
       borderRadius: BorderRadius.circular(20.r),
       child: Padding(
         padding: EdgeInsets.all(20.r),
@@ -146,9 +147,9 @@ class _QrPopupState extends State<QrPopup> {
                         ? SizedBox(
                             width: 16.r,
                             height: 16.r,
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: scheme.onPrimary,
                             ),
                           )
                         : const Icon(LucideIcons.share2),

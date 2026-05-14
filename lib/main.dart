@@ -46,10 +46,7 @@ Future<void> main() async {
   await FirebaseService.setupCrashlyticsAndAnalytics();
 }
 
-Future<void> initializeEnvHelper() async {
-  // loading env file
-  await EnvHelper.init();
-}
+Future<void> initializeEnvHelper() => EnvHelper.init();
 
 Future<void> _setupHydratedStorage() async {
   HydratedBloc.storage = await HydratedStorage.build(

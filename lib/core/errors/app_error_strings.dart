@@ -11,4 +11,5 @@ class AppErrorStrings {
   static const String invalidResponseShape = 'Unexpected response from server';
   static const String missingRequiredField = 'Server response was incomplete';
   static const String operationFailed = 'Operation could not be completed';
+  static const String noInternetConnection = 'No internet connection';
 }

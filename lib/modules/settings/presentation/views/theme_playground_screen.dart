@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/settings/presentation/widgets/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ThemePlaygroundScreen extends StatelessWidget {
   const ThemePlaygroundScreen({super.key});
@@ -19,6 +22,9 @@ class ThemePlaygroundScreen extends StatelessWidget {
             SizedBox(height: 16.h),
             const SettingsSectionHeader(label: 'Brightness mode'),
             const SettingsThemePicker(),
+            SizedBox(height: 20.h),
+            const SettingsSectionHeader(label: 'Presets'),
+            _PresetPicker(active: state.effectiveSource),
             SizedBox(height: 20.h),
             const SettingsSectionHeader(label: 'Source'),
             _SourcePicker(active: state.effectiveSource),
@@ -81,6 +87,96 @@ class _OverrideStatusBanner extends StatelessWidget {
   }
 }
 
+class _PresetPicker extends StatelessWidget {
+  const _PresetPicker({required this.active});
+  final ThemeSource active;
+
+  bool _isActive(ThemePreset preset) {
+    final a = active;
+    final s = preset.source;
+    if (a is SeedOnlySource && s is SeedOnlySource) {
+      return a.seed.toARGB32() == s.seed.toARGB32();
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final presets = ThemePresets.all;
+    return Wrap(
+      spacing: 10.w,
+      runSpacing: 10.h,
+      children: [
+        for (final preset in presets)
+          _PresetChip(
+            preset: preset,
+            selected: _isActive(preset),
+            onTap: () =>
+                context.read<ThemeCubit>().applyCustomSource(preset.source),
+          ),
+      ],
+    );
+  }
+}
+
+class _PresetChip extends StatelessWidget {
+  const _PresetChip({
+    required this.preset,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ThemePreset preset;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: selected
+              ? scheme.primaryContainer
+              : scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: selected ? scheme.primary : scheme.outlineVariant,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 14.r,
+              height: 14.r,
+              decoration: BoxDecoration(
+                color: preset.swatch,
+                shape: BoxShape.circle,
+                border: Border.all(color: scheme.outline, width: 0.5),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              preset.label,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: selected
+                    ? scheme.onPrimaryContainer
+                    : scheme.onSurface,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 enum _SourceKind { seed, dynamicDevice, fromImage }
 
 class _SourcePicker extends StatefulWidget {
@@ -94,6 +190,8 @@ class _SourcePicker extends StatefulWidget {
 class _SourcePickerState extends State<_SourcePicker> {
   _SourceKind _kind = _SourceKind.seed;
   Color _seed = AppColors.seed;
+  String? _imagePath;
+  bool _picking = false;
 
   @override
   void initState() {
@@ -108,6 +206,8 @@ class _SourcePickerState extends State<_SourcePicker> {
     } else if (s is FromImageSource) {
       _kind = _SourceKind.fromImage;
       _seed = s.fallbackSeed;
+      final ref = s.imageRef;
+      if (ref is FileImageRef) _imagePath = ref.path;
     }
   }
 
@@ -129,7 +229,7 @@ class _SourcePickerState extends State<_SourcePicker> {
         _kindTile(
           kind: _SourceKind.fromImage,
           label: 'From image',
-          subtitle: 'Pick an image and seed from its dominant color (coming soon).',
+          subtitle: 'Pick a photo and seed from its dominant color.',
         ),
         SizedBox(height: 12.h),
         if (_kind == _SourceKind.seed) _SeedSwatches(active: _seed, onPick: _pickSeed),
@@ -141,15 +241,12 @@ class _SourcePickerState extends State<_SourcePicker> {
               style: context.textTheme.bodySmall,
             ),
           ),
-        if (_kind == _SourceKind.fromImage)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: FilledButton.tonalIcon(
-              onPressed: null,
-              icon: const Icon(Icons.image_outlined),
-              label: const Text('Pick an image (coming soon)'),
-            ),
-          ),
+        if (_kind == _SourceKind.fromImage) _FromImageControls(
+          imagePath: _imagePath,
+          fallbackSeed: _seed,
+          picking: _picking,
+          onPick: _pickImage,
+        ),
       ],
     );
   }
@@ -181,15 +278,105 @@ class _SourcePickerState extends State<_SourcePicker> {
       case _SourceKind.dynamicDevice:
         cubit.applyUserDynamicDevice(fallbackSeed: _seed);
       case _SourceKind.fromImage:
-        // Image picker not wired yet; the cubit applyUserImage hook is ready
-        // for when a picker lands. Until then we leave the active source.
-        break;
+        final path = _imagePath;
+        if (path != null) {
+          cubit.applyUserImage(FileImageRef(path), fallbackSeed: _seed);
+        }
     }
   }
 
   void _pickSeed(Color color) {
     setState(() => _seed = color);
     context.read<ThemeCubit>().setUserSeed(color);
+  }
+
+  Future<void> _pickImage() async {
+    if (_picking) return;
+    setState(() => _picking = true);
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        imageQuality: 90,
+      );
+      if (file == null) return;
+      if (!mounted) return;
+      setState(() => _imagePath = file.path);
+      await context.read<ThemeCubit>().applyUserImage(
+            FileImageRef(file.path),
+            fallbackSeed: _seed,
+          );
+    } catch (e) {
+      if (!mounted) return;
+      context.showErrorToast('Could not pick image: $e');
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+  }
+}
+
+class _FromImageControls extends StatelessWidget {
+  const _FromImageControls({
+    required this.imagePath,
+    required this.fallbackSeed,
+    required this.picking,
+    required this.onPick,
+  });
+
+  final String? imagePath;
+  final Color fallbackSeed;
+  final bool picking;
+  final Future<void> Function() onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (imagePath != null)
+            Container(
+              height: 120.h,
+              margin: EdgeInsets.only(bottom: 12.h),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: scheme.outlineVariant),
+                image: DecorationImage(
+                  image: FileImage(File(imagePath!)),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          FilledButton.tonalIcon(
+            onPressed: picking ? null : onPick,
+            icon: picking
+                ? SizedBox(
+                    width: 16.r,
+                    height: 16.r,
+                    child: const CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.image_outlined),
+            label: Text(
+              picking
+                  ? 'Picking…'
+                  : imagePath == null
+                      ? 'Pick an image'
+                      : 'Pick a different image',
+            ),
+          ),
+          if (imagePath != null) ...[
+            SizedBox(height: 6.h),
+            Text(
+              'Dominant color is extracted on a background isolate and applied app-wide.',
+              style: context.textTheme.bodySmall,
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 

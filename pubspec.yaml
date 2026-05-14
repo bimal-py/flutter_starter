@@ -55,10 +55,19 @@ dependencies:
   firebase_crashlytics: ^5.0.6
   # Delete with lib/modules/fcm/ if push notifications aren't used.
   firebase_messaging: ^16.0.3
+  # Delete with lib/modules/app_upgrade/ if remote-driven update alerts aren't used.
+  firebase_remote_config: ^6.4.0
 
   # UI
   flutter_svg: ^2.2.4
   cached_network_image: ^3.4.1
+  flutter_widget_from_html: ^0.16.0
+
+  # Image picking + compression (delete with lib/modules/image_picker/ if unused)
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.4.0
+  image: ^4.5.4
+  path: ^1.9.0
   lucide_icons_flutter: ^3.1.13
   skeletonizer: ^2.1.3
   loader_overlay: ^5.0.0

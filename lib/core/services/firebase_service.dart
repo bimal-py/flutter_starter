@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_starter/core/utils/constants/env_config.dart';
 import 'package:flutter_starter/core/utils/helpers/helpers.dart';
 
@@ -17,10 +17,6 @@ import 'package:flutter_starter/core/utils/helpers/helpers.dart';
 //
 // import 'package:flutter_starter/firebase_options.dart';
 
-/// Initialises Firebase if `FIREBASE_ENABLED=true` in `.env` AND
-/// `firebase_options.dart` is present. Returns `true` when Firebase came up
-/// successfully so callers can decide whether to initialise Crashlytics /
-/// Analytics afterwards.
 class FirebaseService {
   FirebaseService._();
 
@@ -29,6 +25,10 @@ class FirebaseService {
   static bool _initialised = false;
   static bool get isInitialised => _initialised;
 
+  /// Initialises Firebase if `FIREBASE_ENABLED=true` in `.env` AND
+  /// `firebase_options.dart` is present. Returns `true` when Firebase came up
+  /// successfully so callers can decide whether to initialise Crashlytics /
+  /// Analytics afterwards.
   static Future<bool> init() async {
     if (kIsWeb) return false;
     if (!EnvConfig.firebaseEnabled) return false;
@@ -46,21 +46,21 @@ class FirebaseService {
   }
 
   /// Wires Crashlytics + an `app_open` analytics event. Call AFTER [init].
-  /// Crashlytics collection is ON in release builds and OFF in debug.
+  /// Crashlytics collection and app_open event is ON in release builds and OFF in debug.
   static Future<void> setupCrashlyticsAndAnalytics() async {
     if (!_initialised) return;
 
     if (kReleaseMode) {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
-      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
       PlatformDispatcher.instance.onError = (error, stack) {
         FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         return true;
       };
+      await FirebaseAnalytics.instance.logAppOpen();
     } else {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
     }
-
-    await FirebaseAnalytics.instance.logAppOpen();
   }
 }

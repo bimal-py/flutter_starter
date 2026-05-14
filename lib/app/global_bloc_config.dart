@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/app_setting/app_setting.dart';
+import 'package:flutter_starter/modules/app_upgrade/app_upgrade.dart';
+import 'package:flutter_starter/modules/auth/auth.dart';
 
 class GlobalBlocConfig extends StatelessWidget {
   const GlobalBlocConfig({super.key, required this.child});
@@ -14,6 +16,12 @@ class GlobalBlocConfig extends StatelessWidget {
       providers: [
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
         BlocProvider<AppSettingCubit>(create: (_) => AppSettingCubit()),
+        // Optional. Delete with lib/modules/app_upgrade/ to remove update popup.
+        BlocProvider<AppUpgradeCubit>(create: (_) => AppUpgradeCubit()),
+        // Optional. The bloc resolves use cases via getIt — write your own
+        // `@LazySingleton(as: AuthRepository)` class before shipping (REST /
+        // Firebase / Supabase). Delete with lib/modules/auth/ to remove.
+        BlocProvider<AuthBloc>(create: (_) => AuthBloc()),
       ],
       child: child,
     );

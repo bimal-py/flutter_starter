@@ -35,7 +35,7 @@ class HomeScreen extends StatelessWidget {
               HomeFeatureCard(
                 icon: LucideIcons.smartphone,
                 label: 'Device info',
-                onTap: (c) => c.pushNamed(Routes.deviceInfo.name),
+                onTap: (c) => c.pushNamed(Routes.login.name),
               ),
               HomeFeatureCard(
                 icon: LucideIcons.package,

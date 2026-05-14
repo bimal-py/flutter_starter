@@ -6,7 +6,9 @@ import 'dart:ui' as ui;
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_starter/core/theme/app_theme_builder.dart';
 import 'package:flutter_starter/core/theme/colors/app_colors.dart';
+import 'package:flutter_starter/core/theme/extension/custom_theme_extension.dart';
 import 'package:flutter_starter/core/theme/source/source.dart';
 import 'package:flutter_starter/core/theme/variant/theme_variant.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -18,10 +20,19 @@ part 'theme_state.dart';
 /// an optional user override that the playground writes. [ThemeState.effectiveSource]
 /// resolves to userOverride when set, falling back to developerSource.
 class ThemeCubit extends HydratedCubit<ThemeState> {
-  ThemeCubit({ThemeSource? developerSource})
-      : super(ThemeState(
+  ThemeCubit({
+    ThemeSource? developerSource,
+    this.extensionBuilder,
+  }) : super(ThemeState(
           developerSource: developerSource ?? _defaultDeveloperSource,
         ));
+
+  /// Optional hook so domain colors in [CustomThemeExtension] follow *every*
+  /// scheme the app renders (seed change, preset, dynamic device colors,
+  /// image-derived). Without it, presets/dynamic schemes use
+  /// [CustomThemeExtension.lightDefault]/`darkDefault` and any per-field
+  /// developer tweaks are lost when the underlying scheme changes.
+  final ThemeExtensionBuilder? extensionBuilder;
 
   static const ThemeSource _defaultDeveloperSource = SeedOnlySource(
     seed: AppColors.seed,

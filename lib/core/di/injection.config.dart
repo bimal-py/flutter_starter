@@ -21,6 +21,34 @@ import 'package:flutter_starter/core/network/service/remote_service.dart'
     as _i439;
 import 'package:flutter_starter/core/network/service/remote_service_impl.dart'
     as _i29;
+import 'package:flutter_starter/modules/auth/data/repository/local/hive_secure_session_store.dart'
+    as _i347;
+import 'package:flutter_starter/modules/auth/data/repository/remote/in_memory_auth_repository.dart'
+    as _i824;
+import 'package:flutter_starter/modules/auth/domain/repository/local/user_session_store.dart'
+    as _i1046;
+import 'package:flutter_starter/modules/auth/domain/repository/remote/auth_repository.dart'
+    as _i446;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/forget_password_use_case.dart'
+    as _i104;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/get_logged_in_user_use_case.dart'
+    as _i613;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/login_with_apple_use_case.dart'
+    as _i232;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/login_with_email_password_use_case.dart'
+    as _i838;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/login_with_google_use_case.dart'
+    as _i468;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/logout_use_case.dart'
+    as _i962;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/register_email_use_case.dart'
+    as _i830;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/register_user_use_case.dart'
+    as _i799;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/reset_password_use_case.dart'
+    as _i719;
+import 'package:flutter_starter/modules/auth/domain/use_case/remote/watch_auth_user_use_case.dart'
+    as _i69;
 import 'package:flutter_starter/modules/onboarding/features/splash/presentation/bloc/splash/splash_bloc.dart'
     as _i158;
 import 'package:get_it/get_it.dart' as _i174;
@@ -45,9 +73,45 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.singleton<_i373.LogoutInterceptor>(() => _i373.LogoutInterceptor());
     gh.factory<_i438.DioClient>(() => _i438.DioClient(gh<_i588.DioConfig>()));
+    gh.lazySingleton<_i1046.UserSessionStore>(
+      () => _i347.HiveSecureSessionStore(),
+    );
+    gh.lazySingleton<_i446.AuthRepository>(
+      () => _i824.InMemoryAuthRepository(gh<_i1046.UserSessionStore>()),
+    );
     gh.factory<_i439.RemoteService>(
       () =>
           _i29.RemoteServiceImpl(gh<_i438.DioClient>(), gh<_i588.DioConfig>()),
+    );
+    gh.factory<_i104.ForgetPasswordUseCase>(
+      () => _i104.ForgetPasswordUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i613.GetLoggedInUserUseCase>(
+      () => _i613.GetLoggedInUserUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i232.LoginWithAppleUseCase>(
+      () => _i232.LoginWithAppleUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i838.LoginWithEmailPasswordUseCase>(
+      () => _i838.LoginWithEmailPasswordUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i468.LoginWithGoogleUseCase>(
+      () => _i468.LoginWithGoogleUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i962.LogoutUseCase>(
+      () => _i962.LogoutUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i830.RegisterEmailUseCase>(
+      () => _i830.RegisterEmailUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i799.RegisterUserUseCase>(
+      () => _i799.RegisterUserUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i719.ResetPasswordUseCase>(
+      () => _i719.ResetPasswordUseCase(gh<_i446.AuthRepository>()),
+    );
+    gh.factory<_i69.WatchAuthUserUseCase>(
+      () => _i69.WatchAuthUserUseCase(gh<_i446.AuthRepository>()),
     );
     return this;
   }

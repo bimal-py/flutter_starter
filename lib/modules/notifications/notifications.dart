@@ -8,9 +8,6 @@
 /// pass it to `NotificationService.instance.initialize(provider: ...)`.
 library;
 
-export 'notification_channels.dart';
-export 'notification_payload.dart';
-export 'notification_permissions.dart';
-export 'notification_service.dart';
-export 'provider/flutter_local_notifications_provider.dart';
-export 'provider/notification_provider.dart';
+export 'data/data.dart';
+export 'domain/domain.dart';
+export 'utils/utils.dart';

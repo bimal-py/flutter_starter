@@ -19,13 +19,16 @@ class QrImageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final ext = Theme.of(context).extension<CustomThemeExtension>();
+    final cardBackground = ext?.dialogBackground ?? colorScheme.surfaceContainerHigh;
     return RepaintBoundary(
       key: qrKey,
       child: Container(
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBackground,
           borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -38,27 +41,39 @@ class QrImageWidget extends StatelessWidget {
               ),
             ),
             SizedBox(height: 12.h),
-            SizedBox(
-              width: size.r,
-              height: size.r,
-              child: QrImageView(
-                data: qrData,
-                errorCorrectionLevel: QrErrorCorrectLevel.L,
-                eyeStyle: const QrEyeStyle(
-                  eyeShape: QrEyeShape.square,
-                  color: Colors.black,
+            // QR modules MUST stay black-on-white for reliable scanning across
+            // cameras and lighting. Wrap the pattern in its own white tile so
+            // the surrounding card can follow the theme without breaking that.
+            Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: SizedBox(
+                width: size.r,
+                height: size.r,
+                child: QrImageView(
+                  data: qrData,
+                  errorCorrectionLevel: QrErrorCorrectLevel.L,
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: Colors.black,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: Colors.black,
+                  ),
+                  backgroundColor: Colors.white,
                 ),
-                dataModuleStyle: const QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square,
-                  color: Colors.black,
-                ),
-                backgroundColor: Colors.transparent,
               ),
             ),
             SizedBox(height: 12.h),
             Text(
               'Scan to download',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

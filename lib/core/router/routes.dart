@@ -3,6 +3,7 @@
 enum Routes {
   splash(name: 'splash', path: '/'),
   onboarding(name: 'onboarding', path: '/onboarding'),
+  login(name: 'login', path: '/login'),
   dashboard(name: 'dashboard', path: '/dashboard'),
   settings(name: 'settings', path: 'settings'),
   themePlayground(name: 'theme-playground', path: 'theme-playground'),

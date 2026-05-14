@@ -1,0 +1,43 @@
+{
+  "conditions": [],
+  "parameters": {
+    "latest_released_app_version": {
+      "defaultValue": {
+        "value": "1.0.0"
+      },
+      "description": "Latest released app version (semver, e.g. 1.2.3). The app shows the update dialog when the installed version is lower than this value.",
+      "valueType": "STRING"
+    },
+    "update_message": {
+      "defaultValue": {
+        "value": "<p>A new version of <b>Flutter Starter</b> is available with improvements and bug fixes.</p><ul><li>Performance improvements</li><li>Bug fixes</li><li>New features</li></ul>"
+      },
+      "description": "HTML body shown inside the update popup. Supports basic HTML tags (p, b, i, ul, li, h3, br, etc.).",
+      "valueType": "STRING"
+    },
+    "enabled_on_ios": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "When false, the update popup is suppressed for iOS devices regardless of version. Use as a per-platform kill switch.",
+      "valueType": "BOOLEAN"
+    },
+    "enabled_on_android": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "When false, the update popup is suppressed for Android devices regardless of version. Use as a per-platform kill switch.",
+      "valueType": "BOOLEAN"
+    },
+    "force_update": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "When true, the dialog blocks the app: only the 'Update now' button is shown; the user cannot dismiss it via barrier tap, back button, or 'Remind me later' / 'Ignore'. Any previously stored 'ignored' version is bypassed.",
+      "valueType": "BOOLEAN"
+    }
+  },
+  "version": {
+    "description": "Initial app upgrade alert configuration"
+  }
+}

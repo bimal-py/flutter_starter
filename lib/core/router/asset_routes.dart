@@ -6,6 +6,7 @@ class AssetRoutes {
 
   // images/logos
   static const String appLogo = '$logoPath/app_logo.png';
+  static const String appLogoSvg = '$logoPath/app_logo.svg';
 
   // images (defaults / empty states)
   static const String defaultAvatar = '$imagePath/default_avatar.png';

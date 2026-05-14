@@ -13,9 +13,6 @@
 ///   );
 library;
 
-export 'fcm_background_handler.dart';
-export 'fcm_remote_message.dart';
-export 'fcm_secure_storage.dart';
-export 'fcm_service.dart';
-export 'fcm_storage_keys.dart';
-export 'integrations/notifications_bridge.dart';
+export 'domain/domain.dart';
+export 'integrations/integrations.dart';
+export 'utils/utils.dart';

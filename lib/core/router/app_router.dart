@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_starter/common/widgets/widgets.dart';
 import 'package:flutter_starter/core/router/observers/app_navigator_observer.dart';
 import 'package:flutter_starter/core/router/routes.dart';
+import 'package:flutter_starter/modules/auth/auth.dart';
 import 'package:flutter_starter/modules/dashboard/dashboard.dart';
 import 'package:flutter_starter/modules/device_info/device_info.dart';
 import 'package:flutter_starter/modules/onboarding/onboarding.dart';
@@ -26,6 +27,11 @@ final GoRouter router = GoRouter(
       name: Routes.onboarding.name,
       path: Routes.onboarding.path,
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      name: Routes.login.name,
+      path: Routes.login.path,
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       name: Routes.dashboard.name,

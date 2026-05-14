@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/app/global_bloc_config.dart';
 import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/app_upgrade/app_upgrade.dart';
+import 'package:flutter_starter/modules/auth/auth.dart';
 
 class StarterApp extends StatelessWidget {
   const StarterApp({super.key});
@@ -31,6 +33,7 @@ class _StarterAppView extends StatelessWidget {
               deviceLightScheme: deviceLight,
               deviceDarkScheme: deviceDark,
               fonts: LocalizedFonts.defaults(),
+              extensionBuilder: context.read<ThemeCubit>().extensionBuilder,
             );
             return MaterialApp.router(
               title: AppConstants.appName,
@@ -45,7 +48,14 @@ class _StarterAppView extends StatelessWidget {
                     context,
                   ).textScaler.clamp(maxScaleFactor: 1.2),
                 ),
-                child: child!,
+                // Optional. Remove with the app_upgrade module.
+                child: AppUpgradeBootstrapper(
+                  // Optional. Remove with the auth module. Wire callbacks
+                  // for route redirects on auth-state edges, e.g.:
+                  //   onUnauthenticated: (_) => router.goNamed('login'),
+                  //   onAuthenticated:   (_, _) => router.goNamed('dashboard'),
+                  child: AuthBootstrapper(child: child!),
+                ),
               ),
             );
           },
