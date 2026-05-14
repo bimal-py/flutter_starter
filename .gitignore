@@ -51,5 +51,5 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
 
-# Claude Code (local-only settings)
-.claude/settings.local.json
+# Claude Code (local-only)
+.claude/
