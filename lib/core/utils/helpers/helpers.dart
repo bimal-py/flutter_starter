@@ -1,5 +1,6 @@
 export 'custom_snackbar.dart';
 export 'dialog/dialog.dart';
+export 'email_helper.dart';
 export 'env_helper.dart';
 export 'hive_helper.dart';
 export 'logger_helper.dart';

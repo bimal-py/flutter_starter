@@ -17,6 +17,11 @@ class AppUrls {
   // Support
   static const String supportEmail = 'support@example.com';
 
+  // Developer contact — shown on the About screen.
+  static const String developerEmail = 'you@example.com';
+  static const String developerGithub = 'https://github.com/your-handle';
+  static const String developerWebsite = 'https://example.com';
+
   // Demo URL used by the starter's website-view example.
   static const String demoSite = 'https://flutter.dev';
 }

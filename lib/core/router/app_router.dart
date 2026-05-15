@@ -3,11 +3,10 @@ import 'package:flutter_starter/common/widgets/widgets.dart';
 import 'package:flutter_starter/core/router/observers/app_navigator_observer.dart';
 import 'package:flutter_starter/core/router/routes.dart';
 import 'package:flutter_starter/core/services/firebase_service.dart';
+import 'package:flutter_starter/modules/about/about.dart';
 import 'package:flutter_starter/modules/auth/auth.dart';
 import 'package:flutter_starter/modules/dashboard/dashboard.dart';
-import 'package:flutter_starter/modules/device_info/device_info.dart';
 import 'package:flutter_starter/modules/onboarding/onboarding.dart';
-import 'package:flutter_starter/modules/package_info/package_info.dart';
 import 'package:flutter_starter/modules/settings/settings.dart';
 import 'package:flutter_starter/modules/website_view/website_view.dart';
 import 'package:go_router/go_router.dart';
@@ -61,14 +60,9 @@ final GoRouter router = GoRouter(
           ],
         ),
         GoRoute(
-          name: Routes.deviceInfo.name,
-          path: Routes.deviceInfo.path,
-          builder: (context, state) => const DeviceInfoScreen(),
-        ),
-        GoRoute(
-          name: Routes.packageInfo.name,
-          path: Routes.packageInfo.path,
-          builder: (context, state) => const PackageInfoScreen(),
+          name: Routes.about.name,
+          path: Routes.about.path,
+          builder: (context, state) => const AboutScreen(),
         ),
         GoRoute(
           name: Routes.websiteView.name,

@@ -33,7 +33,7 @@ class SettingsShareFeedbackGroup extends StatelessWidget {
           const Divider(height: 1),
           SettingsTile(
             icon: LucideIcons.flag,
-            label: 'Report a problem',
+            label: 'Report a problem (${AppConstants.appName})',
             subtitle: AppUrls.supportEmail,
             onTap: () => _report(context),
           ),
@@ -62,7 +62,8 @@ class SettingsShareFeedbackGroup extends StatelessWidget {
 
   Future<void> _report(BuildContext context) async {
     try {
-      await const UrlHelper().sendEmail(
+      await EmailHelper.sendEmail(
+        context: context,
         to: AppUrls.supportEmail,
         subject: 'Report from user (${AppConstants.appName})',
       );

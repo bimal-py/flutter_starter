@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/package_info/package_info.dart';
 import 'package:flutter_starter/modules/settings/presentation/widgets/widgets.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -30,6 +31,7 @@ class SettingsScreen extends StatelessWidget {
           SizedBox(height: 20),
           SettingsSectionHeader(label: 'About'),
           SettingsAboutGroup(),
+          AppVersionFooter(),
         ],
       ),
     );

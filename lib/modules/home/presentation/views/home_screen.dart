@@ -33,14 +33,9 @@ class HomeScreen extends StatelessWidget {
             ),
             delegate: SliverChildListDelegate([
               HomeFeatureCard(
-                icon: LucideIcons.smartphone,
-                label: 'Device info',
-                onTap: (c) => c.pushNamed(Routes.login.name),
-              ),
-              HomeFeatureCard(
-                icon: LucideIcons.package,
-                label: 'Package info',
-                onTap: (c) => c.pushNamed(Routes.packageInfo.name),
+                icon: LucideIcons.info,
+                label: 'About',
+                onTap: (c) => c.pushNamed(Routes.about.name),
               ),
               HomeFeatureCard(
                 icon: LucideIcons.globe,

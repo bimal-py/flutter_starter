@@ -67,7 +67,9 @@ flutter run
 | Image picker + compression (single / multi / camera / gallery) | [`lib/modules/image_picker/`](lib/modules/image_picker/) | Yes |
 | Onboarding replay | [`lib/modules/onboarding/`](lib/modules/onboarding/) | Replaceable |
 | QR share popup (themed, scanner-safe) | [`lib/modules/qr/`](lib/modules/qr/) | Removable |
-| Device / package info screens | [`lib/modules/device_info/`](lib/modules/device_info/) [`lib/modules/package_info/`](lib/modules/package_info/) | Removable |
+| Device + package info cubits (loaded globally) | [`lib/modules/device_info/`](lib/modules/device_info/) [`lib/modules/package_info/`](lib/modules/package_info/) | Removable |
+| About screen (app description + developer card) | [`lib/modules/about/`](lib/modules/about/) | Removable |
+| Email helper with device + version diagnostics | [`lib/core/utils/helpers/email_helper.dart`](lib/core/utils/helpers/email_helper.dart) | No (core) |
 | In-app webview wrapper | [`lib/modules/website_view/`](lib/modules/website_view/) | Removable |
 
 ---

@@ -11,22 +11,12 @@ class SettingsAboutGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
-      child: Column(
-        children: [
-          SettingsTile(
-            icon: LucideIcons.smartphone,
-            label: 'Device info',
-            trailing: const Icon(LucideIcons.chevronRight),
-            onTap: () => context.pushNamed(Routes.deviceInfo.name),
-          ),
-          const Divider(height: 1),
-          SettingsTile(
-            icon: LucideIcons.package,
-            label: 'Package info',
-            trailing: const Icon(LucideIcons.chevronRight),
-            onTap: () => context.pushNamed(Routes.packageInfo.name),
-          ),
-        ],
+      child: SettingsTile(
+        icon: LucideIcons.info,
+        label: 'About app',
+        subtitle: 'What this app does and who built it',
+        trailing: const Icon(LucideIcons.chevronRight),
+        onTap: () => context.pushNamed(Routes.about.name),
       ),
     );
   }

@@ -7,8 +7,7 @@ enum Routes {
   dashboard(name: 'dashboard', path: '/dashboard'),
   settings(name: 'settings', path: 'settings'),
   themePlayground(name: 'theme-playground', path: 'theme-playground'),
-  deviceInfo(name: 'device-info', path: 'device-info'),
-  packageInfo(name: 'package-info', path: 'package-info'),
+  about(name: 'about', path: 'about'),
   websiteView(name: 'website-view', path: 'website-view');
 
   const Routes({required this.name, required this.path});
