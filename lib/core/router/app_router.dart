@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_starter/common/widgets/widgets.dart';
 import 'package:flutter_starter/core/router/observers/app_navigator_observer.dart';
 import 'package:flutter_starter/core/router/routes.dart';
+import 'package:flutter_starter/core/services/firebase_service.dart';
 import 'package:flutter_starter/modules/auth/auth.dart';
 import 'package:flutter_starter/modules/dashboard/dashboard.dart';
 import 'package:flutter_starter/modules/device_info/device_info.dart';
@@ -16,7 +17,16 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GoRouter router = GoRouter(
   navigatorKey: navigatorKey,
   initialLocation: Routes.splash.path,
-  observers: [AppNavigatorObserver()],
+  observers: [
+    AppNavigatorObserver(),
+    ?FirebaseService.analyticsObserver,
+  ],
+  redirect: (context, state) {
+    FirebaseService.logScreenView(
+      state.fullPath ?? state.path ?? state.name,
+    );
+    return null;
+  },
   routes: [
     GoRoute(
       name: Routes.splash.name,

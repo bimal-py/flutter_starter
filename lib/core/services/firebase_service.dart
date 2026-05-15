@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_starter/core/utils/constants/env_config.dart';
 import 'package:flutter_starter/core/utils/helpers/helpers.dart';
 
@@ -62,5 +63,24 @@ class FirebaseService {
     } else {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
     }
+  }
+
+  /// Logs a screen view to Firebase Analytics. No-op when Firebase is not
+  /// initialised, so it's safe to call unconditionally from routing code or
+  /// from a screen's `initState`.
+  static void logScreenView(String? screenName) {
+    if (!_initialised) return;
+    try {
+      FirebaseAnalytics.instance.logScreenView(screenName: screenName);
+    } catch (e, st) {
+      _log.e('logScreenView failed: $e\n$st');
+    }
+  }
+
+  /// A [FirebaseAnalyticsObserver] when Firebase is initialised, else `null`.
+  /// Spread into a router's observer list with the collection-if syntax.
+  static NavigatorObserver? get analyticsObserver {
+    if (!_initialised) return null;
+    return FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
   }
 }
