@@ -23,6 +23,6 @@ class AppConstants {
       'and more.\n\n'
       'Use it as a launchpad: keep what fits, delete what doesn\'t.';
 
-  static const String developerName = 'Your Name';
-  static const String developerRole = 'App Developer';
+  static const String developerName = 'Bimal Khatri';
+  static const String developerRole = 'Software Developer';
 }

@@ -8,20 +8,22 @@ class AppUrls {
 
   // Distribution / marketing
   static const String appDownload = 'https://example.com/download';
-  static const String website = 'https://example.com';
+  static const String website = 'https://bimalkhatri.com.np';
 
   // Legal
-  static const String privacyPolicy = 'https://example.com/privacy';
-  static const String termsOfService = 'https://example.com/terms';
+  static const String privacyPolicy =
+      'https://bimalkhatri.com.np/callbreak-score-tracker/privacy-policy';
+  static const String termsOfService =
+      'https://bimalkhatri.com.np/callbreak-score-tracker/terms-and-conditions';
 
   // Support
   static const String supportEmail = 'support@example.com';
 
   // Developer contact — shown on the About screen.
   static const String developerEmail = 'you@example.com';
-  static const String developerGithub = 'https://github.com/your-handle';
-  static const String developerWebsite = 'https://example.com';
+  static const String developerGithub = 'https://github.com/bimal-py';
+  static const String developerWebsite = 'https://bimalkhatri.com.np';
 
   // Demo URL used by the starter's website-view example.
-  static const String demoSite = 'https://flutter.dev';
+  static const String demoSite = 'https://bimalkhatri.com.np';
 }
