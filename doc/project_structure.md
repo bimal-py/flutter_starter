@@ -24,8 +24,8 @@ lib/
 ├── main.dart
 ├── app/
 │   ├── app.dart                  barrel
-│   ├── apps.dart                 StarterApp: popup loader host + global blocs
-│   ├── app_view.dart             theme, MaterialApp.router, status-bar style
+│   ├── apps.dart                 StarterApp: the global blocs
+│   ├── app_view.dart             theme, MaterialApp.router, status-bar style, popup loader host
 │   ├── app_bootstrappers.dart    app-wide listeners (update alert, auth edges)
 │   ├── global_bloc_config.dart   app-wide BlocProviders
 │   └── hive_bootstrap.dart       opens / clears every module's Hive box

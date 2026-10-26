@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/app/app.dart';
+import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
 
 /// Themed router app. Rebuilds when the theme cubit changes.
@@ -43,7 +44,10 @@ class StarterAppView extends StatelessWidget {
                       (Theme.of(context).brightness == Brightness.dark
                           ? SystemUiOverlayStyle.light
                           : SystemUiOverlayStyle.dark),
-                  child: AppBootstrappers(child: child!),
+                  // Inside MaterialApp, so the popup loader gets the app theme.
+                  child: LoadingOverlayWidget(
+                    child: AppBootstrappers(child: child!),
+                  ),
                 ),
               ),
             );

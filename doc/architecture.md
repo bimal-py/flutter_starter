@@ -77,7 +77,7 @@ The full folder layout is in [project structure](project_structure.md); names ar
 6. `runApp(ScaleKitBuilder(... StarterApp()))`.
 7. After the first frame: the Mobile Ads SDK (consent and ATT prompts need a visible app). Then Crashlytics and Analytics.
 
-`StarterApp` (`lib/app/apps.dart`) wraps the app in the popup loader host and the global blocs. `StarterAppView` (`lib/app/app_view.dart`) builds the theme, `MaterialApp.router`, one status-bar style for the whole app, and `AppBootstrappers`.
+`StarterApp` (`lib/app/apps.dart`) provides the global blocs. `StarterAppView` (`lib/app/app_view.dart`) builds the theme and `MaterialApp.router`; its `builder` adds one status-bar style for the whole app, the popup loader host (inside `MaterialApp`, so the loader card gets the app theme) and `AppBootstrappers`.
 
 ## Hidden details
 
