@@ -1,5 +1,5 @@
-import 'package:flutter_starter/core/utils/helpers/secure_storage_helper.dart';
-import 'package:flutter_starter/modules/fcm/utils/storage_helper/fcm_storage_keys.dart';
+import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/fcm/utils/storage_helper/storage_helper.dart';
 
 class FcmSecureStorage {
   FcmSecureStorage();
@@ -26,9 +26,9 @@ class FcmSecureStorage {
   }
 
   Future<void> clearTokenSyncCache() => Future.wait([
-        _storage.delete(FcmStorageKeys.syncedFcmToken),
-        _storage.delete(FcmStorageKeys.syncedFcmUserId),
-      ]);
+    _storage.delete(FcmStorageKeys.syncedFcmToken),
+    _storage.delete(FcmStorageKeys.syncedFcmUserId),
+  ]);
 
   Future<bool> wasPermissionPrompted() async =>
       (await _storage.read(FcmStorageKeys.permissionPrompted)) == 'true';

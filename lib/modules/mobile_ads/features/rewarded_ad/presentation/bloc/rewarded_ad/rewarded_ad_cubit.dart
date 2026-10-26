@@ -64,9 +64,7 @@ class RewardedAdCubit extends Cubit<RewardedAdState> {
       },
     );
 
-    _rewardedAd!.show(
-      onUserEarnedReward: (ad, reward) => onRewarded(reward),
-    );
+    _rewardedAd!.show(onUserEarnedReward: (ad, reward) => onRewarded(reward));
   }
 
   void retryLoad() {

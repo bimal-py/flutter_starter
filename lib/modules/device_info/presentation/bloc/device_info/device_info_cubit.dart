@@ -2,8 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/device_info/domain/entity/device_info_entity.dart';
-import 'package:flutter_starter/modules/device_info/domain/use_case/remote/get_device_info_use_case.dart';
+import 'package:flutter_starter/modules/device_info/domain/domain.dart';
 
 part 'device_info_state.dart';
 

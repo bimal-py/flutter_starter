@@ -30,10 +30,7 @@ class SplashProgressWidget extends StatelessWidget {
           ),
         ),
         8.verticalSpace,
-        Text(
-          'Loading...',
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
+        Text('Loading...', style: Theme.of(context).textTheme.labelMedium),
       ],
     );
   }

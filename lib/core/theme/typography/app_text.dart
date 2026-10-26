@@ -30,14 +30,14 @@ class AppText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        data,
-        style: style,
-        textAlign: textAlign,
-        textDirection: textDirection,
-        maxLines: maxLines,
-        overflow: overflow,
-        softWrap: softWrap,
-        textScaler: textScaler,
-        semanticsLabel: semanticsLabel,
-      );
+    data,
+    style: style,
+    textAlign: textAlign,
+    textDirection: textDirection,
+    maxLines: maxLines,
+    overflow: overflow,
+    softWrap: softWrap,
+    textScaler: textScaler,
+    semanticsLabel: semanticsLabel,
+  );
 }

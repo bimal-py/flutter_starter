@@ -28,16 +28,16 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   final Color info;
 
   factory CustomThemeExtension.lightDefault() => const CustomThemeExtension(
-        success: Color(0xFF1B873B),
-        warning: Color(0xFFE5A100),
-        info: Color(0xFF1769FF),
-      );
+    success: Color(0xFF1B873B),
+    warning: Color(0xFFE5A100),
+    info: Color(0xFF1769FF),
+  );
 
   factory CustomThemeExtension.darkDefault() => const CustomThemeExtension(
-        success: Color(0xFF4ED27A),
-        warning: Color(0xFFFFC74A),
-        info: Color(0xFF7AA7FF),
-      );
+    success: Color(0xFF4ED27A),
+    warning: Color(0xFFFFC74A),
+    info: Color(0xFF7AA7FF),
+  );
 
   @override
   CustomThemeExtension copyWith({
@@ -45,10 +45,10 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     Color? warning,
     Color? info,
   }) => CustomThemeExtension(
-        success: success ?? this.success,
-        warning: warning ?? this.warning,
-        info: info ?? this.info,
-      );
+    success: success ?? this.success,
+    warning: warning ?? this.warning,
+    info: info ?? this.info,
+  );
 
   @override
   CustomThemeExtension lerp(

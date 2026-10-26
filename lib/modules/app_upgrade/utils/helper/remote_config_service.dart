@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter_starter/modules/app_upgrade/utils/constants/app_upgrade_constants.dart';
+import 'package:flutter_starter/modules/app_upgrade/utils/constants/constants.dart';
 
 /// `FirebaseRemoteConfig` singleton, Firebase-gated. When Firebase hasn't been
 /// initialised (`FIREBASE_ENABLED=false`), `init()` returns silently and every

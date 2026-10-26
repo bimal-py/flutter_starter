@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_starter/core/utils/constants/app_constants.dart';
+import 'package:flutter_starter/core/core.dart';
 
 class AppUpgradeConstants {
   AppUpgradeConstants._();

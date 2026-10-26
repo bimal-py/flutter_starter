@@ -43,9 +43,8 @@ class AboutDeveloperCard extends StatelessWidget {
             _LinkButton(
               icon: LucideIcons.mail,
               tooltip: 'Email',
-              onTap: () => const UrlHelper().launch(
-                'mailto:${AppUrls.developerEmail}',
-              ),
+              onTap: () =>
+                  const UrlHelper().launch('mailto:${AppUrls.developerEmail}'),
             ),
             _LinkButton(
               icon: LucideIcons.code,

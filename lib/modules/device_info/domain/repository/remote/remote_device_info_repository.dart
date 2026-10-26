@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/device_info/domain/entity/device_info_entity.dart';
+import 'package:flutter_starter/modules/device_info/domain/entity/entity.dart';
 
 abstract class RemoteDeviceInfoRepository {
   Future<DeviceInfoEntity> getDeviceInfo();

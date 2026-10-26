@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/core/utils/enums/app_loading_state.dart';
+import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/mobile_ads/mobile_ads.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 

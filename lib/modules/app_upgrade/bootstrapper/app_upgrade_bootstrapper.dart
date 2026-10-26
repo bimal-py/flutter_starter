@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/core/router/app_router.dart';
-import 'package:flutter_starter/core/router/routes.dart';
-import 'package:flutter_starter/modules/app_upgrade/presentation/bloc/app_upgrade/app_upgrade_cubit.dart';
-import 'package:flutter_starter/modules/app_upgrade/presentation/widgets/update_app_popup_widget.dart';
+import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/app_upgrade/presentation/presentation.dart';
 
 /// Wraps the app shell, kicks off [AppUpgradeCubit.checkForUpdate] after the
 /// first frame, and pushes the update dialog onto the root navigator's

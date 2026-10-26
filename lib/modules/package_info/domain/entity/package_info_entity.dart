@@ -16,5 +16,11 @@ class PackageInfoEntity extends Equatable {
   final String buildSignature;
 
   @override
-  List<Object?> get props => [appName, packageName, version, buildNumber, buildSignature];
+  List<Object?> get props => [
+    appName,
+    packageName,
+    version,
+    buildNumber,
+    buildSignature,
+  ];
 }

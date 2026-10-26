@@ -18,12 +18,11 @@ class ImagePickerState extends Equatable {
     List<PickedImageEntity>? images,
     String? error,
     bool? isSingleImagePicker,
-  }) =>
-      ImagePickerState(
-        images: images ?? this.images,
-        error: error,
-        isSingleImagePicker: isSingleImagePicker ?? this.isSingleImagePicker,
-      );
+  }) => ImagePickerState(
+    images: images ?? this.images,
+    error: error,
+    isSingleImagePicker: isSingleImagePicker ?? this.isSingleImagePicker,
+  );
 
   @override
   List<Object?> get props => [images, error, isSingleImagePicker];

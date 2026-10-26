@@ -1,6 +1,4 @@
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_channels_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_payload_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_permission_status_entity.dart';
+import 'package:flutter_starter/modules/notifications/domain/entity/entity.dart';
 
 /// Plugin-agnostic notifications backend. The default app wires
 /// [LocalNotificationsRepositoryImpl]; swap by implementing this interface

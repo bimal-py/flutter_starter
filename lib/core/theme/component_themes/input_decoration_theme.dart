@@ -12,10 +12,7 @@ class InputDecorationThemeBuilder {
     return InputDecorationTheme(
       filled: true,
       fillColor: colorScheme.surfaceContainerHighest,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: 16.w,
-        vertical: 14.h,
-      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       hintStyle: textTheme.bodyMedium?.copyWith(
         color: colorScheme.onSurfaceVariant,
       ),

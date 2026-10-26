@@ -22,32 +22,30 @@ class ThemeState extends Equatable {
     ThemeVariant? variant,
     ThemeSource? developerSource,
     ThemeSource? userOverride,
-  }) =>
-      ThemeState(
-        variant: variant ?? this.variant,
-        developerSource: developerSource ?? this.developerSource,
-        userOverride: userOverride ?? this.userOverride,
-      );
+  }) => ThemeState(
+    variant: variant ?? this.variant,
+    developerSource: developerSource ?? this.developerSource,
+    userOverride: userOverride ?? this.userOverride,
+  );
 
-  ThemeState clearUserOverride() => ThemeState(
-        variant: variant,
-        developerSource: developerSource,
-      );
+  ThemeState clearUserOverride() =>
+      ThemeState(variant: variant, developerSource: developerSource);
 
   Map<String, dynamic> toJson() => {
-        'variant': variant.id,
-        'developerSource': developerSource.toJson(),
-        if (userOverride != null) 'userOverride': userOverride!.toJson(),
-      };
+    'variant': variant.id,
+    'developerSource': developerSource.toJson(),
+    if (userOverride != null) 'userOverride': userOverride!.toJson(),
+  };
 
   factory ThemeState.fromJson(Map<String, dynamic> json) => ThemeState(
-        variant: ThemeVariant.fromId(json['variant'] as String?),
-        developerSource:
-            themeSourceFromJson(json['developerSource'] as Map<String, dynamic>?),
-        userOverride: json['userOverride'] is Map<String, dynamic>
-            ? themeSourceFromJson(json['userOverride'] as Map<String, dynamic>)
-            : null,
-      );
+    variant: ThemeVariant.fromId(json['variant'] as String?),
+    developerSource: themeSourceFromJson(
+      json['developerSource'] as Map<String, dynamic>?,
+    ),
+    userOverride: json['userOverride'] is Map<String, dynamic>
+        ? themeSourceFromJson(json['userOverride'] as Map<String, dynamic>)
+        : null,
+  );
 
   @override
   List<Object?> get props => [variant, developerSource, userOverride];

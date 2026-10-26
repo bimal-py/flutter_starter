@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/package_info/domain/entity/package_info_entity.dart';
+import 'package:flutter_starter/modules/package_info/domain/entity/entity.dart';
 
 abstract class RemotePackageInfoRepository {
   Future<PackageInfoEntity> getPackageInfo();

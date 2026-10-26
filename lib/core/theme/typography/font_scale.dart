@@ -1,4 +1,4 @@
-import 'package:flutter_starter/core/theme/typography/localized_fonts.dart';
+import 'package:flutter_starter/core/theme/typography/typography.dart';
 
 /// Deprecated. Use [LocalizedFonts] — the theme now bakes per-locale family
 /// and scale into the `TextTheme` automatically, so call sites that read

@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/fcm/domain/entity/fcm_remote_message_entity.dart';
+import 'package:flutter_starter/modules/fcm/domain/entity/entity.dart';
 
 abstract class RemoteFcmRepository {
   Future<void> initialize({

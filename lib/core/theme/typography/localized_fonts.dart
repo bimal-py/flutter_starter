@@ -35,13 +35,13 @@ class LocalizedFonts {
   /// Drop or extend in your app. Font files for non-default families must be
   /// declared in pubspec.yaml AND placed under assets/fonts/.
   factory LocalizedFonts.defaults() => const LocalizedFonts(
-        defaultFont: AppFont(family: 'Inter', scale: 1.0),
-        byLocale: {
-          // Devanagari (Nepali, Hindi) reads ~10% smaller than Inter optically.
-          'ne': AppFont(family: 'Mukta', scale: 1.10),
-          'hi': AppFont(family: 'Mukta', scale: 1.10),
-          'bn': AppFont(family: 'NotoSansBengali', scale: 1.08),
-          'ar': AppFont(family: 'NotoSansArabic', scale: 1.05),
-        },
-      );
+    defaultFont: AppFont(family: 'Inter', scale: 1.0),
+    byLocale: {
+      // Devanagari (Nepali, Hindi) reads ~10% smaller than Inter optically.
+      'ne': AppFont(family: 'Mukta', scale: 1.10),
+      'hi': AppFont(family: 'Mukta', scale: 1.10),
+      'bn': AppFont(family: 'NotoSansBengali', scale: 1.08),
+      'ar': AppFont(family: 'NotoSansArabic', scale: 1.05),
+    },
+  );
 }

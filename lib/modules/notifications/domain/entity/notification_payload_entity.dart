@@ -47,4 +47,6 @@ class NotificationTapEventEntity {
   final String? actionId;
 }
 
-typedef NotificationTapHandlerEntity = void Function(NotificationTapEventEntity event);
+typedef NotificationTapHandlerEntity = void Function(
+  NotificationTapEventEntity event,
+);

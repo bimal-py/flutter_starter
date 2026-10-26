@@ -1,15 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/core/errors/error_handler.dart';
-import 'package:flutter_starter/modules/image_picker/domain/entity/picked_image_entity.dart';
-import 'package:flutter_starter/modules/image_picker/utils/helper/image_picker_helper.dart';
+import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/image_picker/domain/domain.dart';
+import 'package:flutter_starter/modules/image_picker/utils/utils.dart';
 
 part 'image_picker_state.dart';
 
 class ImagePickerCubit extends Cubit<ImagePickerState> {
   ImagePickerCubit({ImagePickerHelperLib? helper})
-      : _helper = helper ?? ImagePickerHelperLib(),
-        super(const ImagePickerState());
+    : _helper = helper ?? ImagePickerHelperLib(),
+      super(const ImagePickerState());
 
   final ImagePickerHelperLib _helper;
 
@@ -48,7 +48,9 @@ class ImagePickerCubit extends Cubit<ImagePickerState> {
       if (files.isEmpty) {
         return emit(state.copyWith(error: 'No images picked.'));
       }
-      final incoming = files.map((f) => PickedImageEntity(path: f.path)).toList();
+      final incoming = files
+          .map((f) => PickedImageEntity(path: f.path))
+          .toList();
       emit(state.copyWith(images: _merge(state.images, incoming), error: null));
     } catch (error) {
       emit(state.copyWith(error: AppErrorHandler.getErrorMessage(error)));

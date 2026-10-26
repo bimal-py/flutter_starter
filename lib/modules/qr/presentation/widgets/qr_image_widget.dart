@@ -63,9 +63,8 @@ class QrImageWidget extends StatelessWidget {
           SizedBox(height: 12.h),
           Text(
             'Scan to download',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ],
       ),

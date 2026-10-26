@@ -40,11 +40,7 @@ class OnboardingPageWidget extends StatelessWidget {
                   color: colorScheme.primaryContainer,
                 ),
               ),
-              Icon(
-                icon,
-                size: 56.r,
-                color: colorScheme.onPrimaryContainer,
-              ),
+              Icon(icon, size: 56.r, color: colorScheme.onPrimaryContainer),
             ],
           ),
           SizedBox(height: 36.h),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/qr/qr.dart';
-import 'package:flutter_starter/modules/settings/presentation/widgets/settings_tile_widget.dart';
+import 'package:flutter_starter/modules/settings/presentation/widgets/widgets.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

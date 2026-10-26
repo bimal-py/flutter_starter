@@ -163,9 +163,7 @@ class _PresetChip extends StatelessWidget {
             Text(
               preset.label,
               style: context.textTheme.labelLarge?.copyWith(
-                color: selected
-                    ? scheme.onPrimaryContainer
-                    : scheme.onSurface,
+                color: selected ? scheme.onPrimaryContainer : scheme.onSurface,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -231,7 +229,8 @@ class _SourcePickerState extends State<_SourcePicker> {
           subtitle: 'Pick a photo and seed from its dominant color.',
         ),
         SizedBox(height: 12.h),
-        if (_kind == _SourceKind.seed) _SeedSwatches(active: _seed, onPick: _pickSeed),
+        if (_kind == _SourceKind.seed)
+          _SeedSwatches(active: _seed, onPick: _pickSeed),
         if (_kind == _SourceKind.dynamicDevice)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -240,12 +239,13 @@ class _SourcePickerState extends State<_SourcePicker> {
               style: context.textTheme.bodySmall,
             ),
           ),
-        if (_kind == _SourceKind.fromImage) _FromImageControls(
-          imagePath: _imagePath,
-          fallbackSeed: _seed,
-          picking: _picking,
-          onPick: _pickImage,
-        ),
+        if (_kind == _SourceKind.fromImage)
+          _FromImageControls(
+            imagePath: _imagePath,
+            fallbackSeed: _seed,
+            picking: _picking,
+            onPick: _pickImage,
+          ),
       ],
     );
   }
@@ -303,9 +303,9 @@ class _SourcePickerState extends State<_SourcePicker> {
       if (!mounted) return;
       setState(() => _imagePath = file.path);
       await context.read<ThemeCubit>().applyUserImage(
-            FileImageRef(file.path),
-            fallbackSeed: _seed,
-          );
+        FileImageRef(file.path),
+        fallbackSeed: _seed,
+      );
     } catch (e) {
       if (!mounted) return;
       CustomSnackbar.show(
@@ -365,8 +365,8 @@ class _FromImageControls extends StatelessWidget {
               picking
                   ? 'Picking…'
                   : imagePath == null
-                      ? 'Pick an image'
-                      : 'Pick a different image',
+                  ? 'Pick an image'
+                  : 'Pick a different image',
             ),
           ),
           if (imagePath != null) ...[
@@ -480,7 +480,11 @@ class _SeedSwatches extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: context.colorScheme.outline),
         ),
-        child: Icon(Icons.add, color: context.colorScheme.onSurface, size: 20.r),
+        child: Icon(
+          Icons.add,
+          color: context.colorScheme.onSurface,
+          size: 20.r,
+        ),
       ),
     );
   }
@@ -529,7 +533,10 @@ class _PreviewChips extends StatelessWidget {
               ),
               title: const Text('A preview row'),
               subtitle: const Text('Body text rendered with current theme'),
-              trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+              trailing: Icon(
+                Icons.chevron_right,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

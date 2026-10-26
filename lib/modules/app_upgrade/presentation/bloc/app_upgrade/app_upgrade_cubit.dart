@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/modules/app_upgrade/utils/helper/remote_config_helper.dart';
-import 'package:flutter_starter/modules/app_upgrade/utils/helper/remote_config_service.dart';
+import 'package:flutter_starter/modules/app_upgrade/utils/utils.dart';
 
 part 'app_upgrade_state.dart';
 
@@ -50,12 +49,14 @@ class AppUpgradeCubit extends Cubit<AppUpgradeState> {
         }
       }
 
-      emit(state.copyWith(
-        status: AppUpgradeStatus.updateAvailable,
-        latestVersion: latest,
-        updateMessage: _service.updateMessage,
-        isForceUpdate: forceUpdate,
-      ));
+      emit(
+        state.copyWith(
+          status: AppUpgradeStatus.updateAvailable,
+          latestVersion: latest,
+          updateMessage: _service.updateMessage,
+          isForceUpdate: forceUpdate,
+        ),
+      );
     } catch (_) {
       emit(state.copyWith(status: AppUpgradeStatus.upToDate));
     }

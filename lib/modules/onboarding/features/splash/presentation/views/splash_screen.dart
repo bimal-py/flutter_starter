@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/app_setting/app_setting.dart';
-import 'package:flutter_starter/modules/onboarding/features/splash/presentation/bloc/splash/splash_bloc.dart';
+import 'package:flutter_starter/modules/onboarding/features/splash/presentation/bloc/bloc.dart';
 import 'package:flutter_starter/modules/onboarding/features/splash/presentation/widgets/widgets.dart';
 import 'package:go_router/go_router.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/entity/entity.dart';
-import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/presentation/widgets/self_promotion_native_card.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/presentation/widgets/widgets.dart';
 
 /// House ad in a horizontal banner shape (logo · name/tagline · CTA), for the
 /// banner slots. Tapping opens the promoted app's store page.

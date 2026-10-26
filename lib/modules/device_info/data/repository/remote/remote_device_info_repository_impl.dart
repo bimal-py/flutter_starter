@@ -1,7 +1,6 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_starter/modules/device_info/domain/entity/device_info_entity.dart';
-import 'package:flutter_starter/modules/device_info/domain/repository/remote/remote_device_info_repository.dart';
+import 'package:flutter_starter/modules/device_info/domain/domain.dart';
 import 'package:injectable/injectable.dart';
 
 @LazySingleton(as: RemoteDeviceInfoRepository)

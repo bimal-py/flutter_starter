@@ -35,5 +35,10 @@ class AppUpgradeState extends Equatable {
   );
 
   @override
-  List<Object?> get props => [status, latestVersion, updateMessage, isForceUpdate];
+  List<Object?> get props => [
+    status,
+    latestVersion,
+    updateMessage,
+    isForceUpdate,
+  ];
 }

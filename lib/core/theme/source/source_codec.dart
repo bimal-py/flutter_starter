@@ -1,5 +1,5 @@
-import 'package:flutter_starter/core/theme/colors/app_colors.dart';
-import 'package:flutter_starter/core/theme/source/theme_source.dart';
+import 'package:flutter_starter/core/theme/colors/colors.dart';
+import 'package:flutter_starter/core/theme/source/source.dart';
 
 /// Rebuilds a [ThemeSource] from its persisted JSON shape. Defaults to a
 /// seed-only source on unknown/corrupt input so the app still themes.
@@ -15,5 +15,7 @@ ThemeSource themeSourceFromJson(Map<String, dynamic>? json) {
   };
 }
 
-const ThemeSource _defaultSource =
-    SeedOnlySource(seed: AppColors.seed, accent: AppColors.accent);
+const ThemeSource _defaultSource = SeedOnlySource(
+  seed: AppColors.seed,
+  accent: AppColors.accent,
+);

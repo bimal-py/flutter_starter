@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter_starter/modules/fcm/domain/entity/fcm_remote_message_entity.dart';
+import 'package:flutter_starter/modules/fcm/domain/domain.dart';
 import 'package:flutter_starter/modules/notifications/notifications.dart';
 
 typedef ForegroundMessageHandler = void Function(FcmRemoteMessageEntity msg);
@@ -59,7 +59,8 @@ ForegroundMessageHandler buildNotificationBridge({
     if ((title == null || title.isEmpty) && (body == null || body.isEmpty)) {
       return;
     }
-    final id = idResolver?.call(msg) ??
+    final id =
+        idResolver?.call(msg) ??
         ((msg.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch) &
             0x7fffffff);
     final channel = msg.data['channel']?.toString() ?? defaultChannel;
@@ -93,12 +94,14 @@ List<NotificationActionEntity> parseFcmActions(dynamic raw) {
     return list
         .whereType<Map>()
         .map((m) => m.cast<String, dynamic>())
-        .map((m) => NotificationActionEntity(
-              id: m['id']?.toString() ?? '',
-              label: m['label']?.toString() ?? '',
-              destructive: m['destructive'] == true,
-              foreground: m['foreground'] != false,
-            ))
+        .map(
+          (m) => NotificationActionEntity(
+            id: m['id']?.toString() ?? '',
+            label: m['label']?.toString() ?? '',
+            destructive: m['destructive'] == true,
+            foreground: m['foreground'] != false,
+          ),
+        )
         .where((a) => a.id.isNotEmpty && a.label.isNotEmpty)
         .toList();
   } catch (_) {

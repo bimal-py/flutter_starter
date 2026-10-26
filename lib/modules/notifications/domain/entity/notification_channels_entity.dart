@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_payload_entity.dart';
+import 'package:flutter_starter/modules/notifications/domain/entity/entity.dart';
 
 class NotificationChannelEntity {
   const NotificationChannelEntity({

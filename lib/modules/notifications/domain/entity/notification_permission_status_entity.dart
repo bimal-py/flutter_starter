@@ -1,1 +1,6 @@
-enum NotificationPermissionStatusEntity { granted, denied, provisional, notDetermined }
+enum NotificationPermissionStatusEntity {
+  granted,
+  denied,
+  provisional,
+  notDetermined,
+}

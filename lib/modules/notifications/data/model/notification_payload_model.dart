@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_channels_entity.dart';
+import 'package:flutter_starter/modules/notifications/domain/domain.dart';
 
 /// Transport / persistence shape for [NotificationPayloadEntity]. Only the
 /// fields that need to round-trip through the underlying plugin's `payload`
@@ -32,10 +32,10 @@ class NotificationPayloadModel {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'body': body,
-        'data': data,
-        'channel': channel,
-      };
+    'id': id,
+    'title': title,
+    'body': body,
+    'data': data,
+    'channel': channel,
+  };
 }

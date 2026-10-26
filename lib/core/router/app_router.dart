@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/common/widgets/widgets.dart';
-import 'package:flutter_starter/core/router/observers/app_navigator_observer.dart';
-import 'package:flutter_starter/core/router/routes.dart';
-import 'package:flutter_starter/core/services/firebase_service.dart';
+import 'package:flutter_starter/core/router/router.dart';
+import 'package:flutter_starter/core/services/services.dart';
 import 'package:flutter_starter/modules/about/about.dart';
 import 'package:flutter_starter/modules/auth/auth.dart';
 import 'package:flutter_starter/modules/dashboard/dashboard.dart';
@@ -16,14 +15,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GoRouter router = GoRouter(
   navigatorKey: navigatorKey,
   initialLocation: Routes.splash.path,
-  observers: [
-    AppNavigatorObserver(),
-    ?FirebaseService.analyticsObserver,
-  ],
+  observers: [AppNavigatorObserver(), ?FirebaseService.analyticsObserver],
   redirect: (context, state) {
-    FirebaseService.logScreenView(
-      state.fullPath ?? state.path ?? state.name,
-    );
+    FirebaseService.logScreenView(state.fullPath ?? state.path ?? state.name);
     return null;
   },
   routes: [
@@ -75,5 +69,6 @@ final GoRouter router = GoRouter(
       ],
     ),
   ],
-  errorBuilder: (context, state) => ErrorScreen(message: state.error?.toString()),
+  errorBuilder: (context, state) =>
+      ErrorScreen(message: state.error?.toString()),
 );

@@ -56,19 +56,19 @@ class RewardedInterstitialAdCubit extends Cubit<RewardedInterstitialAdState> {
 
     _rewardedInterstitialAd!.fullScreenContentCallback =
         FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _rewardedInterstitialAd = null;
-        onClosed?.call();
-        loadAd();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _rewardedInterstitialAd = null;
-        onClosed?.call();
-        loadAd();
-      },
-    );
+          onAdDismissedFullScreenContent: (ad) {
+            ad.dispose();
+            _rewardedInterstitialAd = null;
+            onClosed?.call();
+            loadAd();
+          },
+          onAdFailedToShowFullScreenContent: (ad, error) {
+            ad.dispose();
+            _rewardedInterstitialAd = null;
+            onClosed?.call();
+            loadAd();
+          },
+        );
 
     _rewardedInterstitialAd!.show(
       onUserEarnedReward: (ad, reward) => onRewarded(reward),

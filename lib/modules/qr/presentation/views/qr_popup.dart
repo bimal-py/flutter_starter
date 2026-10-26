@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/qr/utils/helper/qr_capture_service.dart';
-import 'package:flutter_starter/modules/qr/presentation/widgets/qr_image_widget.dart';
+import 'package:flutter_starter/modules/qr/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/qr/utils/utils.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Bottom-sheet style dialog showing the app's download QR with

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_scale_kit/flutter_scale_kit.dart';
-import 'package:flutter_starter/core/theme/colors/app_colors.dart';
-import 'package:flutter_starter/core/theme/colors/brand_palette.dart';
+import 'package:flutter_starter/core/theme/colors/colors.dart';
 import 'package:flutter_starter/core/theme/component_themes/component_themes.dart';
-import 'package:flutter_starter/core/theme/extension/custom_theme_extension.dart';
-import 'package:flutter_starter/core/theme/source/theme_source.dart';
-import 'package:flutter_starter/core/theme/typography/app_text_style.dart';
-import 'package:flutter_starter/core/theme/typography/localized_fonts.dart';
+import 'package:flutter_starter/core/theme/extension/extension.dart';
+import 'package:flutter_starter/core/theme/source/source.dart';
+import 'package:flutter_starter/core/theme/typography/typography.dart';
 
 class ComposedThemes {
   const ComposedThemes({required this.light, required this.dark});
@@ -69,16 +67,20 @@ class AppThemeBuilder {
         );
 
       case SeedWithOverridesSource(
-          :final seed,
-          :final accent,
-          :final lightSchemeOverrides,
-          :final darkSchemeOverrides,
-        ):
+        :final seed,
+        :final accent,
+        :final lightSchemeOverrides,
+        :final darkSchemeOverrides,
+      ):
         final palette = BrandPalette(seed: seed, accent: accent);
-        final lightScheme =
-            _applySchemeOverrides(palette.light, lightSchemeOverrides);
-        final darkScheme =
-            _applySchemeOverrides(palette.dark, darkSchemeOverrides);
+        final lightScheme = _applySchemeOverrides(
+          palette.light,
+          lightSchemeOverrides,
+        );
+        final darkScheme = _applySchemeOverrides(
+          palette.dark,
+          darkSchemeOverrides,
+        );
         return ComposedThemes(
           light: _buildOne(
             context: context,
@@ -105,34 +107,37 @@ class AppThemeBuilder {
         );
 
       case FullCustomSource(
-          :final lightScheme,
-          :final darkScheme,
-          :final lightExtension,
-          :final darkExtension,
-          :final textTheme,
-          :final fontFamily,
-        ):
+        :final lightScheme,
+        :final darkScheme,
+        :final lightExtension,
+        :final darkExtension,
+        :final textTheme,
+        :final fontFamily,
+      ):
         // Fill missing brightness by mirroring the supplied one.
         final l = lightScheme ?? darkScheme!;
         final d = darkScheme ?? lightScheme!;
         // Developer-supplied extensions on FullCustomSource win — those were
         // chosen deliberately. Otherwise fall back to the builder, then defaults.
-        final lExt = lightExtension ??
+        final lExt =
+            lightExtension ??
             _resolveExtension(
               scheme: l,
               brightness: Brightness.light,
               builder: extensionBuilder,
               fallback: () => CustomThemeExtension.lightDefault(),
             );
-        final dExt = darkExtension ??
+        final dExt =
+            darkExtension ??
             _resolveExtension(
               scheme: d,
               brightness: Brightness.dark,
               builder: extensionBuilder,
               fallback: () => CustomThemeExtension.darkDefault(),
             );
-        final overrideFont =
-            fontFamily != null ? AppFont(family: fontFamily) : font;
+        final overrideFont = fontFamily != null
+            ? AppFont(family: fontFamily)
+            : font;
         return ComposedThemes(
           light: _buildOne(
             context: context,
@@ -227,13 +232,13 @@ class AppThemeBuilder {
 
   /// Defaults used when no source has been wired yet.
   static ComposedThemes defaults(BuildContext context) => compose(
-        context: context,
-        source: const SeedOnlySource(
-          seed: AppColors.seed,
-          accent: AppColors.accent,
-        ),
-        fonts: LocalizedFonts.defaults(),
-      );
+    context: context,
+    source: const SeedOnlySource(
+      seed: AppColors.seed,
+      accent: AppColors.accent,
+    ),
+    fonts: LocalizedFonts.defaults(),
+  );
 
   static ThemeData _buildOne({
     required BuildContext context,

@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_starter/common/common.dart';
-import 'package:flutter_starter/modules/app_upgrade/domain/entity/app_upgrade_info_entity.dart';
-import 'package:flutter_starter/modules/app_upgrade/domain/repository/remote/remote_app_upgrade_repository.dart';
+import 'package:flutter_starter/modules/app_upgrade/domain/entity/entity.dart';
+import 'package:flutter_starter/modules/app_upgrade/domain/repository/repository.dart';
 import 'package:injectable/injectable.dart';
 
 @injectable

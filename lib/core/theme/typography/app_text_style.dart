@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_scale_kit/flutter_scale_kit.dart';
-import 'package:flutter_starter/core/theme/typography/localized_fonts.dart';
+import 'package:flutter_starter/core/theme/typography/typography.dart';
 
 /// Applies responsive font sizes / weights / line heights **on top of** an
 /// existing Material 3 [TextTheme] and optionally swaps in [AppFont]'s family

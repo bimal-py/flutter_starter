@@ -1,6 +1,5 @@
-import 'package:flutter_starter/modules/fcm/domain/entity/fcm_remote_message_entity.dart';
-import 'package:flutter_starter/modules/fcm/domain/repository/remote/remote_fcm_repository.dart';
-import 'package:flutter_starter/modules/fcm/utils/helper/fcm_service.dart';
+import 'package:flutter_starter/modules/fcm/domain/domain.dart';
+import 'package:flutter_starter/modules/fcm/utils/utils.dart';
 import 'package:injectable/injectable.dart';
 
 @LazySingleton(as: RemoteFcmRepository)
@@ -13,13 +12,12 @@ class RemoteFcmRepositoryImpl implements RemoteFcmRepository {
     void Function(FcmRemoteMessageEntity)? onMessageOpenedApp,
     bool requestPermissionOnInit = false,
     List<String> defaultTopics = const [],
-  }) =>
-      _service.initialize(
-        onForegroundMessage: onForegroundMessage,
-        onMessageOpenedApp: onMessageOpenedApp,
-        requestPermissionOnInit: requestPermissionOnInit,
-        defaultTopics: defaultTopics,
-      );
+  }) => _service.initialize(
+    onForegroundMessage: onForegroundMessage,
+    onMessageOpenedApp: onMessageOpenedApp,
+    requestPermissionOnInit: requestPermissionOnInit,
+    defaultTopics: defaultTopics,
+  );
 
   @override
   Future<String?> getToken() => _service.getToken();

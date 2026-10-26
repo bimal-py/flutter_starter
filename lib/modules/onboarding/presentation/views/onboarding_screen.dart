@@ -21,20 +21,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingPageWidget(
       icon: LucideIcons.rocket,
       title: 'Ship faster',
-      subtitle:
-          'Skip the boilerplate. Start from a clean architecture instead of a blank Flutter template.',
+      subtitle: 'Skip the boilerplate. Start from a clean architecture instead of a blank Flutter template.',
     ),
     OnboardingPageWidget(
       icon: LucideIcons.layers,
       title: 'Feature-first modules',
-      subtitle:
-          'Each feature owns its data, domain, and presentation layers — no tangled dependencies.',
+      subtitle: 'Each feature owns its data, domain, and presentation layers — no tangled dependencies.',
     ),
     OnboardingPageWidget(
       icon: LucideIcons.palette,
       title: 'Themeable by default',
-      subtitle:
-          'Material 3 ColorScheme + a CustomThemeExtension hook for brand colors.',
+      subtitle: 'Material 3 ColorScheme + a CustomThemeExtension hook for brand colors.',
     ),
   ];
 

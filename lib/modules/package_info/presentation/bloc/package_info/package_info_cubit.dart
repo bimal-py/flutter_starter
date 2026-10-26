@@ -2,8 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/package_info/domain/entity/package_info_entity.dart';
-import 'package:flutter_starter/modules/package_info/domain/use_case/remote/get_package_info_use_case.dart';
+import 'package:flutter_starter/modules/package_info/domain/domain.dart';
 
 part 'package_info_state.dart';
 

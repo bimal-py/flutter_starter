@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/image_picker/utils/helper/image_compressor.dart';
+import 'package:flutter_starter/modules/image_picker/utils/helper/helper.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Thin wrapper around `image_picker` that runs every returned [XFile]

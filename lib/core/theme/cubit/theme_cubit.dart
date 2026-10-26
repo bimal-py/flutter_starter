@@ -6,11 +6,7 @@ import 'dart:ui' as ui;
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter_starter/core/theme/app_theme_builder.dart';
-import 'package:flutter_starter/core/theme/colors/app_colors.dart';
-import 'package:flutter_starter/core/theme/extension/custom_theme_extension.dart';
-import 'package:flutter_starter/core/theme/source/source.dart';
-import 'package:flutter_starter/core/theme/variant/theme_variant.dart';
+import 'package:flutter_starter/core/theme/theme.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:material_color_utilities/material_color_utilities.dart';
 
@@ -20,12 +16,10 @@ part 'theme_state.dart';
 /// an optional user override that the playground writes. [ThemeState.effectiveSource]
 /// resolves to userOverride when set, falling back to developerSource.
 class ThemeCubit extends HydratedCubit<ThemeState> {
-  ThemeCubit({
-    ThemeSource? developerSource,
-    this.extensionBuilder,
-  }) : super(ThemeState(
-          developerSource: developerSource ?? _defaultDeveloperSource,
-        ));
+  ThemeCubit({ThemeSource? developerSource, this.extensionBuilder})
+    : super(
+        ThemeState(developerSource: developerSource ?? _defaultDeveloperSource),
+      );
 
   /// Optional hook so domain colors in [CustomThemeExtension] follow *every*
   /// scheme the app renders (seed change, preset, dynamic device colors,
@@ -64,9 +58,14 @@ class ThemeCubit extends HydratedCubit<ThemeState> {
     required Color fallbackSeed,
   }) async {
     // Emit placeholder source so the UI starts re-themeing immediately.
-    emit(state.copyWith(
-      userOverride: FromImageSource(imageRef: ref, fallbackSeed: fallbackSeed),
-    ));
+    emit(
+      state.copyWith(
+        userOverride: FromImageSource(
+          imageRef: ref,
+          fallbackSeed: fallbackSeed,
+        ),
+      ),
+    );
     final seed = await _extractDominantColor(ref);
     if (seed != null) {
       emit(state.copyWith(userOverride: SeedOnlySource(seed: seed)));
@@ -93,8 +92,9 @@ class ThemeCubit extends HydratedCubit<ThemeState> {
       final bytes = await _loadImageBytes(ref);
       if (bytes == null) return null;
       final encoded = await decodeImageFromList(bytes);
-      final byteData =
-          await encoded.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final byteData = await encoded.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
       if (byteData == null) return null;
       // Sample 1 in every 16 pixels (4x4 grid) to keep extraction snappy on
       // large images. Quantizer wants ARGB ints.

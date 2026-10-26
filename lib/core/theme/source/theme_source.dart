@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_starter/core/theme/extension/custom_theme_extension.dart';
+import 'package:flutter_starter/core/theme/extension/extension.dart';
 
 /// Brightness modes a [ThemeSource] is willing to render in.
 enum SupportedBrightness { light, dark, both }
@@ -59,10 +59,10 @@ sealed class ThemeSource {
   Map<String, dynamic> toJson();
 
   bool supportsVariant(Brightness target) => switch (supports) {
-        SupportedBrightness.both => true,
-        SupportedBrightness.light => target == Brightness.light,
-        SupportedBrightness.dark => target == Brightness.dark,
-      };
+    SupportedBrightness.both => true,
+    SupportedBrightness.light => target == Brightness.light,
+    SupportedBrightness.dark => target == Brightness.dark,
+  };
 }
 
 // ── 1. Seed-only ─────────────────────────────────────────────────────
@@ -79,15 +79,15 @@ class SeedOnlySource extends ThemeSource {
   SupportedBrightness get supports => SupportedBrightness.both;
   @override
   Map<String, dynamic> toJson() => {
-        'kind': kind,
-        'seed': seed.toARGB32(),
-        if (accent != null) 'accent': accent!.toARGB32(),
-      };
+    'kind': kind,
+    'seed': seed.toARGB32(),
+    if (accent != null) 'accent': accent!.toARGB32(),
+  };
 
   static SeedOnlySource fromJson(Map<String, dynamic> j) => SeedOnlySource(
-        seed: Color(j['seed'] as int),
-        accent: j['accent'] is int ? Color(j['accent'] as int) : null,
-      );
+    seed: Color(j['seed'] as int),
+    accent: j['accent'] is int ? Color(j['accent'] as int) : null,
+  );
 }
 
 // ── 2. Seed + per-role overrides ─────────────────────────────────────
@@ -111,12 +111,12 @@ class SeedWithOverridesSource extends ThemeSource {
   SupportedBrightness get supports => SupportedBrightness.both;
   @override
   Map<String, dynamic> toJson() => {
-        'kind': kind,
-        'seed': seed.toARGB32(),
-        if (accent != null) 'accent': accent!.toARGB32(),
-        'lightSchemeOverrides': _encodeColors(lightSchemeOverrides),
-        'darkSchemeOverrides': _encodeColors(darkSchemeOverrides),
-      };
+    'kind': kind,
+    'seed': seed.toARGB32(),
+    if (accent != null) 'accent': accent!.toARGB32(),
+    'lightSchemeOverrides': _encodeColors(lightSchemeOverrides),
+    'darkSchemeOverrides': _encodeColors(darkSchemeOverrides),
+  };
 
   static SeedWithOverridesSource fromJson(Map<String, dynamic> j) =>
       SeedWithOverridesSource(
@@ -138,9 +138,9 @@ class FullCustomSource extends ThemeSource {
     this.textTheme,
     this.fontFamily,
   }) : assert(
-          lightScheme != null || darkScheme != null,
-          'FullCustomSource needs at least one brightness',
-        );
+         lightScheme != null || darkScheme != null,
+         'FullCustomSource needs at least one brightness',
+       );
 
   final ColorScheme? lightScheme;
   final ColorScheme? darkScheme;
@@ -208,13 +208,13 @@ class FullCustomSourceBuilder {
   }
 
   FullCustomSource build() => FullCustomSource(
-        lightScheme: _light,
-        darkScheme: _dark,
-        lightExtension: _lightExt,
-        darkExtension: _darkExt,
-        textTheme: _textTheme,
-        fontFamily: _fontFamily,
-      );
+    lightScheme: _light,
+    darkScheme: _dark,
+    lightExtension: _lightExt,
+    darkExtension: _darkExt,
+    textTheme: _textTheme,
+    fontFamily: _fontFamily,
+  );
 }
 
 // ── 4. Dynamic device colors ─────────────────────────────────────────
@@ -229,9 +229,9 @@ class DynamicDeviceSource extends ThemeSource {
   SupportedBrightness get supports => SupportedBrightness.both;
   @override
   Map<String, dynamic> toJson() => {
-        'kind': kind,
-        'fallbackSeed': fallbackSeed.toARGB32(),
-      };
+    'kind': kind,
+    'fallbackSeed': fallbackSeed.toARGB32(),
+  };
 
   static DynamicDeviceSource fromJson(Map<String, dynamic> j) =>
       DynamicDeviceSource(fallbackSeed: Color(j['fallbackSeed'] as int));
@@ -250,10 +250,10 @@ class FromImageSource extends ThemeSource {
   SupportedBrightness get supports => SupportedBrightness.both;
   @override
   Map<String, dynamic> toJson() => {
-        'kind': kind,
-        'imageRef': imageRef.toJson(),
-        'fallbackSeed': fallbackSeed.toARGB32(),
-      };
+    'kind': kind,
+    'imageRef': imageRef.toJson(),
+    'fallbackSeed': fallbackSeed.toARGB32(),
+  };
 
   static FromImageSource? fromJson(Map<String, dynamic> j) {
     final ref = ImageRef.fromJson(j['imageRef'] as Map<String, dynamic>?);

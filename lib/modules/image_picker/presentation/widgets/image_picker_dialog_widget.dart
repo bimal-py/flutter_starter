@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/modules/image_picker/presentation/bloc/image_picker/image_picker_cubit.dart';
+import 'package:flutter_starter/modules/image_picker/presentation/bloc/bloc.dart';
 
 /// Bottom-sheet picker with "Capture" / "Choose from device". Closes itself
 /// once the cubit finishes — observe [ImagePickerCubit] for the picked files.
@@ -37,8 +37,9 @@ class ImagePickerDialogWidget extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider<ImagePickerCubit>(
-        create: (_) => ImagePickerCubit()
-          ..setSingleImagePicker(single: !shouldPickMultipleImages),
+        create: (_) =>
+            ImagePickerCubit()
+              ..setSingleImagePicker(single: !shouldPickMultipleImages),
         child: ImagePickerDialogWidget(
           shouldPickMultipleImages: shouldPickMultipleImages,
         ),
@@ -78,9 +79,7 @@ class ImagePickerDialogWidget extends StatelessWidget {
               onTap: () => _runAndClose(
                 sheetContext,
                 () => shouldPickMultipleImages
-                    ? sheetContext
-                          .read<ImagePickerCubit>()
-                          .pickMultipleImages()
+                    ? sheetContext.read<ImagePickerCubit>().pickMultipleImages()
                     : sheetContext.read<ImagePickerCubit>().pickImage(),
               ),
               leading: CircleAvatar(

@@ -1,5 +1,5 @@
 import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/entity/entity.dart';
-import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/utils/constants/self_promotion_assets.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/utils/constants/constants.dart';
 
 /// The catalogue of sibling apps promoted through house ads. Each entry links a
 /// bundled logo ([SelfPromotionAssets]) to the app's

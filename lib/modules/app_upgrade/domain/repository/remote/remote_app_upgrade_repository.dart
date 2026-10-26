@@ -1,4 +1,4 @@
-import 'package:flutter_starter/modules/app_upgrade/domain/entity/app_upgrade_info_entity.dart';
+import 'package:flutter_starter/modules/app_upgrade/domain/entity/entity.dart';
 
 abstract class RemoteAppUpgradeRepository {
   Future<AppUpgradeInfoEntity?> checkForUpdate();

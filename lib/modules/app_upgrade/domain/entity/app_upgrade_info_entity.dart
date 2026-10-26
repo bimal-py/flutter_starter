@@ -31,5 +31,10 @@ class AppUpgradeInfoEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [latestVersion, currentVersion, isForceUpdate, updateMessage];
+  List<Object?> get props => [
+    latestVersion,
+    currentVersion,
+    isForceUpdate,
+    updateMessage,
+  ];
 }

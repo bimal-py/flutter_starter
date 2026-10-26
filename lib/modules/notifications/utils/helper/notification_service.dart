@@ -1,8 +1,5 @@
-import 'package:flutter_starter/modules/notifications/data/repository/local/local_notifications_repository_impl.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_channels_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_payload_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_permission_status_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/repository/local/local_notifications_repository.dart';
+import 'package:flutter_starter/modules/notifications/data/data.dart';
+import 'package:flutter_starter/modules/notifications/domain/domain.dart';
 
 /// Public singleton consumers depend on. Delegates to a [LocalNotificationsRepository]
 /// — default [LocalNotificationsRepositoryImpl], swappable at init time.
@@ -35,7 +32,8 @@ class NotificationService {
     );
   }
 
-  Future<void> show(NotificationPayloadEntity payload) => provider.show(payload);
+  Future<void> show(NotificationPayloadEntity payload) =>
+      provider.show(payload);
 
   Future<void> schedule(NotificationPayloadEntity payload, DateTime when) =>
       provider.schedule(payload, when);

@@ -1,5 +1,5 @@
-import 'package:flutter_starter/modules/notifications/data/model/notification_payload_model.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_payload_entity.dart';
+import 'package:flutter_starter/modules/notifications/data/model/model.dart';
+import 'package:flutter_starter/modules/notifications/domain/domain.dart';
 import 'package:injectable/injectable.dart';
 
 /// Bridges [NotificationPayloadModel] (data-layer JSON envelope) and

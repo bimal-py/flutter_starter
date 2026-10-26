@@ -25,9 +25,9 @@ class SettingsThemePickerWidget extends StatelessWidget {
                   child: _ThemeOptionWidget(
                     mode: mode,
                     selected: activeMode == mode,
-                    onTap: () => context
-                        .read<ThemeCubit>()
-                        .setVariant(_variantFor(mode)),
+                    onTap: () => context.read<ThemeCubit>().setVariant(
+                      _variantFor(mode),
+                    ),
                   ),
                 ),
             ],
@@ -38,10 +38,10 @@ class SettingsThemePickerWidget extends StatelessWidget {
   }
 
   ThemeVariant _variantFor(ThemeMode mode) => switch (mode) {
-        ThemeMode.light => ThemeVariant.light,
-        ThemeMode.dark => ThemeVariant.dark,
-        ThemeMode.system => ThemeVariant.system,
-      };
+    ThemeMode.light => ThemeVariant.light,
+    ThemeMode.dark => ThemeVariant.dark,
+    ThemeMode.system => ThemeVariant.system,
+  };
 }
 
 class _ThemeOptionWidget extends StatelessWidget {

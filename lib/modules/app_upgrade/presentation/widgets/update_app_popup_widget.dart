@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_scale_kit/flutter_scale_kit.dart';
-import 'package:flutter_starter/core/utils/helpers/url_helper.dart';
+import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/app_upgrade/app_upgrade.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 

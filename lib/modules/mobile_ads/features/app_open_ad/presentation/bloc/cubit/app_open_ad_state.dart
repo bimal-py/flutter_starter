@@ -19,12 +19,12 @@ class AppOpenAdState extends Equatable {
 
   @override
   List<Object?> get props => [
-        adStatus,
-        appOpenAd,
-        error,
-        appOpenAdLoadTime,
-        isFirstLaunch,
-      ];
+    adStatus,
+    appOpenAd,
+    error,
+    appOpenAdLoadTime,
+    isFirstLaunch,
+  ];
 
   AppOpenAdState copyWith({
     AppOpenAdStatus? adStatus,
