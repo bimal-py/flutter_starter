@@ -169,6 +169,9 @@ class LocalNotificationsRepositoryImpl implements LocalNotificationsRepository {
             (a) => AndroidNotificationAction(
               a.id,
               a.label,
+              // A foreground action opens the app, so the tap reaches
+              // `onTap`; a background one would need a background isolate.
+              showsUserInterface: a.foreground,
               cancelNotification: !a.foreground,
             ),
           )

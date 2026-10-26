@@ -84,7 +84,7 @@ Every other permission and its keys: the permission_handler setup page on pub.de
 - `GalleryPermission`: iOS asks for `photosAddOnly` (limited counts as granted), Android 9 and lower asks for `storage`, Android 10 and up needs nothing and returns `true`.
 - Android 12 and lower grants notifications at install. On 13 and up, the first request shows the prompt.
 - image_picker asks for the camera itself (because `CAMERA` is in the manifest) but has no settings fallback. Run `PermissionFlow.ensure(permission: Permission.camera, ...)` first if you want one. See the [image_picker module](../modules/image_picker.md).
-- `<uses-feature android:name="android.hardware.camera"/>` has no `android:required="false"`, so Google Play hides the app from devices without a camera.
+- The camera `<uses-feature>` entries in the manifest say `android:required="false"`, so Google Play still offers the app to devices without a camera. On those, the camera source fails; offer the gallery too.
 - Info.plist also carries `NSAppleMusicUsageDescription` and a microphone text about voice messages that the starter never uses. Reword or remove them before release.
 - The two wrappers' dialog texts are English literals in the wrapper files.
 - Local notifications start without prompting on iOS (`requestAlertPermission: false` and friends), so nothing asks before you call `ensure`.
