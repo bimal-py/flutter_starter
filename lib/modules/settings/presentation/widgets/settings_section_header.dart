@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 
-class SettingsSectionHeaderWidget extends StatelessWidget {
-  const SettingsSectionHeaderWidget({super.key, required this.label});
+class SettingsSectionHeader extends StatelessWidget {
+  const SettingsSectionHeader({super.key, required this.label});
 
   final String label;
 

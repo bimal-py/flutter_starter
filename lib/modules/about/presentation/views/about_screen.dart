@@ -1,44 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/about/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/about/utils/constants/constants.dart';
 import 'package:flutter_starter/modules/package_info/package_info.dart';
 
+/// Reads only app-wide state (the version), so there is nothing to provide.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('About')),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
-        children: const [
-          AboutDescription(),
-          SizedBox(height: 20),
-          _SectionHeader(label: 'Developer'),
-          AboutDeveloperCard(),
-          AppVersionFooter(),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const AboutView();
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label});
-
-  final String label;
+class AboutView extends StatelessWidget {
+  const AboutView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
-      child: Text(
-        label,
-        style: theme.textTheme.labelLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+    return Scaffold(
+      appBar: AppBar(title: const Text(AboutStrings.title)),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+        children: [
+          const AboutDescription(),
+          20.verticalSpace,
+          const AboutSectionHeader(label: AboutStrings.developer),
+          const AboutDeveloperCard(),
+          const AppVersionFooter(),
+        ],
       ),
     );
   }

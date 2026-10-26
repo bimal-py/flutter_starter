@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/settings/utils/constants/constants.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class SettingsAppCardWidget extends StatelessWidget {
-  const SettingsAppCardWidget({super.key});
+class SettingsAppCard extends StatelessWidget {
+  const SettingsAppCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class SettingsAppCardWidget extends StatelessWidget {
               size: 28.r,
             ),
           ),
-          SizedBox(width: 16.w),
+          16.horizontalSpace,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,9 +42,9 @@ class SettingsAppCardWidget extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2.h),
+                2.verticalSpace,
                 Text(
-                  'Tweak the look. Share, rate, or report.',
+                  SettingsStrings.appCardTagline,
                   style: context.textTheme.bodySmall,
                 ),
               ],

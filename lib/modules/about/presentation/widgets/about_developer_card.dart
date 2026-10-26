@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/about/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/about/utils/constants/constants.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class AboutDeveloperCard extends StatelessWidget {
@@ -7,90 +9,58 @@ class AboutDeveloperCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = context.colorScheme;
     return Card(
-      margin: EdgeInsets.zero,
       child: Padding(
         padding: EdgeInsets.all(16.r),
         child: Row(
           children: [
             CircleAvatar(
               radius: 24.r,
-              backgroundColor: theme.colorScheme.primaryContainer,
+              backgroundColor: colorScheme.primaryContainer,
               child: Icon(
                 LucideIcons.user,
-                color: theme.colorScheme.onPrimaryContainer,
+                color: colorScheme.onPrimaryContainer,
               ),
             ),
-            SizedBox(width: 12.w),
+            12.horizontalSpace,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     AppConstants.developerName,
-                    style: theme.textTheme.titleMedium,
+                    style: context.textTheme.titleMedium,
                   ),
                   Text(
                     AppConstants.developerRole,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
-            _LinkButton(
+            AboutLinkButton(
               icon: LucideIcons.mail,
-              tooltip: 'Email',
+              tooltip: AboutStrings.email,
               onTap: () =>
                   const UrlHelper().launch('mailto:${AppUrls.developerEmail}'),
             ),
-            _LinkButton(
+            // Lucide ships no brand logos, so GitHub gets the code icon.
+            AboutLinkButton(
               icon: LucideIcons.code,
-              tooltip: 'GitHub',
+              tooltip: AboutStrings.github,
               onTap: () => const UrlHelper().launch(AppUrls.developerGithub),
             ),
-            _LinkButton(
+            AboutLinkButton(
               icon: LucideIcons.globe,
-              tooltip: 'Website',
+              tooltip: AboutStrings.website,
               onTap: () => const UrlHelper().launch(AppUrls.developerWebsite),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _LinkButton extends StatelessWidget {
-  const _LinkButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final Future<void> Function() onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon, size: 20.r),
-      tooltip: tooltip,
-      onPressed: () async {
-        try {
-          await onTap();
-        } catch (e) {
-          if (context.mounted) {
-            CustomSnackbar.show(
-              type: ToastType.error,
-              message: AppErrorHandler.getErrorMessage(e),
-            );
-          }
-        }
-      },
     );
   }
 }

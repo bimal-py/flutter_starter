@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 
-class SettingsTileWidget extends StatelessWidget {
-  const SettingsTileWidget({
+class SettingsTile extends StatelessWidget {
+  const SettingsTile({
     super.key,
     required this.icon,
     required this.label,

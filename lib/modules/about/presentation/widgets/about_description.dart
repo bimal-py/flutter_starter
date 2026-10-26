@@ -7,12 +7,11 @@ class AboutDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.zero,
       child: Padding(
         padding: EdgeInsets.all(16.r),
         child: Text(
           AppConstants.aboutAppText,
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: context.textTheme.bodyMedium,
         ),
       ),
     );

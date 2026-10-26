@@ -4,24 +4,31 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Pragmatic in-app webview wrapper:
-/// - Progress bar across the top.
-/// - Reflects the page's title in the AppBar.
-/// - Hardware/system back goes in-page first, then pops.
-/// - Intercepts `mailto:`, `tel:`, `sms:` and `target="_blank"` so they
-///   launch outside the webview.
-/// - Pauses the page when the app goes to background (Android).
-class WebsiteViewScreen extends StatefulWidget {
+/// In-app page for [url]:
+/// - A progress bar runs under the app bar, which shows the page's title.
+/// - Back goes back in the page first, then closes the screen.
+/// - `mailto:`, `tel:` and `sms:` links open outside the webview;
+///   `target="_blank"` links load here (no new windows).
+/// - Pauses the page while the app is in the background (Android).
+class WebsiteViewScreen extends StatelessWidget {
   const WebsiteViewScreen({super.key, required this.url});
 
   final String url;
 
   @override
-  State<WebsiteViewScreen> createState() => _WebsiteViewScreenState();
+  Widget build(BuildContext context) => WebsiteView(url: url);
 }
 
-class _WebsiteViewScreenState extends State<WebsiteViewScreen>
-    with WidgetsBindingObserver {
+class WebsiteView extends StatefulWidget {
+  const WebsiteView({super.key, required this.url});
+
+  final String url;
+
+  @override
+  State<WebsiteView> createState() => _WebsiteViewState();
+}
+
+class _WebsiteViewState extends State<WebsiteView> with WidgetsBindingObserver {
   InAppWebViewController? _webViewController;
   double _progress = 0;
   String _title = '';
