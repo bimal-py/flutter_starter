@@ -23,26 +23,33 @@ final GoRouter router = GoRouter(
   // route name.
   observers: [AppNavigatorObserver(), ?FirebaseService.analyticsObserver],
   routes: [
+    // Optional. Remove with lib/modules/onboarding/ (splash too), and set
+    // initialLocation to your first screen.
     GoRoute(
       name: Routes.splash.name,
       path: Routes.splash.path,
       builder: (context, state) => const SplashScreen(),
     ),
+    // Optional. Remove with lib/modules/onboarding/.
     GoRoute(
       name: Routes.onboarding.name,
       path: Routes.onboarding.path,
       builder: (context, state) => const OnboardingScreen(),
     ),
+    // Optional. Remove with lib/modules/auth/.
     GoRoute(
       name: Routes.login.name,
       path: Routes.login.path,
       builder: (context, state) => const LoginScreen(),
     ),
+    // Optional. Remove with lib/modules/dashboard/; the children move to
+    // the top level, with a leading `/` in their paths.
     GoRoute(
       name: Routes.dashboard.name,
       path: Routes.dashboard.path,
       builder: (context, state) => const DashboardScreen(),
       routes: [
+        // Optional. Remove with lib/modules/settings/ (the playground too).
         GoRoute(
           name: Routes.settings.name,
           path: Routes.settings.path,
@@ -55,11 +62,13 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+        // Optional. Remove with lib/modules/about/.
         GoRoute(
           name: Routes.about.name,
           path: Routes.about.path,
           builder: (context, state) => const AboutScreen(),
         ),
+        // Optional. Remove with lib/modules/website_view/.
         GoRoute(
           name: Routes.websiteView.name,
           path: Routes.websiteView.path,

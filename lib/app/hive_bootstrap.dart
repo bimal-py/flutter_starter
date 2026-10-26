@@ -11,7 +11,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 final List<Future<dynamic> Function()> _boxOpeners =
     <Future<dynamic> Function()>[
       () => Hive.openAppBox(),
+      // Optional. Remove with lib/modules/auth/.
       () => Hive.openAuthBox(),
+      // Optional. Remove with lib/modules/user/.
       () => Hive.openAuthUserBox(),
       // Add module box openers here, e.g.:
       // () => Hive.openReminderDataBox(),
@@ -22,7 +24,9 @@ final List<Future<dynamic> Function()> _boxOpeners =
 final List<Future<dynamic> Function()> _boxClearers =
     <Future<dynamic> Function()>[
       () => Hive.clearAppBox(),
+      // Optional. Remove with lib/modules/auth/.
       () => Hive.clearAuthBox(),
+      // Optional. Remove with lib/modules/user/.
       () => Hive.clearAuthUserBox(),
       // () => Hive.clearReminderDataBox(),
       // () => Hive.clearReminderCategoryDataBox(),

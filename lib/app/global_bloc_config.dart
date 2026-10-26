@@ -17,19 +17,22 @@ class GlobalBlocConfig extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+        // Optional. Remove with lib/modules/app_setting/.
         BlocProvider<AppSettingCubit>(create: (_) => AppSettingCubit()),
+        // Optional. Remove with lib/modules/package_info/.
         BlocProvider<PackageInfoCubit>(
           lazy: false,
           create: (_) => PackageInfoCubit()..load(),
         ),
+        // Optional. Remove with lib/modules/device_info/.
         BlocProvider<DeviceInfoCubit>(
           lazy: false,
           create: (_) => DeviceInfoCubit()..load(),
         ),
-        // Optional. Delete with lib/modules/app_upgrade/ to remove update popup.
+        // Optional. Remove with lib/modules/app_upgrade/.
         BlocProvider<AppUpgradeCubit>(create: (_) => AppUpgradeCubit()),
-        // Optional. Eager so the saved session is restored at launch.
-        // Delete with lib/modules/auth/ to remove.
+        // Optional. Remove with lib/modules/auth/. Eager, so the saved
+        // session is restored at launch.
         BlocProvider<AuthBloc>(lazy: false, create: (_) => AuthBloc()),
       ],
       child: child,

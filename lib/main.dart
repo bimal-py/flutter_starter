@@ -16,7 +16,7 @@ import 'package:path_provider/path_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Optional. Delete lib/modules/fcm/ + this line to remove push notifications.
+  // Optional. Remove with lib/modules/fcm/.
   FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
   await initializeEnvHelper();
   await _setupHydratedStorage();
@@ -26,13 +26,15 @@ Future<void> main() async {
   await _setDeviceOrientationToPortrait();
   await configureDependencyInjection();
 
-  // Optional. Delete lib/modules/notifications/ + this line to remove.
+  // Optional. Remove with lib/modules/notifications/.
   await NotificationService.instance.initialize();
 
-  // Optional. No-op unless FIREBASE_ENABLED=true in .env AND firebase_options.dart has been generated. See firebase_service.dart.
+  // Core. A no-op unless FIREBASE_ENABLED=true in .env and
+  // firebase_options.dart exists (see firebase_service.dart).
   await FirebaseService.init();
 
-  // Optional. No-op when FIREBASE_ENABLED=false. Bridge requires Notifications.
+  // Optional. Remove with lib/modules/fcm/. A no-op until Firebase starts.
+  // The bridge shows foreground pushes through lib/modules/notifications/.
   await FcmService.instance.initialize(
     onForegroundMessage: buildNotificationBridge(),
   );
@@ -45,10 +47,10 @@ Future<void> main() async {
     ),
   );
 
-  // Mobile Ads SDK — deferred to after the first frame so the app is
-  // foregrounded/active when the initializer gathers UMP consent and shows the
-  // iOS ATT prompt (both are silently dropped if requested before that).
-  // Non-blocking — the app works without ads and init failures are swallowed.
+  // Optional. Remove with lib/modules/mobile_ads/.
+  // After the first frame, so the app is in front when the initializer
+  // gathers UMP consent and shows the iOS ATT prompt (both are dropped if
+  // requested earlier). Non-blocking: the app works without ads.
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(MobileAdsInitializer.instance.init()),
   );
