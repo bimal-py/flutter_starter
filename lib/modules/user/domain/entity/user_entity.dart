@@ -1,70 +1,53 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_starter/core/utils/extensions/string_extension.dart';
 
+/// The signed-in person, as `users/me/` describes them.
 class UserEntity extends Equatable {
   const UserEntity({
     this.id,
+    this.fullName,
+    this.username,
     this.email,
-    this.phoneNumber,
-    this.firstName,
-    this.lastName,
-    this.profilePic,
-    this.phoneVerified,
-    this.emailVerified,
-    this.role,
+    this.phone,
+    this.gender,
+    this.joinedAt,
+    this.avatar,
+    this.birthday,
   });
 
-  final int? id;
+  final String? id;
+  final String? fullName;
+  final String? username;
   final String? email;
-  final String? phoneNumber;
-  final String? firstName;
-  final String? lastName;
-  final String? profilePic;
-  final bool? phoneVerified;
-  final bool? emailVerified;
-  final String? role;
+  final String? phone;
+  final String? gender;
+  final DateTime? joinedAt;
 
-  String? get fullName {
-    final first = firstName?.capitalize;
-    final last = lastName?.capitalize;
-    final name = [first, last]
-        .where((p) => p?.trim().isNotEmpty ?? false)
-        .join(' ');
-    return name.isEmpty ? email?.split('@').first.capitalize : name;
+  /// `avatar_url`.
+  final String? avatar;
+
+  /// `dob`.
+  final DateTime? birthday;
+
+  /// Up to two capitals for an avatar placeholder ("Ada Lovelace" → "AL").
+  String get initials {
+    final parts = (fullName ?? '')
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty);
+    if (parts.isEmpty) return '?';
+    return parts.take(2).map((p) => p[0].toUpperCase()).join();
   }
-
-  String? get shortName {
-    final first = firstName?.capitalize;
-    return (first == null || first.isEmpty)
-        ? email?.split('@').first.capitalize
-        : first;
-  }
-
-  UserEntity copyWith({
-    int? id,
-    String? email,
-    String? phoneNumber,
-    String? firstName,
-    String? lastName,
-    String? profilePic,
-    bool? phoneVerified,
-    bool? emailVerified,
-    String? role,
-  }) => UserEntity(
-    id: id ?? this.id,
-    email: email ?? this.email,
-    phoneNumber: phoneNumber ?? this.phoneNumber,
-    firstName: firstName ?? this.firstName,
-    lastName: lastName ?? this.lastName,
-    profilePic: profilePic ?? this.profilePic,
-    phoneVerified: phoneVerified ?? this.phoneVerified,
-    emailVerified: emailVerified ?? this.emailVerified,
-    role: role ?? this.role,
-  );
 
   @override
   List<Object?> get props => [
-    id, email, phoneNumber, firstName, lastName,
-    profilePic, phoneVerified, emailVerified, role,
+    id,
+    fullName,
+    username,
+    email,
+    phone,
+    gender,
+    joinedAt,
+    avatar,
+    birthday,
   ];
 }

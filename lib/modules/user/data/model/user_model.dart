@@ -1,48 +1,49 @@
 import 'dart:convert';
 
+/// `users/me/` → `user`.
 class UserModel {
+  final String? id;
+  final String? fullName;
+  final String? username;
+  final String? email;
+  final String? phone;
+  final String? gender;
+  final DateTime? joinedAt;
+  final String? avatarUrl;
+  final DateTime? dob;
+
   UserModel({
     this.id,
+    this.fullName,
+    this.username,
     this.email,
-    this.phoneNumber,
-    this.firstName,
-    this.lastName,
-    this.profilePic,
-    this.phoneVerified,
-    this.emailVerified,
-    this.role,
+    this.phone,
+    this.gender,
+    this.joinedAt,
+    this.avatarUrl,
+    this.dob,
   });
 
-  final int? id;
-  final String? email;
-  final String? phoneNumber;
-  final String? firstName;
-  final String? lastName;
-  final String? profilePic;
-  final bool? phoneVerified;
-  final bool? emailVerified;
-  final String? role;
-
   UserModel copyWith({
-    int? id,
+    String? id,
+    String? fullName,
+    String? username,
     String? email,
-    String? phoneNumber,
-    String? firstName,
-    String? lastName,
-    String? profilePic,
-    bool? phoneVerified,
-    bool? emailVerified,
-    String? role,
+    String? phone,
+    String? gender,
+    DateTime? joinedAt,
+    String? avatarUrl,
+    DateTime? dob,
   }) => UserModel(
     id: id ?? this.id,
+    fullName: fullName ?? this.fullName,
+    username: username ?? this.username,
     email: email ?? this.email,
-    phoneNumber: phoneNumber ?? this.phoneNumber,
-    firstName: firstName ?? this.firstName,
-    lastName: lastName ?? this.lastName,
-    profilePic: profilePic ?? this.profilePic,
-    phoneVerified: phoneVerified ?? this.phoneVerified,
-    emailVerified: emailVerified ?? this.emailVerified,
-    role: role ?? this.role,
+    phone: phone ?? this.phone,
+    gender: gender ?? this.gender,
+    joinedAt: joinedAt ?? this.joinedAt,
+    avatarUrl: avatarUrl ?? this.avatarUrl,
+    dob: dob ?? this.dob,
   );
 
   factory UserModel.fromRawJson(String str) =>
@@ -51,26 +52,26 @@ class UserModel {
   String toRawJson() => json.encode(toJson());
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-    id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}'),
-    email: json['email'] as String?,
-    phoneNumber: json['phone_number'] as String?,
-    firstName: json['first_name'] as String?,
-    lastName: json['last_name'] as String?,
-    profilePic: json['profile_pic'] as String?,
-    phoneVerified: json['phone_verified'] as bool?,
-    emailVerified: json['email_verified'] as bool?,
-    role: json['role'] as String?,
+    id: json["id"]?.toString(),
+    fullName: json["full_name"]?.toString(),
+    username: json["username"]?.toString(),
+    email: json["email"]?.toString(),
+    phone: json["phone"]?.toString(),
+    gender: json["gender"]?.toString(),
+    joinedAt: DateTime.tryParse(json["joined_at"]?.toString() ?? '')?.toLocal(),
+    avatarUrl: json["avatar_url"]?.toString(),
+    dob: DateTime.tryParse(json["dob"]?.toString() ?? ''),
   );
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'email': email,
-    'phone_number': phoneNumber,
-    'first_name': firstName,
-    'last_name': lastName,
-    'profile_pic': profilePic,
-    'phone_verified': phoneVerified,
-    'email_verified': emailVerified,
-    'role': role,
+    "id": id,
+    "full_name": fullName,
+    "username": username,
+    "email": email,
+    "phone": phone,
+    "gender": gender,
+    "joined_at": joinedAt?.toUtc().toIso8601String(),
+    "avatar_url": avatarUrl,
+    "dob": dob?.toIso8601String().substring(0, 10),
   };
 }
