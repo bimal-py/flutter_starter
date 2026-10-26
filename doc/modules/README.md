@@ -30,7 +30,7 @@ Every feature lives in `lib/modules/<module>/`. Each page below says what the mo
 | [package_info](package_info.md) | App name and version in an app-wide cubit, `AppVersionFooter` | none | settings, about |
 | [device_info](device_info.md) | Device model and OS in an app-wide cubit | none | settings (report email) |
 
-"Needs" is what breaks when that module is gone; "Used by" is who you edit when you remove this one. Removing a module that others use means following both pages, or removing them together.
+"Needs": the modules this one imports, so removing one of those breaks this one. "Used by": the modules that import this one, so removing this one means editing them too (their pages say how), or removing them together.
 
 ## Common combinations
 
