@@ -15,6 +15,8 @@ class EnvConfig {
   EnvConfig._();
 
   // ── API ──────────────────────────────────────────────────────────
+  /// Endpoint paths live in each module (`<feature>_api_route.dart`,
+  /// no leading `/`); Dio prepends this base URL.
   static String get apiBaseUrl => EnvHelper.get('API_BASE_URL');
 
   /// Picks DEV vs PROD auth key based on build mode. Define both in `.env`.
@@ -32,20 +34,4 @@ class EnvConfig {
 
   // ── Feature flags ────────────────────────────────────────────────
   static bool get firebaseEnabled => EnvHelper.getBool('FIREBASE_ENABLED');
-}
-
-/// API endpoint paths. Combine with [EnvConfig.apiBaseUrl]:
-/// `'${EnvConfig.apiBaseUrl}${ApiEndpoints.login}'`.
-///
-/// Add nested classes per feature as the API grows:
-/// ```dart
-/// class AuthEndpoints {
-///   AuthEndpoints._();
-///   static const String login = '/auth/login';
-///   static const String refresh = '/auth/refresh';
-/// }
-/// ```
-class ApiEndpoints {
-  ApiEndpoints._();
-  // Add paths here as you build features.
 }

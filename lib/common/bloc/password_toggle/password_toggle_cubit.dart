@@ -1,7 +1,7 @@
 import 'package:flutter_starter/common/bloc/bloc.dart';
 
 /// Holds password-field obscure state. Provide it via `BlocProvider` around
-/// any form that needs to toggle the eye icon (`AuthPasswordField`, etc.).
+/// any form that needs to toggle the eye icon (`AppPasswordField`, etc.).
 class PasswordVisibilityCubit extends SafeCubit<PasswordVisibilityState> {
   PasswordVisibilityCubit()
     : super(const PasswordVisibilityState(isPasswordVisible: false));

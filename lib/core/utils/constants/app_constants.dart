@@ -1,6 +1,6 @@
 /// App identity values — name, store identifiers, Hive box names.
 ///
-/// URLs live in [AppUrls] (static) or [ApiEndpoints] (env-driven).
+/// URLs live in [AppUrls] (static) or [EnvConfig] (from `.env`).
 class AppConstants {
   AppConstants._();
 

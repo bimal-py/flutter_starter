@@ -24,7 +24,7 @@ typedef ThemeExtensionBuilder = CustomThemeExtension Function(
 
 /// Single composer that turns a [ThemeSource] (plus device schemes from
 /// `DynamicColorBuilder` and the active locale) into a {light, dark} pair.
-/// MaterialApp wiring lives in `lib/app/app.dart`.
+/// MaterialApp wiring lives in `lib/app/app_view.dart`.
 class AppThemeBuilder {
   AppThemeBuilder._();
 

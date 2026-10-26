@@ -2,7 +2,7 @@
 /// support contact, legal pages, social links.
 ///
 /// For URLs that vary per environment (API base, auth callbacks), use
-/// [ApiEndpoints] instead — those are read from `.env` at runtime.
+/// [EnvConfig] instead: those are read from `.env` at runtime.
 class AppUrls {
   AppUrls._();
 
