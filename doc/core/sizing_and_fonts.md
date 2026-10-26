@@ -1,0 +1,90 @@
+# Sizing and fonts
+
+Sizes scale from a 425 × 691 design with flutter_scale_kit, text sizes come from the theme, and the font family (with a size multiplier) is chosen per language.
+The rule: write sizes as `16.w`, `8.h`, `12.r` and text as `context.textTheme.<role>`. No raw `fontSize`, no fixed pixel sizes.
+
+## Where it lives
+
+```
+lib/main.dart                                   ScaleKitBuilder(designWidth: 425, designHeight: 691)
+lib/app/app_view.dart                           system text scale capped at 1.2
+lib/core/theme/typography/app_text_style.dart   AppTextStyle.applyTo: size, weight, line height per role
+lib/core/theme/typography/localized_fonts.dart  LocalizedFonts, AppFont(family:, scale:)
+pubspec.yaml (flutter: fonts:)                  Inter (100 to 900), NotoSansDevanagari (400 to 700)
+assets/fonts/                                   the .ttf files
+```
+
+`core.dart` re-exports flutter_scale_kit, so `import 'package:flutter_starter/core/core.dart';` brings in every extension below. Colors and component themes: [theme](theme.md).
+
+## How to use
+
+```dart
+Padding(
+  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        width: 48.r,
+        height: 48.r,
+        decoration: BoxDecoration(
+          color: context.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+      ),
+      12.verticalSpace,
+      Text('Title', style: context.textTheme.titleMedium),
+      Row(children: [Icon(Icons.info_outline, size: 18.r), 8.horizontalSpace]),
+    ],
+  ),
+)
+```
+
+| Write | Scales with | Use for |
+|---|---|---|
+| `16.w` | screen width ÷ 425 | horizontal padding, widths |
+| `8.h` | screen height ÷ 691 | vertical padding, heights |
+| `12.r` | a bounded size factor | corner radius, icon size, square boxes |
+| `14.sp`, `14.spClamp(12, 16)` | the smaller of the width and height scale, per device type | font sizes, in the theme only |
+| `12.verticalSpace`, `8.horizontalSpace` | `12.h`, `8.w` | gaps in a `Column` / `Row` |
+
+Text roles and their base sizes (each clamped a few points either way): display 36 / 30 / 24, headline 22 / 20 / 18, title 18 / 16 / 14, body 16 / 14 / 12, label 14 / 12 / 11. Pick the role; restyle with `copyWith(fontWeight: ..., color: ...)` when needed.
+
+Fonts per language (`LocalizedFonts.defaults()`):
+
+- Default: `AppFont(family: 'Inter')`.
+- `ne`, `hi`: `Mukta`, scale 1.10. `bn`: `NotoSansBengali`, 1.08. `ar`: `NotoSansArabic`, 1.05.
+- `scale` multiplies every size of the text theme, so scripts that look small next to Latin read the same size.
+
+## How to change / extend
+
+**Match your design file**: set `designWidth` / `designHeight` in `lib/main.dart` to the frame size your designer uses.
+
+**Change the app font**
+
+1. Put the `.ttf` files in `assets/fonts/<family>/`.
+2. Declare the family and its weights under `flutter: fonts:` in `pubspec.yaml`.
+3. Set `defaultFont: AppFont(family: '<Family>')` in `LocalizedFonts.defaults()`.
+4. Stop and run the app again (fonts don't hot reload).
+
+**Add a font for a language**
+
+1. Bundle and declare the font as above.
+2. Add `'<code>': AppFont(family: '<Family>', scale: 1.1)` to `byLocale` (ISO 639-1 code: `'ne'`, `'hi'`).
+3. Make the locale reachable. `AppThemeBuilder.compose` reads `Localizations.maybeLocaleOf(context)` with a context above `MaterialApp`, where it is always null (see Hidden details). Pass the app's locale in, or fall back to `WidgetsBinding.instance.platformDispatcher.locale` as flutter_scale_kit does, and give `MaterialApp.router` its `supportedLocales` and `localizationsDelegates`.
+
+**Change the text-scale cap**: `textScaler.clamp(maxScaleFactor: 1.2)` in `lib/app/app_view.dart`.
+
+**Restyle a text role everywhere**: edit its line in `AppTextStyle.applyTo`, not each `Text`.
+
+## Hidden details
+
+- Per-language fonts don't apply today: the locale lookup in `compose` returns null, so `defaultFont` (Inter) is used for every language.
+- The per-language families in `LocalizedFonts.defaults()` (`Mukta`, `NotoSansBengali`, `NotoSansArabic`) are not bundled, and the bundled `NotoSansDevanagari` is not used by any `AppFont`. Once the locale works, `ne` / `hi` would fall back to the system font. Point them at `NotoSansDevanagari` or bundle `Mukta`.
+- Fonts declared in `pubspec.yaml` ship in the app whether used or not.
+- The system font size applies on top of `.sp`, capped at 1.2 (no lower cap). Don't use `.spf` in styles: it applies the system scale a second time.
+- Scaled values are computed when used. Sizes inside `ThemeData` (`48.h` buttons, `12.r` corners, text sizes) are recomputed because the theme watches flutter_scale_kit and rebuilds when the screen size changes by more than 5% (any change on desktop and web).
+- In landscape, flutter_scale_kit swaps the design width and height, so sizes don't shrink to the short edge.
+- `main.dart` locks phones to portrait. iPad ignores the lock while multitasking is on (Info.plist allows every iPad orientation).
+- `ScaleKitBuilder.designType` is accepted but not used yet by flutter_scale_kit 2.0.2.
+- `AppTextStyle.applyTo` copies onto Material's text theme, so Material's text colors stay. Building a `TextTheme` from scratch with null colors would lose them.
