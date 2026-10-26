@@ -28,8 +28,7 @@ class BannerAdCubit extends Cubit<BannerAdState> {
 
     emit(state.copyWith(loadingState: AppLoadingState.loading));
 
-    final adSize =
-        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+    final adSize = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(
       _lastWidth ?? AdSize.banner.width,
     );
     final size = adSize ?? AdSize.banner;

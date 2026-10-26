@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_starter/modules/fcm/utils/helper/notifications_bridge.dart';
+import 'package:flutter_starter/modules/fcm/utils/helper/helper.dart';
 import 'package:flutter_starter/modules/notifications/notifications.dart';
 
 /// Minimal background handler — initializes Firebase in the background isolate
@@ -19,7 +19,9 @@ Future<void> fcmBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await Firebase.initializeApp();
-  } catch (_) {/* already initialized */}
+  } catch (_) {
+    /* already initialized */
+  }
 }
 
 /// Displays data-only FCM messages as local notifications, parsing action
@@ -39,7 +41,9 @@ Future<void> fcmBackgroundDisplayHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await Firebase.initializeApp();
-  } catch (_) {/* already initialized */}
+  } catch (_) {
+    /* already initialized */
+  }
 
   // Skip if OS already displayed the notification-payload banner.
   if (message.notification?.title != null ||
@@ -54,35 +58,38 @@ Future<void> fcmBackgroundDisplayHandler(RemoteMessage message) async {
 
   final plugin = FlutterLocalNotificationsPlugin();
   await plugin.initialize(
-    const InitializationSettings(
+    settings: const InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(),
     ),
   );
 
-  final channel = data['channel']?.toString() ??
+  final channel =
+      data['channel']?.toString() ??
       NotificationChannelsEntity.defaultChannelId;
   final actions = parseFcmActions(data['actions']);
   final id =
       (message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch) &
-          0x7fffffff;
+      0x7fffffff;
 
   await plugin.show(
-    id,
-    title,
-    body,
-    NotificationDetails(
+    id: id,
+    title: title,
+    body: body,
+    notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         channel,
         channel,
         importance: Importance.high,
         priority: Priority.high,
         actions: actions
-            .map((a) => AndroidNotificationAction(
-                  a.id,
-                  a.label,
-                  cancelNotification: !a.foreground,
-                ))
+            .map(
+              (a) => AndroidNotificationAction(
+                a.id,
+                a.label,
+                cancelNotification: !a.foreground,
+              ),
+            )
             .toList(),
       ),
       iOS: DarwinNotificationDetails(

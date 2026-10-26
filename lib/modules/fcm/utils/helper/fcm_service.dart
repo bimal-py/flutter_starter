@@ -4,9 +4,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/fcm/domain/entity/fcm_remote_message_entity.dart';
-import 'package:flutter_starter/modules/fcm/utils/constants/fcm_constants.dart';
-import 'package:flutter_starter/modules/fcm/utils/storage_helper/fcm_secure_storage.dart';
+import 'package:flutter_starter/modules/fcm/domain/domain.dart';
+import 'package:flutter_starter/modules/fcm/utils/constants/constants.dart';
+import 'package:flutter_starter/modules/fcm/utils/storage_helper/storage_helper.dart';
 
 /// Wraps [FirebaseMessaging]. No-op when [EnvConfig.firebaseEnabled] is false
 /// so the two main.dart lines stay benign while Firebase is opt-in.
@@ -134,13 +134,19 @@ class FcmService {
     return _mapAuthorizationStatus(settings.authorizationStatus);
   }
 
+  // firebase_messaging 17 deprecates the token APIs for register() /
+  // onRegistered, which hand out a Firebase Installation ID for FCM direct
+  // send instead of the registration token most backends store. Keep the
+  // token until the backend sends by installation ID.
   Future<String?> getToken() async {
     if (!isSupported) return null;
+    // ignore: deprecated_member_use
     return _messaging.getToken();
   }
 
   Future<void> deleteToken() async {
     if (!isSupported) return;
+    // ignore: deprecated_member_use
     await _messaging.deleteToken();
   }
 
@@ -167,7 +173,9 @@ class FcmService {
   Future<void> clearTokenSyncCache() => _storage.clearTokenSyncCache();
 
   Stream<FcmRemoteMessageEntity> get onMessage => isSupported
-      ? FirebaseMessaging.onMessage.map(FcmRemoteMessageEntity.fromRemoteMessage)
+      ? FirebaseMessaging.onMessage.map(
+          FcmRemoteMessageEntity.fromRemoteMessage,
+        )
       : const Stream.empty();
 
   Stream<FcmRemoteMessageEntity> get onMessageOpenedApp => isSupported
@@ -177,6 +185,7 @@ class FcmService {
       : const Stream.empty();
 
   Stream<String> get onTokenRefresh =>
+      // ignore: deprecated_member_use
       isSupported ? _messaging.onTokenRefresh : const Stream.empty();
 
   Future<FcmRemoteMessageEntity?> getInitialMessage() async {
@@ -188,7 +197,8 @@ class FcmService {
   FcmPermissionStatus _mapAuthorizationStatus(AuthorizationStatus s) =>
       switch (s) {
         AuthorizationStatus.authorized => FcmPermissionStatus.authorized,
-        AuthorizationStatus.denied => FcmPermissionStatus.denied,
+        AuthorizationStatus.denied ||
+        AuthorizationStatus.deniedPermanently => FcmPermissionStatus.denied,
         AuthorizationStatus.provisional => FcmPermissionStatus.provisional,
         AuthorizationStatus.notDetermined => FcmPermissionStatus.notDetermined,
       };

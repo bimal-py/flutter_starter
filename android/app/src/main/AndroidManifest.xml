@@ -35,8 +35,9 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- AdMob App ID — value is set via manifestPlaceholders in build.gradle.kts.
-             The SDK crashes at startup if this entry is missing or the value is empty. -->
+        <!-- AdMob App ID. The SDK crashes at startup if this entry is missing or
+             empty. The value below is Google's test App ID: replace it with yours
+             from https://admob.google.com before release. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713"/>

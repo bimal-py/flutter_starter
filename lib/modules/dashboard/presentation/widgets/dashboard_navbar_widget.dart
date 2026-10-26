@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/modules/dashboard/presentation/bloc/bottom_navigation/bottom_navigation_cubit.dart';
+import 'package:flutter_starter/modules/dashboard/presentation/bloc/bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DashboardNavbarWidget extends StatelessWidget {
-  const DashboardNavbarWidget({
-    super.key,
-    required PageController pageController,
-  }) : _pageController = pageController;
+  const DashboardNavbarWidget({super.key, required this._pageController});
 
   final PageController _pageController;
 

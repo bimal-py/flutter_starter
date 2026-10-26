@@ -3,13 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_starter/core/di/injection.dart';
-import 'package:flutter_starter/modules/notifications/data/mapper/notification_payload_mapper.dart';
-import 'package:flutter_starter/modules/notifications/data/model/notification_payload_model.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_channels_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_payload_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/entity/notification_permission_status_entity.dart';
-import 'package:flutter_starter/modules/notifications/domain/repository/local/local_notifications_repository.dart';
+import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/notifications/data/mapper/mapper.dart';
+import 'package:flutter_starter/modules/notifications/data/model/model.dart';
+import 'package:flutter_starter/modules/notifications/domain/domain.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -18,9 +15,11 @@ class LocalNotificationsRepositoryImpl implements LocalNotificationsRepository {
 
   /// Resolved lazily from [getIt] so swapping the mapper in tests is just a
   /// re-registration — no constructor plumbing through [NotificationService].
-  late final NotificationPayloadMapper _mapper = getIt<NotificationPayloadMapper>();
+  late final NotificationPayloadMapper _mapper =
+      getIt<NotificationPayloadMapper>();
   final _plugin = FlutterLocalNotificationsPlugin();
-  final _tapController = StreamController<NotificationTapEventEntity>.broadcast();
+  final _tapController =
+      StreamController<NotificationTapEventEntity>.broadcast();
   bool _initialized = false;
 
   @override
@@ -45,7 +44,10 @@ class LocalNotificationsRepositoryImpl implements LocalNotificationsRepository {
       requestSoundPermission: false,
     );
     await _plugin.initialize(
-      const InitializationSettings(android: androidInit, iOS: iosInit),
+      settings: const InitializationSettings(
+        android: androidInit,
+        iOS: iosInit,
+      ),
       onDidReceiveNotificationResponse: _handleResponse,
     );
 
@@ -74,22 +76,25 @@ class LocalNotificationsRepositoryImpl implements LocalNotificationsRepository {
   @override
   Future<void> show(NotificationPayloadEntity payload) async {
     await _plugin.show(
-      payload.id,
-      payload.title,
-      payload.body,
-      _platformDetails(payload),
+      id: payload.id,
+      title: payload.title,
+      body: payload.body,
+      notificationDetails: _platformDetails(payload),
       payload: _encodeEnvelope(payload),
     );
   }
 
   @override
-  Future<void> schedule(NotificationPayloadEntity payload, DateTime when) async {
+  Future<void> schedule(
+    NotificationPayloadEntity payload,
+    DateTime when,
+  ) async {
     await _plugin.zonedSchedule(
-      payload.id,
-      payload.title,
-      payload.body,
-      tz.TZDateTime.from(when, tz.local),
-      _platformDetails(payload),
+      id: payload.id,
+      title: payload.title,
+      body: payload.body,
+      scheduledDate: tz.TZDateTime.from(when, tz.local),
+      notificationDetails: _platformDetails(payload),
       payload: _encodeEnvelope(payload),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
@@ -101,7 +106,7 @@ class LocalNotificationsRepositoryImpl implements LocalNotificationsRepository {
       jsonEncode(_mapper.toModel(payload).toJson());
 
   @override
-  Future<void> cancel(int id) => _plugin.cancel(id);
+  Future<void> cancel(int id) => _plugin.cancel(id: id);
 
   @override
   Future<void> cancelAll() => _plugin.cancelAll();
