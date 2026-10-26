@@ -10,13 +10,13 @@ class RewardedInterstitialAdHelper {
 
   static String get adUnitId {
     if (Platform.isAndroid) {
-      return kDebugMode
-          ? EnvHelper.get('DEV_ANDROID_REWARDED_INTERSTITIAL_AD_UNIT_ID')
-          : EnvHelper.get('PROD_ANDROID_REWARDED_INTERSTITIAL_AD_UNIT_ID');
+      return kReleaseMode
+          ? EnvHelper.get('PROD_ANDROID_REWARDED_INTERSTITIAL_AD_UNIT_ID')
+          : EnvHelper.get('DEV_ANDROID_REWARDED_INTERSTITIAL_AD_UNIT_ID');
     } else if (Platform.isIOS) {
-      return kDebugMode
-          ? EnvHelper.get('DEV_IOS_REWARDED_INTERSTITIAL_AD_UNIT_ID')
-          : EnvHelper.get('PROD_IOS_REWARDED_INTERSTITIAL_AD_UNIT_ID');
+      return kReleaseMode
+          ? EnvHelper.get('PROD_IOS_REWARDED_INTERSTITIAL_AD_UNIT_ID')
+          : EnvHelper.get('DEV_IOS_REWARDED_INTERSTITIAL_AD_UNIT_ID');
     } else {
       throw UnsupportedError(MobileAdsError.unsupportedPlatform);
     }
