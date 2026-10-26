@@ -71,10 +71,10 @@ final file = await ImagePickerHelper().pickFromGallery(); // null: cancelled
 - HEIC: iOS converts it natively. Android decodes it with `dart:ui` and writes PNG bytes, uncompressed, to a file named `<name>_converted.jpg`.
 - `maybeCompressLargeFile` re-encodes non-JPEG files with the `image` package (quality 85) before compressing at 55. That package can't read HEIC, so a large HEIC throws `ImagePickerError.decodingFailed` there.
 - The output files stay in the temporary directory; the module never deletes them, the OS may.
-- Without `cubit:`, `ImagePickerDialog.show` makes a cubit of its own that is closed with the sheet, so nobody can read the pick. Always pass the screen's cubit.
+- `ImagePickerDialog.show` requires the screen's cubit: the sheet closes when the pick is done, so a cubit of its own would take the photos with it.
 - The sheet closes itself when the pick finishes, cancelled or not.
 - Cancelling sets `state.error` (`ImagePickerError.noImagePicked` and friends); the module shows nothing, so decide in your screen whether that deserves a message. Any later emit clears `error`.
-- Multi mode appends and skips paths already in the list; single mode (`setSingleImagePicker(single: true)`) replaces the list. `ImagePickerDialog.show` with its own cubit sets single mode from `shouldPickMultipleImages`.
+- Multi mode appends and skips paths already in the list; single mode (`setSingleImagePicker(single: true)`) replaces the list. The screen sets the mode on its cubit; `shouldPickMultipleImages` only tells the sheet which pick to run.
 - Because `CAMERA` is declared in the manifest, Android requires it to be granted before the camera opens: image_picker asks for it itself, with no settings fallback. A denial ends up as `state.error` ("Something went wrong"). For a friendlier flow, run `PermissionFlow.ensure(context, permission: Permission.camera, ...)` first (see [permissions](../core/permissions.md)).
 - The camera `<uses-feature>` entries in the manifest say `android:required="false"`, so Google Play still offers the app to devices without a camera. On those, the camera source fails; offer the gallery too.
 - Android may kill the app while the camera is open on low memory; the photo then comes back through `ImagePicker().retrieveLostData()`, which this module doesn't call.

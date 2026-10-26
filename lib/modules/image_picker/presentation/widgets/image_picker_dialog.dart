@@ -14,9 +14,11 @@ class ImagePickerDialog extends StatelessWidget {
 
   /// Pass the screen's [cubit] to keep the picked files there. Without one the
   /// sheet makes its own, and the pick is gone when the sheet closes.
+  /// [cubit] is the screen's: the sheet closes when the pick is done, and
+  /// the screen reads the photos from it.
   static Future<void> show(
     BuildContext context, {
-    ImagePickerCubit? cubit,
+    required ImagePickerCubit cubit,
     bool shouldPickMultipleImages = false,
   }) {
     final sheet = ImagePickerDialog(
@@ -26,14 +28,7 @@ class ImagePickerDialog extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => cubit != null
-          ? BlocProvider.value(value: cubit, child: sheet)
-          : BlocProvider(
-              create: (_) =>
-                  ImagePickerCubit()
-                    ..setSingleImagePicker(single: !shouldPickMultipleImages),
-              child: sheet,
-            ),
+      builder: (_) => BlocProvider.value(value: cubit, child: sheet),
     );
   }
 
