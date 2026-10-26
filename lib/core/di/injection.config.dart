@@ -100,23 +100,18 @@ import 'package:flutter_starter/modules/user/domain/use_case/remote/fetch_user_u
 import 'package:flutter_starter/modules/user/user.dart' as _i140;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
-import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
-  Future<_i174.GetIt> init({
+  _i174.GetIt init({
     String? environment,
     _i526.EnvironmentFilter? environmentFilter,
-  }) async {
+  }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final serviceModule = _$ServiceModule();
     gh.factory<_i588.DioConfig>(() => _i588.DioConfig());
     gh.singleton<_i558.FlutterSecureStorage>(() => serviceModule.secureStorage);
     gh.singleton<_i895.Connectivity>(() => serviceModule.connectivity);
-    await gh.singletonAsync<_i460.SharedPreferences>(
-      () => serviceModule.sharedPreferences,
-      preResolve: true,
-    );
     gh.singleton<_i373.LogoutInterceptor>(() => _i373.LogoutInterceptor());
     gh.lazySingleton<_i482.NotificationPayloadMapper>(
       () => const _i482.NotificationPayloadMapper(),

@@ -6,7 +6,11 @@ import 'package:injectable/injectable.dart';
 final GetIt getIt = GetIt.instance;
 
 /// Run from `main()` BEFORE `runApp` so services are ready when widgets build.
+/// Async on purpose: the generated `init` returns a Future as soon as one
+/// registration is `@preResolve`, and then neither this nor `main()` changes.
 @injectableInit
 Future<void> configureDependencyInjection() async {
+  // Synchronous until a registration is @preResolve.
+  // ignore: await_only_futures
   await getIt.init();
 }

@@ -10,7 +10,7 @@ lib/main.dart                                     HydratedBloc storage, Hive.ini
 lib/app/hive_bootstrap.dart                       the registry: every box opener and clearer
 lib/core/utils/helpers/hive_helper.dart           app box: Hive.openAppBox(), Hive.appBox, Hive.clearAppBox()
 lib/core/utils/helpers/secure_storage_helper.dart SecureStorageHelper.instance: write, read, delete, removeAllData
-lib/core/di/service_module.dart                   FlutterSecureStorage and SharedPreferences registrations
+lib/core/di/service_module.dart                   FlutterSecureStorage registration
 lib/modules/<feature>/utils/storage_helper/       <Feature>StorageKeys + <feature>_hive.dart (the box extension)
 ```
 
@@ -21,7 +21,7 @@ lib/modules/<feature>/utils/storage_helper/       <Feature>StorageKeys + <featur
 | Cubit state to restore at launch | `HydratedCubit` | `ThemeCubit`, `AppSettingCubit` |
 | Images and files from the network | `CachedNetworkImageWrapper` | avatars, pictures |
 
-`SharedPreferences` is registered in DI for packages that need it; app code uses one of the stores above.
+There is no SharedPreferences: Hive covers what it would store. Add `shared_preferences` only for a package that asks for an instance.
 
 ## How to use
 

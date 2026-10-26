@@ -101,7 +101,7 @@ Only create the folders you use. Every folder gets a barrel named after it (`dom
 
 ## `local/` vs `remote/`
 
-Split by the data source a class talks to. Network (REST, Supabase, Firebase) is `remote/`; Hive, secure storage and SharedPreferences are `local/`. A use case sits on the same side as the repository it calls. A module with one side only keeps just that folder.
+Split by the data source a class talks to. Network (REST, Supabase, Firebase) is `remote/`; Hive, secure storage and SQLite are `local/`. A use case sits on the same side as the repository it calls. A module with one side only keeps just that folder.
 
 ## Hidden details
 
