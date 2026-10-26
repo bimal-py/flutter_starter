@@ -32,7 +32,7 @@ HTTP failure copy (`ApiErrorStrings`, `DioExceptionUtil`) belongs to the [networ
 
 Where copy lives:
 
-- Generic failures: `AppErrorStrings` (`somethingWentWrong`, `tryAgain`, `invalidResponseShape`, `missingRequiredField`, `operationFailed`, `noInternetConnection`).
+- Generic failures: `AppErrorStrings` (`somethingWentWrong`, `tryAgain`, `invalidResponseShape`, `missingRequiredField`, `operationFailed`, `noInternetConnection`, `pageNotFound`).
 - Shared non-error text: `CommonStrings`.
 - A feature's success and info text: `<Feature>Strings` in `utils/constants/<feature>_strings.dart`.
 - A feature's failure text, thrown and shown: `<Feature>Error` in `utils/constants/<feature>_error.dart` (`AuthError`, `UserError`).

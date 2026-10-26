@@ -99,7 +99,6 @@ SvgViewer(AssetRoutes.noDataFound, width: 160.r, height: 160.r);
 
    ```dart
    redirect: (context, state) {
-     FirebaseService.logScreenView(state.fullPath ?? state.path ?? state.name);
      final auth = context.read<AuthBloc>().state;
      if (auth.status.isInitial) return null; // session still loading
      final location = state.matchedLocation;
@@ -118,19 +117,18 @@ SvgViewer(AssetRoutes.noDataFound, width: 160.r, height: 160.r);
 
 3. With the guard, `AuthBloc` decides; screens stop navigating on sign-in and sign-out themselves. See the [auth module](../modules/auth.md).
 
-**Change the error page**: `errorBuilder` builds `ErrorScreen(message: state.error?.toString())`; replace the message or the widget there.
+**Change the error page**: `errorBuilder` logs go_router's error and builds `ErrorScreen(message: AppErrorStrings.pageNotFound)`; replace the message or the widget there.
 
 **Add an asset**: put the file under `assets/images/...`, list its folder under `flutter: assets:` in `pubspec.yaml`, add a constant to `AssetRoutes`.
 
 ## Hidden details
 
 - `router` is a top-level `final`, created the first time `StarterAppView` builds. That is after `FirebaseService.init()`, so `?FirebaseService.analyticsObserver` (a null-aware list element) adds the analytics observer only when Firebase is on.
-- With Firebase on, each screen view is logged twice: by `redirect` (the path, `/dashboard/settings`) and by `FirebaseAnalyticsObserver` (the route name, `settings`). Keep one of the two.
-- `redirect` runs before every `go` and `push`, on `router.refresh()`, and again after `context.pop()` (go_router 17 restores the page below through the parser). Keep it fast: what it does, like the screen-view log, happens each time. Its `context` sits below `GlobalBlocConfig`, so app-wide blocs can be read there.
-- With a guard, a redirected navigation logs the requested path and then the final one. Log after the decision if that matters.
+- With Firebase on, `FirebaseAnalyticsObserver` logs each screen view once, by route name (`settings`, not `/dashboard/settings`). It sees the pages of the root navigator only; a nested navigator needs an observer of its own.
+- The router has no `redirect` until you add a guard. A `redirect` runs before every `go` and `push`, on `router.refresh()`, and again after `context.pop()` (go_router 17 restores the page below through the parser), so keep it fast. Its `context` sits below `GlobalBlocConfig`, so app-wide blocs can be read there.
 - `extra` is not part of the URL. It is gone after a deep link or a web reload, so check its type (`is!`) instead of casting.
 - Route names must be unique in the whole tree. Child paths never start with `/`.
-- `ErrorScreen` shows `state.error.toString()` (raw go_router text) under "Something went wrong". Its "Go back" pops, or goes to the splash route when there is nothing to pop.
+- `ErrorScreen` shows "This page doesn't exist." under "Something went wrong"; the raw go_router text goes to the log (`CustomLogger`, debug builds only). Its "Go back" pops, or goes to the splash route when there is nothing to pop.
 - `core/` never imports a module, except here: the router has to list the screens.
 - `AppNavigatorObserver` logs through `CustomLogger`, which prints in debug builds only.
 - `pubspec.yaml` asset folders are not recursive: each sub-folder needs its own line.

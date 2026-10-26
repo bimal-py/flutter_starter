@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/common/widgets/widgets.dart';
+import 'package:flutter_starter/core/errors/errors.dart';
 import 'package:flutter_starter/core/router/router.dart';
 import 'package:flutter_starter/core/services/services.dart';
+import 'package:flutter_starter/core/utils/utils.dart';
 import 'package:flutter_starter/modules/about/about.dart';
 import 'package:flutter_starter/modules/auth/auth.dart';
 import 'package:flutter_starter/modules/dashboard/dashboard.dart';
@@ -12,14 +14,14 @@ import 'package:go_router/go_router.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+final _log = CustomLogger(title: 'Router');
+
 final GoRouter router = GoRouter(
   navigatorKey: navigatorKey,
   initialLocation: Routes.splash.path,
+  // With Firebase on, the analytics observer logs each screen view by its
+  // route name.
   observers: [AppNavigatorObserver(), ?FirebaseService.analyticsObserver],
-  redirect: (context, state) {
-    FirebaseService.logScreenView(state.fullPath ?? state.path ?? state.name);
-    return null;
-  },
   routes: [
     GoRoute(
       name: Routes.splash.name,
@@ -69,6 +71,9 @@ final GoRouter router = GoRouter(
       ],
     ),
   ],
-  errorBuilder: (context, state) =>
-      ErrorScreen(message: state.error?.toString()),
+  // An unknown location. go_router's error text is for the log, not users.
+  errorBuilder: (context, state) {
+    _log.e('No route for ${state.uri}: ${state.error}');
+    return const ErrorScreen(message: AppErrorStrings.pageNotFound);
+  },
 );
