@@ -28,7 +28,7 @@ class ShareService {
   }
 
   /// Share one or more files by absolute path. Provide the `mimeTypes` if you
-  /// know them, e.g. `['image/png']`.
+  /// know them, one per path in the same order, e.g. `['image/png']`.
   static Future<void> shareFiles({
     required BuildContext context,
     required List<String> filePaths,
@@ -38,7 +38,10 @@ class ShareService {
   }) async {
     await SharePlus.instance.share(
       ShareParams(
-        files: filePaths.map(XFile.new).toList(),
+        files: [
+          for (final (i, path) in filePaths.indexed)
+            XFile(path, mimeType: mimeTypes?.elementAtOrNull(i)),
+        ],
         text: text,
         subject: subject,
         sharePositionOrigin: _origin(context),

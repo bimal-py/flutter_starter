@@ -20,7 +20,7 @@ ios/Podfile                                PERMISSION_* macros in post_install
 1. Granted, limited or provisional: `true` at once.
 2. Never asked (`isDenied`): the system prompt. Granted: `true`.
 3. Still denied, or permanently denied: a `ConfirmationDialog` with "Open settings" and "Not now". "Not now" returns `false`.
-4. "Open settings": `openAppSettings()`, then the status is read again right away (see Hidden details).
+4. "Open settings": `openAppSettings()`, then `ensure` waits until the app is in front again and reads the status once more (see Hidden details).
 
 ## How to use
 
@@ -76,7 +76,7 @@ Every other permission and its keys: the permission_handler setup page on pub.de
 
 ## Hidden details
 
-- After "Open settings", `ensure` reads the status at once. `openAppSettings()` returns as soon as Settings opens, so the result is almost always `false`. Check again when the app resumes, for example with `AppLifecycleListener(onResume: ...)` and `NotificationPermission.isGranted`.
+- After "Open settings", `ensure` waits for the next resume (an `AppLifecycleListener`), because `openAppSettings()` returns as soon as Settings opens. If Settings can't open, it returns `false` at once. On iOS a changed permission restarts the app, so the waiting call never returns; the new process reads the new status.
 - iOS ends the app when the user changes one of its permissions in Settings; it starts fresh when they come back.
 - Without its Podfile macro, iOS never prompts: the status reads `denied` and a request returns `permanentlyDenied`, so the flow goes straight to the settings dialog, and Settings has no switch for it.
 - Each macro compiles code that uses that API. App Store Connect rejects an upload that uses an API without its usage description (ITMS-90683): add the macro and the key together.

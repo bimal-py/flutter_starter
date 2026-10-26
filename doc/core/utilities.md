@@ -7,7 +7,7 @@ The rule: look here before writing a helper or a widget, and read `.env` through
 
 ```
 lib/core/utils/
-├── constants/    AppConstants, AppUrls, CommonStrings, EnvConfig (+ empty ApiEndpoints)
+├── constants/    AppConstants, AppUrls, CommonStrings, EnvConfig
 ├── enums/        AppLoadingState
 ├── extensions/   context_extension.dart, string_extension.dart
 └── helpers/      EnvHelper, CustomLogger, UrlHelper, Hive app box, SecureStorageHelper,
@@ -127,11 +127,11 @@ CachedNetworkImageWrapper(
 ## Hidden details
 
 - `.env` is bundled as an asset: anyone can read it from the APK or IPA. Only public values go there.
-- Debug picks `DEV_*` ad units (`kDebugMode`), but `EnvConfig.authKey` picks `PROD_AUTH_KEY` only in release (`kReleaseMode`): a profile build mixes PROD ads with the DEV auth key.
+- Every `DEV_*` / `PROD_*` pair follows `kReleaseMode`: release builds read `PROD_*`, debug and profile builds read `DEV_*` (so a profile build never serves real ads).
 - `FirebaseService.init()` returns `false` on web, when the flag is off, or when init throws. Crashlytics is wired after `runApp`, so errors before that aren't reported.
-- `ShareService` needs the tapped widget's `context`: iPad uses its position for the share popover. `shareFiles` accepts `mimeTypes` but doesn't pass them on.
-- `isValidEmail` (string extension) and `AuthValidators.isValidEmail` use different patterns. Forms use `AuthValidators`.
-- `ApiEndpoints` is an empty placeholder. Endpoint paths live in each module's `<feature>_api_route.dart`, without a leading `/`.
+- `ShareService` needs the tapped widget's `context`: iPad uses its position for the share popover. `shareFiles` gives each file the MIME type at the same index of `mimeTypes`.
+- `isValidEmail` (string extension) is the app's one email rule; `AuthValidators` uses it. It accepts `+` tags, subdomains and any TLD length.
+- There's no endpoint class in core. Endpoint paths live in each module's `<feature>_api_route.dart`, without a leading `/`.
 - `awaitSettled()` is an extension on `Bloc`, so a `Cubit` can't use it.
 - `context.customTheme` force-unwraps the extension: it throws in a context without the app theme.
 - `AppPasswordField` creates its own `PasswordVisibilityCubit`, so two password fields toggle independently. Provide the cubit yourself only for a custom field.

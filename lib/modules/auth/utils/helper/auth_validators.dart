@@ -1,3 +1,4 @@
+import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/auth/utils/constants/constants.dart';
 
 /// Client-side checks that match the backend rules, so obvious mistakes are
@@ -5,9 +6,7 @@ import 'package:flutter_starter/modules/auth/utils/constants/constants.dart';
 class AuthValidators {
   AuthValidators._();
 
-  static final RegExp _email = RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$');
-
-  static bool isValidEmail(String value) => _email.hasMatch(value.trim());
+  static bool isValidEmail(String value) => value.trim().isValidEmail;
 
   static String? email(String? value) =>
       isValidEmail(value ?? '') ? null : AuthError.emailInvalid;

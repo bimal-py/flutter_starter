@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+import 'package:flutter_starter/core/utils/constants/constants.dart';
 import 'package:flutter_starter/core/utils/helpers/dialog/dialog.dart';
 
 /// A Material [AlertDialog] with a typed accent icon, centered copy, and
@@ -43,7 +44,7 @@ class ConfirmationDialog extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(cancelText ?? 'Cancel'),
+                  child: Text(cancelText ?? CommonStrings.cancel),
                 ),
               ),
               SizedBox(width: 12.w),

@@ -4,11 +4,11 @@ extension StringExtension on String {
     return '${this[0].toUpperCase()}${substring(1)}';
   }
 
-  bool get isValidEmail {
-    final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return regex.hasMatch(this);
-  }
+  /// The app's one email rule: `name+tag@sub.domain.tld`, any TLD length.
+  bool get isValidEmail => _email.hasMatch(this);
 }
+
+final RegExp _email = RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$');
 
 extension NullableStringExtension on String? {
   bool get isNullOrEmpty => this == null || this!.isEmpty;
