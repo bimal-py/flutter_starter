@@ -9,9 +9,10 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
 import 'package:connectivity_plus/connectivity_plus.dart' as _i895;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
-import 'package:flutter_starter/core/core.dart' as _i526;
+import 'package:flutter_starter/core/core.dart' as _i527;
 import 'package:flutter_starter/core/di/service_module.dart' as _i592;
 import 'package:flutter_starter/core/network/dio/config/config.dart' as _i644;
 import 'package:flutter_starter/core/network/dio/config/dio_config.dart'
@@ -23,12 +24,6 @@ import 'package:flutter_starter/core/network/dio/interceptors/logout_interceptor
 import 'package:flutter_starter/core/network/service/remote_service_impl.dart'
     as _i29;
 import 'package:flutter_starter/core/network/service/service.dart' as _i167;
-import 'package:flutter_starter/modules/app_upgrade/data/repository/remote/remote_app_upgrade_repository_impl.dart'
-    as _i714;
-import 'package:flutter_starter/modules/app_upgrade/domain/repository/remote/remote_app_upgrade_repository.dart'
-    as _i280;
-import 'package:flutter_starter/modules/app_upgrade/domain/use_case/remote/check_app_upgrade_use_case.dart'
-    as _i210;
 import 'package:flutter_starter/modules/auth/data/repository/local/local_auth_session_repository_impl.dart'
     as _i521;
 import 'package:flutter_starter/modules/auth/data/repository/remote/auth_token_handler_impl.dart'
@@ -68,26 +63,27 @@ import 'package:flutter_starter/modules/auth/domain/use_case/remote/send_verific
     as _i863;
 import 'package:flutter_starter/modules/device_info/data/repository/remote/remote_device_info_repository_impl.dart'
     as _i722;
-import 'package:flutter_starter/modules/device_info/domain/repository/remote/remote_device_info_repository.dart'
-    as _i85;
+import 'package:flutter_starter/modules/device_info/domain/domain.dart'
+    as _i190;
+import 'package:flutter_starter/modules/device_info/domain/repository/repository.dart'
+    as _i123;
 import 'package:flutter_starter/modules/device_info/domain/use_case/remote/get_device_info_use_case.dart'
     as _i502;
 import 'package:flutter_starter/modules/fcm/data/repository/remote/remote_fcm_repository_impl.dart'
     as _i295;
-import 'package:flutter_starter/modules/fcm/domain/repository/remote/remote_fcm_repository.dart'
-    as _i938;
+import 'package:flutter_starter/modules/fcm/domain/domain.dart' as _i204;
 import 'package:flutter_starter/modules/notifications/data/mapper/notification_payload_mapper.dart'
     as _i482;
-import 'package:flutter_starter/modules/onboarding/features/splash/presentation/bloc/splash/splash_bloc.dart'
-    as _i158;
 import 'package:flutter_starter/modules/package_info/data/repository/remote/remote_package_info_repository_impl.dart'
     as _i729;
-import 'package:flutter_starter/modules/package_info/domain/repository/remote/remote_package_info_repository.dart'
-    as _i30;
+import 'package:flutter_starter/modules/package_info/domain/domain.dart'
+    as _i609;
+import 'package:flutter_starter/modules/package_info/domain/repository/repository.dart'
+    as _i563;
 import 'package:flutter_starter/modules/package_info/domain/use_case/remote/get_package_info_use_case.dart'
     as _i670;
 import 'package:flutter_starter/modules/user/data/repository/local/local_user_repository_impl.dart'
-    as _i204;
+    as _i205;
 import 'package:flutter_starter/modules/user/data/repository/remote/remote_user_repository_impl.dart'
     as _i175;
 import 'package:flutter_starter/modules/user/domain/domain.dart' as _i885;
@@ -115,7 +111,6 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final serviceModule = _$ServiceModule();
     gh.factory<_i588.DioConfig>(() => _i588.DioConfig());
-    gh.factory<_i158.SplashBloc>(() => _i158.SplashBloc());
     gh.singleton<_i558.FlutterSecureStorage>(() => serviceModule.secureStorage);
     gh.singleton<_i895.Connectivity>(() => serviceModule.connectivity);
     await gh.singletonAsync<_i460.SharedPreferences>(
@@ -126,20 +121,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i482.NotificationPayloadMapper>(
       () => const _i482.NotificationPayloadMapper(),
     );
-    gh.lazySingleton<_i85.RemoteDeviceInfoRepository>(
-      () => _i722.RemoteDeviceInfoRepositoryImpl(),
-    );
-    gh.lazySingleton<_i30.RemotePackageInfoRepository>(
-      () => _i729.RemotePackageInfoRepositoryImpl(),
-    );
+    gh.factory<_i438.DioClient>(() => _i438.DioClient(gh<_i644.DioConfig>()));
     gh.lazySingleton<_i648.ThirdPartyAuthProvider>(
       () => _i318.ThirdPartyAuthProviderStub(),
     );
-    gh.lazySingleton<_i938.RemoteFcmRepository>(
+    gh.lazySingleton<_i204.RemoteFcmRepository>(
       () => _i295.RemoteFcmRepositoryImpl(),
     );
+    gh.lazySingleton<_i190.RemoteDeviceInfoRepository>(
+      () => _i722.RemoteDeviceInfoRepositoryImpl(),
+    );
     gh.lazySingleton<_i885.LocalUserRepository>(
-      () => _i204.LocalUserRepositoryImpl(),
+      () => _i205.LocalUserRepositoryImpl(),
+    );
+    gh.lazySingleton<_i609.RemotePackageInfoRepository>(
+      () => _i729.RemotePackageInfoRepositoryImpl(),
     );
     gh.lazySingleton<_i648.LocalAuthSessionRepository>(
       () => _i521.LocalAuthSessionRepositoryImpl(),
@@ -149,9 +145,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i435.LocalAuthSessionRepository>(),
         gh<_i140.LocalUserRepository>(),
       ),
-    );
-    gh.lazySingleton<_i280.RemoteAppUpgradeRepository>(
-      () => _i714.RemoteAppUpgradeRepositoryImpl(),
     );
     gh.factory<_i483.GetSavedUserUseCase>(
       () => _i483.GetSavedUserUseCase(gh<_i178.LocalUserRepository>()),
@@ -163,10 +156,15 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i512.WatchUserUseCase(gh<_i178.LocalUserRepository>()),
     );
     gh.factory<_i670.GetPackageInfoUseCase>(
-      () => _i670.GetPackageInfoUseCase(gh<_i30.RemotePackageInfoRepository>()),
+      () =>
+          _i670.GetPackageInfoUseCase(gh<_i563.RemotePackageInfoRepository>()),
     );
     gh.factory<_i502.GetDeviceInfoUseCase>(
-      () => _i502.GetDeviceInfoUseCase(gh<_i85.RemoteDeviceInfoRepository>()),
+      () => _i502.GetDeviceInfoUseCase(gh<_i123.RemoteDeviceInfoRepository>()),
+    );
+    gh.factory<_i167.RemoteService>(
+      () =>
+          _i29.RemoteServiceImpl(gh<_i952.DioClient>(), gh<_i952.DioConfig>()),
     );
     gh.factory<_i390.GetRememberedEmailUseCase>(
       () => _i390.GetRememberedEmailUseCase(
@@ -181,38 +179,29 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i245.LogoutHandlerImpl(
         gh<_i648.LocalAuthSessionRepository>(),
         gh<_i140.LocalUserRepository>(),
-        gh<_i526.DioConfig>(),
-        gh<_i526.LogoutInterceptor>(),
+        gh<_i527.DioConfig>(),
+        gh<_i527.LogoutInterceptor>(),
         gh<_i648.ThirdPartyAuthProvider>(),
       ),
-    );
-    gh.factory<_i438.DioClient>(() => _i438.DioClient(gh<_i644.DioConfig>()));
-    gh.factory<_i210.CheckAppUpgradeUseCase>(
-      () =>
-          _i210.CheckAppUpgradeUseCase(gh<_i280.RemoteAppUpgradeRepository>()),
     );
     gh.factory<_i962.LogoutUseCase>(
       () => _i962.LogoutUseCase(gh<_i435.LogoutHandler>()),
     );
-    gh.factory<_i167.RemoteService>(
-      () =>
-          _i29.RemoteServiceImpl(gh<_i952.DioClient>(), gh<_i952.DioConfig>()),
+    gh.factory<_i885.RemoteUserRepository>(
+      () => _i175.RemoteUserRepositoryImpl(gh<_i527.RemoteService>()),
     );
-    gh.lazySingleton<_i526.AuthTokenHandler>(
+    gh.lazySingleton<_i527.AuthTokenHandler>(
       () => _i324.AuthTokenHandlerImpl(
         gh<_i648.LocalAuthSessionRepository>(),
         gh<_i648.LogoutHandler>(),
-        gh<_i526.DioConfig>(),
+        gh<_i527.DioConfig>(),
       ),
-    );
-    gh.factory<_i885.RemoteUserRepository>(
-      () => _i175.RemoteUserRepositoryImpl(gh<_i526.RemoteService>()),
     );
     gh.lazySingleton<_i648.RemoteAuthRepository>(
       () => _i744.RemoteAuthRepositoryImpl(
-        gh<_i526.RemoteService>(),
+        gh<_i527.RemoteService>(),
         gh<_i648.LocalAuthSessionRepository>(),
-        gh<_i526.LogoutInterceptor>(),
+        gh<_i527.LogoutInterceptor>(),
         gh<_i648.ThirdPartyAuthProvider>(),
         gh<_i140.RemoteUserRepository>(),
         gh<_i140.LocalUserRepository>(),
