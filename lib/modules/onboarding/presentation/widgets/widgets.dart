@@ -1,2 +1,4 @@
-export 'onboarding_dots_widget.dart';
-export 'onboarding_page_widget.dart';
+export 'onboarding_dots.dart';
+export 'onboarding_next_button.dart';
+export 'onboarding_page.dart';
+export 'onboarding_skip_button.dart';

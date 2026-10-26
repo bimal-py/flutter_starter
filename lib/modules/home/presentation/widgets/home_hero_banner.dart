@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/home/utils/constants/constants.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class HomeHeroBannerWidget extends StatelessWidget {
-  const HomeHeroBannerWidget({super.key});
+class HomeHeroBanner extends StatelessWidget {
+  const HomeHeroBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class HomeHeroBannerWidget extends StatelessWidget {
               color: colorScheme.tertiary,
             ),
           ),
-          SizedBox(width: 14.w),
+          14.horizontalSpace,
           Expanded(
             child: DefaultTextStyle.merge(
               style: TextStyle(color: colorScheme.onPrimary),
@@ -36,15 +37,15 @@ class HomeHeroBannerWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome to ${AppConstants.appName}',
+                    HomeStrings.welcomeTitle,
                     style: context.textTheme.titleMedium?.copyWith(
                       color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  4.verticalSpace,
                   Text(
-                    'Production-ready Flutter scaffold. Replace the demo tiles with your own features.',
+                    HomeStrings.welcomeSubtitle,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onPrimary.withValues(alpha: 0.85),
                     ),

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/dashboard/dashboard.dart';
+import 'package:flutter_starter/modules/dashboard/presentation/bloc/bloc.dart';
+import 'package:flutter_starter/modules/dashboard/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/dashboard/utils/constants/constants.dart';
 
+/// The app shell: the tab cubit, then [DashboardView].
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
@@ -11,65 +14,58 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => BottomNavigationCubit(),
-      child: const DashboardScreenView(),
+      child: const DashboardView(),
     );
   }
 }
 
-class DashboardScreenView extends StatefulWidget {
-  const DashboardScreenView({super.key});
+/// Tabs over a bottom bar. Android back returns to the first tab, then needs
+/// a second press within two seconds to leave the app.
+class DashboardView extends StatefulWidget {
+  const DashboardView({super.key});
 
   @override
-  State<DashboardScreenView> createState() => _DashboardScreenViewState();
+  State<DashboardView> createState() => _DashboardViewState();
 }
 
-class _DashboardScreenViewState extends State<DashboardScreenView> {
-  final PageController _pageController = PageController(initialPage: 0);
+class _DashboardViewState extends State<DashboardView> {
+  static const _exitWindow = Duration(seconds: 2);
+
   DateTime? _lastBackPressed;
 
-  @override
-  void initState() {
-    super.initState();
-    context.read<BottomNavigationCubit>().changePage(
-      _pageController.initialPage,
-    );
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  Future<void> _onBack() async {
+    final cubit = context.read<BottomNavigationCubit>();
+    if (cubit.state.currentIndex != 0) {
+      cubit.changePage(0);
+      return;
+    }
+    final now = DateTime.now();
+    final last = _lastBackPressed;
+    if (last == null || now.difference(last) > _exitWindow) {
+      _lastBackPressed = now;
+      CustomSnackbar.show(
+        type: ToastType.info,
+        message: DashboardStrings.pressBackAgainToExit,
+      );
+      return;
+    }
+    await SystemNavigator.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final isFirstTab = (_pageController.page ?? 0) == 0;
-        if (isFirstTab) {
-          final now = DateTime.now();
-          if (_lastBackPressed == null ||
-              now.difference(_lastBackPressed!) > const Duration(seconds: 2)) {
-            _lastBackPressed = now;
-            CustomSnackbar.show(
-              type: ToastType.info,
-              message: 'Press back again to exit',
-            );
-            return;
-          }
-          await SystemNavigator.pop();
-        } else {
-          context.read<BottomNavigationCubit>().changePage(0);
-        }
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _onBack();
       },
-      child: Scaffold(
-        body: SafeArea(
-          child: DashboardBodyWidget(pageController: _pageController),
-        ),
-        bottomNavigationBar: DashboardNavbarWidget(
-          pageController: _pageController,
+      child: BlocBuilder<BottomNavigationCubit, BottomNavigationState>(
+        builder: (context, state) => Scaffold(
+          body: SafeArea(child: DashboardBody(index: state.currentIndex)),
+          bottomNavigationBar: DashboardNavBar(
+            index: state.currentIndex,
+            onSelect: context.read<BottomNavigationCubit>().changePage,
+          ),
         ),
       ),
     );

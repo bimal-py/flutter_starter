@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 
-class OnboardingDotsWidget extends StatelessWidget {
-  const OnboardingDotsWidget({
-    super.key,
-    required this.count,
-    required this.current,
-  });
+/// Page indicator; the current page's dot stretches into a pill.
+class OnboardingDots extends StatelessWidget {
+  const OnboardingDots({super.key, required this.count, required this.current});
 
   final int count;
   final int current;

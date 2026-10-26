@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 
-class HomeSectionLabelWidget extends StatelessWidget {
-  const HomeSectionLabelWidget({super.key, required this.text});
+class HomeSectionLabel extends StatelessWidget {
+  const HomeSectionLabel({super.key, required this.text});
 
   final String text;
 

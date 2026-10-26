@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 
-class OnboardingPageWidget extends StatelessWidget {
-  const OnboardingPageWidget({
+/// One carousel page: layered circle badge, title and supporting copy.
+class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({
     super.key,
     required this.icon,
     required this.title,
@@ -43,7 +44,7 @@ class OnboardingPageWidget extends StatelessWidget {
               Icon(icon, size: 56.r, color: colorScheme.onPrimaryContainer),
             ],
           ),
-          SizedBox(height: 36.h),
+          36.verticalSpace,
           Text(
             title,
             style: context.textTheme.headlineMedium?.copyWith(
@@ -51,7 +52,7 @@ class OnboardingPageWidget extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 12.h),
+          12.verticalSpace,
           Text(
             subtitle,
             style: context.textTheme.bodyLarge?.copyWith(

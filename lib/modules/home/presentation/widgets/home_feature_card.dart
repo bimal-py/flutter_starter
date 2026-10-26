@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/home/utils/constants/constants.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class HomeFeatureCardWidget extends StatelessWidget {
-  const HomeFeatureCardWidget({
+/// A demo tile. [onTap] gets the card's own context, so it can push a route
+/// or open a dialog.
+class HomeFeatureCard extends StatelessWidget {
+  const HomeFeatureCard({
     super.key,
     required this.icon,
     required this.label,
@@ -45,17 +48,17 @@ class HomeFeatureCardWidget extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: 4.h),
+              4.verticalSpace,
               Row(
                 children: [
                   Text(
-                    'Open',
+                    HomeStrings.open,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: colorScheme.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(width: 4.w),
+                  4.horizontalSpace,
                   Icon(
                     LucideIcons.arrowRight,
                     size: 14.r,

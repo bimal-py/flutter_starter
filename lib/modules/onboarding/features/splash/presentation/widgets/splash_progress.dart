@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/onboarding/features/splash/utils/constants/constants.dart';
 
-class SplashLogoWidget extends StatelessWidget {
-  const SplashLogoWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      AssetRoutes.appLogo,
-      width: 0.5.sw,
-      height: 0.5.swClamp(0, 0.5.sh),
-    );
-  }
-}
-
-class SplashProgressWidget extends StatelessWidget {
-  const SplashProgressWidget({super.key});
+/// Thin indeterminate bar with a label, at the bottom of the splash.
+class SplashProgress extends StatelessWidget {
+  const SplashProgress({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +19,7 @@ class SplashProgressWidget extends StatelessWidget {
           ),
         ),
         8.verticalSpace,
-        Text('Loading...', style: Theme.of(context).textTheme.labelMedium),
+        Text(SplashStrings.loading, style: context.textTheme.labelMedium),
       ],
     );
   }

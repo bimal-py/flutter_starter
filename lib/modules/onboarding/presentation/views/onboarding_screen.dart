@@ -3,49 +3,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/app_setting/app_setting.dart';
 import 'package:flutter_starter/modules/onboarding/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/onboarding/utils/constants/constants.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class OnboardingScreen extends StatefulWidget {
+/// No bloc of its own: whether onboarding is done lives in the app-wide
+/// [AppSettingCubit].
+class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  Widget build(BuildContext context) => const OnboardingView();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+/// The carousel. Skip and "Get started" both mark onboarding done and open
+/// the dashboard.
+class OnboardingView extends StatefulWidget {
+  const OnboardingView({super.key});
+
+  @override
+  State<OnboardingView> createState() => _OnboardingViewState();
+}
+
+class _OnboardingViewState extends State<OnboardingView> {
   final _controller = PageController();
   int _index = 0;
 
-  static const _pages = [
-    OnboardingPageWidget(
-      icon: LucideIcons.rocket,
-      title: 'Ship faster',
-      subtitle: 'Skip the boilerplate. Start from a clean architecture instead of a blank Flutter template.',
-    ),
-    OnboardingPageWidget(
-      icon: LucideIcons.layers,
-      title: 'Feature-first modules',
-      subtitle: 'Each feature owns its data, domain, and presentation layers — no tangled dependencies.',
-    ),
-    OnboardingPageWidget(
-      icon: LucideIcons.palette,
-      title: 'Themeable by default',
-      subtitle: 'Material 3 ColorScheme + a CustomThemeExtension hook for brand colors.',
-    ),
-  ];
-
-  void _next() {
-    if (_index == _pages.length - 1) {
-      context.read<AppSettingCubit>().markOnboardingComplete();
-      context.goNamed(Routes.dashboard.name);
-      return;
-    }
-    _controller.nextPage(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOut,
-    );
-  }
+  bool get _isLast => _index == OnboardingConstants.pages.length - 1;
 
   @override
   void dispose() {
@@ -53,50 +36,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  void _finish() {
+    context.read<AppSettingCubit>().markOnboardingComplete();
+    context.goNamed(Routes.dashboard.name);
+  }
+
+  void _next() {
+    if (_isLast) {
+      _finish();
+      return;
+    }
+    _controller.nextPage(
+      duration: OnboardingConstants.pageTransition,
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isLast = _index == _pages.length - 1;
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: EdgeInsets.all(8.r),
-                child: TextButton(
-                  onPressed: () {
-                    context.read<AppSettingCubit>().markOnboardingComplete();
-                    context.goNamed(Routes.dashboard.name);
-                  },
-                  child: const Text('Skip'),
-                ),
-              ),
-            ),
+            OnboardingSkipButton(onPressed: _finish),
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: _pages.length,
+                itemCount: OnboardingConstants.pages.length,
                 onPageChanged: (i) => setState(() => _index = i),
-                itemBuilder: (_, i) => _pages[i],
+                itemBuilder: (_, i) {
+                  final page = OnboardingConstants.pages[i];
+                  return OnboardingPage(
+                    icon: page.icon,
+                    title: page.title,
+                    subtitle: page.subtitle,
+                  );
+                },
               ),
             ),
-            OnboardingDotsWidget(count: _pages.length, current: _index),
-            Padding(
-              padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 16.h),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: FilledButton.icon(
-                  onPressed: _next,
-                  icon: Icon(
-                    isLast ? LucideIcons.check : LucideIcons.arrowRight,
-                    size: 18.r,
-                  ),
-                  label: Text(isLast ? 'Get started' : 'Next'),
-                ),
-              ),
+            OnboardingDots(
+              count: OnboardingConstants.pages.length,
+              current: _index,
             ),
+            OnboardingNextButton(isLast: _isLast, onPressed: _next),
           ],
         ),
       ),

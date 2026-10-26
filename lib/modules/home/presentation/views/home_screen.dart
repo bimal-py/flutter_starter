@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/home/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/home/utils/constants/constants.dart';
 import 'package:flutter_starter/modules/qr/qr.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// The dashboard's first tab. It has no Scaffold: the dashboard provides one.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => const HomeView();
+}
+
+/// A welcome banner over a grid of demo tiles.
+class HomeView extends StatelessWidget {
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,12 +24,12 @@ class HomeScreen extends StatelessWidget {
       slivers: [
         SliverPadding(
           padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-          sliver: const SliverToBoxAdapter(child: HomeHeroBannerWidget()),
+          sliver: const SliverToBoxAdapter(child: HomeHeroBanner()),
         ),
         SliverPadding(
           padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
           sliver: const SliverToBoxAdapter(
-            child: HomeSectionLabelWidget(text: 'Try the demos'),
+            child: HomeSectionLabel(text: HomeStrings.demosLabel),
           ),
         ),
         SliverPadding(
@@ -32,22 +42,22 @@ class HomeScreen extends StatelessWidget {
               childAspectRatio: 1.05,
             ),
             delegate: SliverChildListDelegate([
-              HomeFeatureCardWidget(
+              HomeFeatureCard(
                 icon: LucideIcons.info,
-                label: 'About',
+                label: HomeStrings.about,
                 onTap: (c) => c.pushNamed(Routes.about.name),
               ),
-              HomeFeatureCardWidget(
+              HomeFeatureCard(
                 icon: LucideIcons.globe,
-                label: 'Open website',
+                label: HomeStrings.openWebsite,
                 onTap: (c) => c.pushNamed(
                   Routes.websiteView.name,
                   extra: AppUrls.demoSite,
                 ),
               ),
-              HomeFeatureCardWidget(
+              HomeFeatureCard(
                 icon: LucideIcons.qrCode,
-                label: 'Share via QR',
+                label: HomeStrings.shareViaQr,
                 onTap: (c) => QrPopup.show(
                   c,
                   qrData: AppUrls.appDownload,

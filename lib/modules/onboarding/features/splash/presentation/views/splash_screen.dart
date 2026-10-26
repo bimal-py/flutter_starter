@@ -6,48 +6,54 @@ import 'package:flutter_starter/modules/onboarding/features/splash/presentation/
 import 'package:flutter_starter/modules/onboarding/features/splash/presentation/widgets/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+/// Splash: its bloc and the redirect once the delay is over, then
+/// [SplashView].
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
+
+  /// Onboarding until it is finished (or replayed from Settings), otherwise
+  /// the dashboard.
+  void _onState(BuildContext context, SplashState state) {
+    if (!state.status.isSuccess) return;
+    final showOnboarding = context
+        .read<AppSettingCubit>()
+        .state
+        .showOnboardingAtAppOpen;
+    context.goNamed(
+      showOnboarding ? Routes.onboarding.name : Routes.dashboard.name,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<SplashBloc>()..add(const SplashStarted()),
-      child: const _SplashView(),
+      create: (_) => SplashBloc()..add(const SplashStarted()),
+      child: BlocListener<SplashBloc, SplashState>(
+        listenWhen: (previous, current) => previous.status != current.status,
+        listener: _onState,
+        child: const SplashView(),
+      ),
     );
   }
 }
 
-class _SplashView extends StatelessWidget {
-  const _SplashView();
+class SplashView extends StatelessWidget {
+  const SplashView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SplashBloc, SplashState>(
-      listenWhen: (prev, curr) => prev.status != curr.status,
-      listener: (context, state) {
-        if (!state.status.isSuccess) return;
-        final showOnboarding = context
-            .read<AppSettingCubit>()
-            .state
-            .showOnboardingAtAppOpen;
-        context.goNamed(
-          showOnboarding ? Routes.onboarding.name : Routes.dashboard.name,
-        );
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(),
-                const SplashLogoWidget(),
-                const Spacer(),
-                const SplashProgressWidget(),
-                SizedBox(height: 24.h),
-              ],
-            ),
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              const SplashLogo(),
+              const Spacer(),
+              const SplashProgress(),
+              24.verticalSpace,
+            ],
           ),
         ),
       ),
