@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_starter/app/app.dart';
-import 'package:flutter_starter/app/hive_bootstrap.dart';
 import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/fcm/fcm.dart';
