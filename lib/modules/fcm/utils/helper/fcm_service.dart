@@ -20,7 +20,8 @@ class FcmService {
   bool _initialized = false;
   Future<FcmPermissionStatus?>? _inFlightPermissionRequest;
 
-  bool get isSupported => !kIsWeb && EnvConfig.firebaseEnabled;
+  // Firebase started (flag on, options present, init succeeded); never on web.
+  bool get isSupported => FirebaseService.isInitialised;
   bool get isInitialized => _initialized;
 
   StreamSubscription<RemoteMessage>? _onMessageSub;

@@ -106,7 +106,7 @@ To keep fcm without the notifications module, see that module's Remove section.
 
 ## Hidden details
 
-- Every Firebase call no-ops when `isSupported` is false: on the web, or with `FIREBASE_ENABLED` off. It checks the flag, not whether Firebase started: turn the flag on before Firebase is set up and `initialize()` throws in `main()` (`FirebaseMessaging.instance` needs a Firebase app).
+- Every Firebase call no-ops while `isSupported` is false. It is `FirebaseService.isInitialised`: the flag is on, `firebase_options.dart` is wired and `Firebase.initializeApp()` succeeded (never on the web). Turning the flag on before Firebase is set up leaves push off instead of crashing `main()`.
 - Nothing asks for the permission at launch (`requestPermissionOnInit` is false). `ensureNotificationPermission` runs core's `NotificationPermission.ensure` (system prompt, then a settings dialog after a denial) and records `fcm.permission_prompted`. `requestPermissionIfNeeded()` asks only when the OS says "not determined" and the app never asked; calls made at the same time share one request.
 - Foreground: iOS shows pushes that have a `notification` payload by itself (`setForegroundNotificationPresentationOptions`), so the bridge skips those on iOS. Android doesn't, so the bridge shows them as local notifications. Data-only pushes are shown by the bridge on both.
 - On Android 8+ the channel decides whether a notification pops up: the bridge's `priority: high` doesn't, and the `default` channel only makes a sound. Send `channel: high_priority` for a banner.
