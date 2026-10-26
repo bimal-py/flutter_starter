@@ -1,8 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-/// Framework-agnostic wrapper around [RemoteMessage]. Lets bridges (e.g. the
-/// notifications-glue file) consume FCM events without a transitive
-/// firebase_messaging import.
+/// The fields of a [RemoteMessage] the app reads, so callers (like the
+/// notifications bridge) don't work with firebase_messaging types.
 class FcmRemoteMessageEntity {
   const FcmRemoteMessageEntity({
     required this.messageId,

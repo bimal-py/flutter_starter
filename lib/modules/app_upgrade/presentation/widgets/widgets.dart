@@ -1,1 +1,1 @@
-export 'update_app_popup_widget.dart';
+export 'update_app_popup.dart';

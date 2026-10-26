@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/package_info/package_info.dart';
+import 'package:flutter_starter/modules/package_info/presentation/bloc/bloc.dart';
+import 'package:flutter_starter/modules/package_info/utils/constants/constants.dart';
 
-/// Centered "Version x.y.z (build)" text. Reads from the globally-provided
-/// [PackageInfoCubit] and renders nothing until the info has loaded.
+/// Centered "Version x.y.z (build)". Reads the app-wide [PackageInfoCubit]
+/// and renders nothing until the info has loaded: no shimmer or error for a
+/// line of diagnostics.
 class AppVersionFooter extends StatelessWidget {
   const AppVersionFooter({super.key});
 
@@ -18,9 +20,9 @@ class AppVersionFooter extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: 16.h),
           child: Center(
             child: Text(
-              'Version ${info.version} (${info.buildNumber})',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              PackageInfoStrings.version(info.version, info.buildNumber),
+              style: context.textTheme.bodySmall?.copyWith(
+                color: context.colorScheme.onSurfaceVariant,
               ),
             ),
           ),

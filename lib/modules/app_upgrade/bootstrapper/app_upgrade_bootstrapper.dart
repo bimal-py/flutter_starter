@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/app_upgrade/presentation/presentation.dart';
+import 'package:flutter_starter/modules/app_upgrade/presentation/bloc/bloc.dart';
+import 'package:flutter_starter/modules/app_upgrade/presentation/widgets/widgets.dart';
 
 /// Wraps the app shell, kicks off [AppUpgradeCubit.checkForUpdate] after the
 /// first frame, and pushes the update dialog onto the root navigator's
@@ -66,11 +67,11 @@ class _AppUpgradeBootstrapperState extends State<AppUpgradeBootstrapper> {
       showDialog<void>(
         context: overlayContext,
         barrierDismissible: false,
-        barrierColor: Colors.black.withValues(alpha: 0.7),
+        barrierColor: overlayContext.colorScheme.scrim.withValues(alpha: 0.7),
         useSafeArea: true,
         builder: (_) => BlocProvider.value(
           value: cubit,
-          child: UpdateAppPopupWidget(content: message),
+          child: UpdateAppPopup(content: message),
         ),
       );
     });

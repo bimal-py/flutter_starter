@@ -87,9 +87,8 @@ class FcmService {
   /// app has UI context — runs the unified [NotificationPermission.ensure]
   /// flow (native prompt on first call, app-settings dialog on later denials).
   ///
-  /// Returns `true` when notifications end up enabled at the OS level. The
-  /// FCM-specific authorization status is also refreshed afterwards so
-  /// subsequent calls to [getNotificationSettings] see the new value.
+  /// Returns `true` when notifications end up enabled at the OS level. Marks
+  /// the prompt as shown, so [requestPermissionIfNeeded] won't ask again.
   Future<bool> ensureNotificationPermission(BuildContext context) async {
     if (!isSupported) return false;
     final granted = await NotificationPermission.ensure(context);

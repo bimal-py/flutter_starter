@@ -22,10 +22,6 @@ class AppUpgradeConstants {
       'https://play.google.com/store/apps/details?id=${AppConstants.appAndroidPackageId}';
   static String get storeUrl => Platform.isIOS ? appStoreUrl : googlePlayUrl;
 
-  /// Fallback HTML if Remote Config is unreachable on first launch.
-  static const String defaultUpdateMessage =
-      '<p>A new version is available with improvements and bug fixes.</p>';
-
   /// Refresh window. Debug builds skip the cache so console changes show up
   /// instantly while you iterate; release builds throttle to 1 hour.
   static const Duration minFetchInterval = kDebugMode

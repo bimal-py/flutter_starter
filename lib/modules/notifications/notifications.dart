@@ -1,11 +1,5 @@
-/// Native config required for this module to work end-to-end:
-/// - Android: add POST_NOTIFICATIONS permission, RECEIVE_BOOT_COMPLETED for
-///   scheduled notifications, and the flutter_local_notifications `<receiver>`
-///   entries from the plugin docs. Provide a small @drawable/ic_notification
-///   for the status-bar icon.
-/// - iOS: ensure UNUserNotificationCenter delegate is set in AppDelegate.
-/// To replace the underlying package, implement [LocalNotificationsRepository] and
-/// pass it to `NotificationService.instance.initialize(provider: ...)`.
+/// Local notifications. Native setup, use and removal:
+/// `doc/modules/notifications.md`.
 library;
 
 export 'data/data.dart';

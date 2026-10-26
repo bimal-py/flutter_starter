@@ -20,11 +20,11 @@ class GlobalBlocConfig extends StatelessWidget {
         BlocProvider<AppSettingCubit>(create: (_) => AppSettingCubit()),
         BlocProvider<PackageInfoCubit>(
           lazy: false,
-          create: (_) => PackageInfoCubit()..loadPackageInfo(),
+          create: (_) => PackageInfoCubit()..load(),
         ),
         BlocProvider<DeviceInfoCubit>(
           lazy: false,
-          create: (_) => DeviceInfoCubit()..loadDeviceInfo(),
+          create: (_) => DeviceInfoCubit()..load(),
         ),
         // Optional. Delete with lib/modules/app_upgrade/ to remove update popup.
         BlocProvider<AppUpgradeCubit>(create: (_) => AppUpgradeCubit()),

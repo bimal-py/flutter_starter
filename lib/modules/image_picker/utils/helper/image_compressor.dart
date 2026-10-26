@@ -3,13 +3,15 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/image_picker/utils/constants/constants.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 enum CompressorOutput { file, bytes }
 
-/// JPG re-encode + HEIC handling for picked images.
+/// JPEG re-encode + HEIC handling for picked images.
 class ImageCompressor {
   ImageCompressor._();
 
@@ -25,7 +27,7 @@ class ImageCompressor {
   static const int jpgEncodeQuality = 85;
   static const int largeFileThresholdBytes = 2 * 1024 * 1024;
 
-  /// Returns null for unsupported formats — caller should keep the original.
+  /// Throws [UnsupportedError] for a format outside [supportedFormats].
   static Future<XFile?> compressXFile(XFile file) async {
     final out = await _processXFile(file, output: CompressorOutput.file);
     return out is XFile ? out : null;
@@ -36,8 +38,8 @@ class ImageCompressor {
     return out is Uint8List ? out : null;
   }
 
-  /// Compresses images ≥ [largeFileThresholdBytes]; smaller files + non-images
-  /// pass through unchanged.
+  /// Compresses images larger than [largeFileThresholdBytes]; smaller files
+  /// and non-images pass through unchanged.
   static Future<File> maybeCompressLargeFile(File file) async {
     final ext = p.extension(file.path).toLowerCase();
     if (!supportedFormats.contains(ext)) return file;
@@ -55,7 +57,7 @@ class ImageCompressor {
   }) async {
     final ext = p.extension(file.path).toLowerCase();
     if (!supportedFormats.contains(ext)) {
-      throw UnsupportedError('Unsupported image format: $ext');
+      throw UnsupportedError(ImagePickerError.unsupportedFormat(ext));
     }
 
     if (ext == '.heic') {
@@ -92,7 +94,9 @@ class ImageCompressor {
     final byteData = await frame.image.toByteData(
       format: ui.ImageByteFormat.png,
     );
-    if (byteData == null) throw Exception('HEIC conversion failed');
+    if (byteData == null) {
+      throw const AppException(message: ImagePickerError.heicConversionFailed);
+    }
 
     if (output == CompressorOutput.bytes) {
       return byteData.buffer.asUint8List();
@@ -119,7 +123,9 @@ class ImageCompressor {
       outPath,
       quality: quality,
     );
-    if (result == null) throw Exception('Image compression failed');
+    if (result == null) {
+      throw const AppException(message: ImagePickerError.compressionFailed);
+    }
     return result;
   }
 
@@ -140,14 +146,18 @@ class ImageCompressor {
       outPath,
       quality: defaultCompressionQuality,
     );
-    if (result == null) throw Exception('Image compression failed');
+    if (result == null) {
+      throw const AppException(message: ImagePickerError.compressionFailed);
+    }
     return File(result.path);
   }
 
   static Future<File> _convertToJpg(File file) async {
     final bytes = await file.readAsBytes();
     final decoded = img.decodeImage(bytes);
-    if (decoded == null) throw Exception('Image decoding failed');
+    if (decoded == null) {
+      throw const AppException(message: ImagePickerError.decodingFailed);
+    }
 
     final jpgBytes = img.encodeJpg(decoded, quality: jpgEncodeQuality);
     final dir = await getTemporaryDirectory();

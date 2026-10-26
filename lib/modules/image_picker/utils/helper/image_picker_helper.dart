@@ -2,11 +2,10 @@ import 'package:flutter_starter/modules/image_picker/utils/helper/helper.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Thin wrapper around `image_picker` that runs every returned [XFile]
-/// through [ImageCompressor]. Used by [ImagePickerCubit]; safe to call
-/// directly when a cubit is overkill.
-class ImagePickerHelperLib {
-  ImagePickerHelperLib({ImagePicker? picker})
-    : _picker = picker ?? ImagePicker();
+/// through [ImageCompressor]. The cubit uses it; call it directly when a
+/// cubit is overkill.
+class ImagePickerHelper {
+  ImagePickerHelper({ImagePicker? picker}) : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 
@@ -26,20 +25,16 @@ class ImagePickerHelperLib {
     final files = await _picker.pickMultiImage();
     final compressed = <XFile>[];
     for (final f in files) {
-      final out = await _compressOrPassThrough(f);
-      if (out != null) compressed.add(out);
+      compressed.add(await _compressOrPassThrough(f));
     }
     return compressed;
   }
 
-  /// Some formats (HEIC on Android) round-trip through dart:ui and can fail;
-  /// in those cases we'd rather return the original than throw.
-  Future<XFile?> _compressOrPassThrough(XFile file) async {
+  /// Unsupported formats and failed conversions (HEIC on Android goes through
+  /// dart:ui) keep the original file rather than failing the pick.
+  Future<XFile> _compressOrPassThrough(XFile file) async {
     try {
-      final compressed = await ImageCompressor.compressXFile(file);
-      return compressed ?? file;
-    } on UnsupportedError {
-      return file;
+      return await ImageCompressor.compressXFile(file) ?? file;
     } catch (_) {
       return file;
     }

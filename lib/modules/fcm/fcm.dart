@@ -1,16 +1,5 @@
-/// Native setup notes:
-/// - iOS: APNs key/cert in Firebase console, Push Notifications capability in
-///   Xcode, Background Modes -> Remote notifications, register for remote
-///   notifications in AppDelegate.swift.
-/// - Android: google-services.json (pulled by FlutterFire). For data-only
-///   messages on Android 13+, ensure POST_NOTIFICATIONS permission is granted
-///   (the notifications module handles the prompt).
-///
-/// Wire FCM in main.dart with these two lines:
-///   FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
-///   await FcmService.instance.initialize(
-///     onForegroundMessage: buildNotificationBridge(),   // optional bridge
-///   );
+/// Firebase Cloud Messaging. Native setup, the `main.dart` lines, use and
+/// removal: `doc/modules/fcm.md`.
 library;
 
 export 'data/data.dart';

@@ -1,4 +1,5 @@
 import 'package:flutter_starter/modules/notifications/domain/entity/entity.dart';
+import 'package:flutter_starter/modules/notifications/utils/constants/constants.dart';
 
 class NotificationChannelEntity {
   const NotificationChannelEntity({
@@ -27,13 +28,13 @@ class NotificationChannelsEntity {
   static const List<NotificationChannelEntity> defaults = [
     NotificationChannelEntity(
       id: defaultChannelId,
-      name: 'General',
-      description: 'General app notifications',
+      name: NotificationsStrings.generalChannelName,
+      description: NotificationsStrings.generalChannelDescription,
     ),
     NotificationChannelEntity(
       id: highPriorityChannelId,
-      name: 'High priority',
-      description: 'Time-sensitive notifications',
+      name: NotificationsStrings.highPriorityChannelName,
+      description: NotificationsStrings.highPriorityChannelDescription,
       importance: NotificationPriority.max,
     ),
   ];

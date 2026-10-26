@@ -19,7 +19,8 @@ class RemoteDeviceInfoRepositoryImpl implements RemoteDeviceInfoRepository {
             _ => await plugin.deviceInfo,
           };
     return DeviceInfoEntity(
-      platform: kIsWeb ? 'web' : defaultTargetPlatform.name,
+      // Lowercase, so callers match 'ios' / 'macos' like 'android' / 'web'.
+      platform: kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase(),
       data: info.data.map((k, v) => MapEntry(k, v ?? '')),
     );
   }

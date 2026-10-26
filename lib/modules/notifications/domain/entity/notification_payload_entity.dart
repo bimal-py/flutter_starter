@@ -1,3 +1,5 @@
+import 'package:flutter_starter/modules/notifications/domain/entity/entity.dart';
+
 enum NotificationPriority { min, low, normal, high, max }
 
 /// Action button rendered inside a notification. Tapping fires a
@@ -15,15 +17,15 @@ class NotificationActionEntity {
   final bool foreground;
 }
 
-/// Package-agnostic payload. [LocalNotificationsRepository] implementations translate
-/// this to their underlying plugin's representation.
+/// Package-agnostic payload. [LocalNotificationsRepository] implementations
+/// translate this to their underlying plugin's representation.
 class NotificationPayloadEntity {
   const NotificationPayloadEntity({
     required this.id,
     required this.title,
     required this.body,
     this.data = const {},
-    this.channel = 'default',
+    this.channel = NotificationChannelsEntity.defaultChannelId,
     this.sound = true,
     this.priority = NotificationPriority.normal,
     this.actions = const [],

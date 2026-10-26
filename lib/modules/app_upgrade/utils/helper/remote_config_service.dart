@@ -22,7 +22,7 @@ class RemoteConfigService {
       await rc.setDefaults(<String, dynamic>{
         AppUpgradeConstants.latestVersionRcKey: '0.0.0',
         AppUpgradeConstants.updateMessageRcKey:
-            AppUpgradeConstants.defaultUpdateMessage,
+            AppUpgradeStrings.defaultUpdateMessage,
         AppUpgradeConstants.enabledOnIosRcKey: true,
         AppUpgradeConstants.enabledOnAndroidRcKey: true,
         AppUpgradeConstants.forceUpdateRcKey: false,
@@ -37,8 +37,8 @@ class RemoteConfigService {
       _remoteConfig = rc;
       _initialized = true;
     } catch (_) {
-      // Offline / fetch failure — leave _initialized=false so the next call
-      // retries. The SDK still serves defaults via its in-memory instance.
+      // Offline or the fetch failed: stay uninitialised so the next check
+      // retries.
     }
   }
 
@@ -48,7 +48,7 @@ class RemoteConfigService {
 
   String get updateMessage {
     final v = _remoteConfig?.getString(AppUpgradeConstants.updateMessageRcKey);
-    if (v == null || v.isEmpty) return AppUpgradeConstants.defaultUpdateMessage;
+    if (v == null || v.isEmpty) return AppUpgradeStrings.defaultUpdateMessage;
     return v;
   }
 

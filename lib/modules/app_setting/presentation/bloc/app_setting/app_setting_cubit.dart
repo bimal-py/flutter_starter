@@ -3,6 +3,8 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 part 'app_setting_state.dart';
 
+/// App-wide flags that must survive restarts, hence a [HydratedCubit] rather
+/// than a SafeCubit.
 class AppSettingCubit extends HydratedCubit<AppSettingState> {
   AppSettingCubit() : super(const AppSettingState());
 

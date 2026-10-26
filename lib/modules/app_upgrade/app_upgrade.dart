@@ -1,5 +1,3 @@
-export 'bootstrapper/app_upgrade_bootstrapper.dart';
-export 'data/data.dart';
-export 'domain/domain.dart';
+export 'bootstrapper/bootstrapper.dart';
 export 'presentation/presentation.dart';
 export 'utils/utils.dart';

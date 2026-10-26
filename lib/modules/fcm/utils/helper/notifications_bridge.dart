@@ -1,68 +1,41 @@
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_starter/modules/fcm/domain/domain.dart';
 import 'package:flutter_starter/modules/notifications/notifications.dart';
 
 typedef ForegroundMessageHandler = void Function(FcmRemoteMessageEntity msg);
 
-/// Optional glue between FCM and Notifications. Import ONLY when both modules
-/// are present. Delete this file if either module is removed — nothing else
-/// references it.
-///
-/// ## Backend payload contract
-///
-/// To get a notification with action buttons, your backend should send a
-/// **data-only** FCM message (no `notification` key). The bridge reads:
-///
-/// - `title` (string, required)
-/// - `body` (string, required)
-/// - `channel` (string, optional) — picks the local channel, defaults to
-///   [defaultChannel]
-/// - `actions` (JSON string, optional) — array of `{id, label, destructive?}`.
-///   Example: `[{"id":"view","label":"View"},{"id":"snooze","label":"Snooze"}]`
-/// - any other keys → forwarded through `payload.data` so the tap handler
-///   can route / deep-link.
-///
-/// Example backend send (HTTP v1 API):
-/// ```json
-/// {
-///   "message": {
-///     "token": "<fcm token>",
-///     "data": {
-///       "title": "New chat message",
-///       "body": "Alex: are you online?",
-///       "channel": "high_priority",
-///       "actions": "[{\"id\":\"reply\",\"label\":\"Reply\"},{\"id\":\"mute\",\"label\":\"Mute\",\"destructive\":true}]",
-///       "chat_id": "1234"
-///     },
-///     "android": {"priority": "high"}
-///   }
-/// }
-/// ```
-///
-/// ## iOS action-button caveat
-///
-/// Android action buttons are dynamic — every notification can ship its own
-/// set. iOS requires categories registered up-front at app launch; you can't
-/// add new action sets per-notification. If you need action buttons on iOS,
-/// register `DarwinNotificationCategory` instances at notifications init time
-/// and send a matching `channel` (used as the categoryIdentifier) from the
-/// backend. Android-only action buttons work out of the box with this bridge.
+// The only fcm file that imports the notifications module: without that
+// module, delete this file and its export in helper.dart. The payload
+// contract for data-only pushes is in doc/modules/fcm.md.
+
+/// Shows foreground pushes as local notifications. Pass it to
+/// `FcmService.instance.initialize(onForegroundMessage: ...)`.
 ForegroundMessageHandler buildNotificationBridge({
   int Function(FcmRemoteMessageEntity msg)? idResolver,
   String defaultChannel = NotificationChannelsEntity.defaultChannelId,
   NotificationPriority priority = NotificationPriority.high,
 }) {
   return (msg) async {
+    // iOS already shows a push that has a title or body (FcmService asks it
+    // to, with setForegroundNotificationPresentationOptions); a second
+    // banner here would show it twice. Its tap comes through
+    // onMessageOpenedApp.
+    if (defaultTargetPlatform == TargetPlatform.iOS &&
+        (msg.title != null || msg.body != null)) {
+      return;
+    }
     final title = msg.title ?? msg.data['title']?.toString();
     final body = msg.body ?? msg.data['body']?.toString();
     if ((title == null || title.isEmpty) && (body == null || body.isEmpty)) {
       return;
     }
-    final id =
-        idResolver?.call(msg) ??
-        ((msg.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch) &
-            0x7fffffff);
+    final id = idResolver?.call(msg) ?? _notificationId(msg.messageId);
     final channel = msg.data['channel']?.toString() ?? defaultChannel;
     await NotificationService.instance.show(
       NotificationPayloadEntity(
@@ -78,13 +51,94 @@ ForegroundMessageHandler buildNotificationBridge({
   };
 }
 
-/// Parses an `actions` value from the FCM data payload. Accepts:
-/// - a JSON-encoded string (the only form FCM data accepts cross-platform —
-///   `data` values must be strings)
-/// - an already-decoded List (in case the data was built locally for a test)
+/// Background handler that also shows data-only pushes as local
+/// notifications, with the action buttons from `data.actions`. Register it
+/// instead of `fcmBackgroundHandler`:
 ///
-/// Returns an empty list on anything malformed instead of throwing — a bad
-/// payload shouldn't drop the whole notification.
+/// ```dart
+/// FirebaseMessaging.onBackgroundMessage(fcmBackgroundDisplayHandler);
+/// ```
+///
+/// Pushes with a `notification` payload are skipped: the OS already showed
+/// them. A tap that starts the app arrives through
+/// `NotificationService.initialize(onLaunch:)`, not the `onTap` stream.
+@pragma('vm:entry-point')
+Future<void> fcmBackgroundDisplayHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {
+    // Already initialised in this isolate.
+  }
+
+  if (message.notification?.title != null ||
+      message.notification?.body != null) {
+    return;
+  }
+
+  final data = message.data;
+  final title = data['title']?.toString() ?? '';
+  final body = data['body']?.toString() ?? '';
+  if (title.isEmpty && body.isEmpty) return;
+
+  // NotificationService isn't initialised in this isolate: use the plugin.
+  final plugin = FlutterLocalNotificationsPlugin();
+  await plugin.initialize(
+    settings: const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      iOS: DarwinInitializationSettings(),
+    ),
+  );
+
+  final channel =
+      data['channel']?.toString() ??
+      NotificationChannelsEntity.defaultChannelId;
+  final actions = parseFcmActions(data['actions']);
+  final id = _notificationId(message.messageId);
+
+  await plugin.show(
+    id: id,
+    title: title,
+    body: body,
+    notificationDetails: NotificationDetails(
+      android: AndroidNotificationDetails(
+        channel,
+        channel,
+        importance: Importance.high,
+        priority: Priority.high,
+        actions: actions
+            .map(
+              (a) => AndroidNotificationAction(
+                a.id,
+                a.label,
+                cancelNotification: !a.foreground,
+              ),
+            )
+            .toList(),
+      ),
+      iOS: DarwinNotificationDetails(
+        // iOS shows buttons only for a category registered at launch; the
+        // channel names it.
+        categoryIdentifier: actions.isEmpty ? null : channel,
+      ),
+    ),
+    // Same envelope LocalNotificationsRepositoryImpl writes, so its tap
+    // handler can read it.
+    payload: jsonEncode(
+      NotificationPayloadModel(
+        id: id,
+        title: title,
+        body: body,
+        data: data,
+        channel: channel,
+      ).toJson(),
+    ),
+  );
+}
+
+/// Parses `data.actions`: a JSON string (FCM data values are strings) or an
+/// already-decoded list. Anything malformed gives no actions rather than
+/// dropping the notification.
 List<NotificationActionEntity> parseFcmActions(dynamic raw) {
   if (raw == null) return const [];
   try {
@@ -108,3 +162,7 @@ List<NotificationActionEntity> parseFcmActions(dynamic raw) {
     return const [];
   }
 }
+
+/// Local notification id from the FCM message id (a positive 31-bit int).
+int _notificationId(String? messageId) =>
+    (messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch) & 0x7fffffff;

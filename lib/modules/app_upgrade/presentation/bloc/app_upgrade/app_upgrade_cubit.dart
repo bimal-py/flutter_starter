@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/modules/app_upgrade/utils/utils.dart';
+import 'package:flutter_starter/common/common.dart';
+import 'package:flutter_starter/modules/app_upgrade/utils/helper/helper.dart';
 
 part 'app_upgrade_state.dart';
 
 /// Decides "is an update available?" by reading Remote Config and comparing
 /// against `package_info_plus`. Honours per-platform kill switches, the
 /// "ignore this version" preference (bypassed by `force_update`).
-class AppUpgradeCubit extends Cubit<AppUpgradeState> {
+class AppUpgradeCubit extends SafeCubit<AppUpgradeState> {
   AppUpgradeCubit() : super(const AppUpgradeState());
 
   final RemoteConfigService _service = RemoteConfigService.instance;
@@ -58,6 +58,7 @@ class AppUpgradeCubit extends Cubit<AppUpgradeState> {
         ),
       );
     } catch (_) {
+      // An update check must never get in the way of using the app.
       emit(state.copyWith(status: AppUpgradeStatus.upToDate));
     }
   }

@@ -1,17 +1,17 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/image_picker/domain/domain.dart';
 import 'package:flutter_starter/modules/image_picker/utils/utils.dart';
 
 part 'image_picker_state.dart';
 
-class ImagePickerCubit extends Cubit<ImagePickerState> {
-  ImagePickerCubit({ImagePickerHelperLib? helper})
-    : _helper = helper ?? ImagePickerHelperLib(),
+class ImagePickerCubit extends SafeCubit<ImagePickerState> {
+  ImagePickerCubit({ImagePickerHelper? helper})
+    : _helper = helper ?? ImagePickerHelper(),
       super(const ImagePickerState());
 
-  final ImagePickerHelperLib _helper;
+  final ImagePickerHelper _helper;
 
   void setSingleImagePicker({required bool single}) =>
       emit(state.copyWith(isSingleImagePicker: single));
@@ -20,7 +20,8 @@ class ImagePickerCubit extends Cubit<ImagePickerState> {
     try {
       final file = await _helper.captureFromCamera();
       if (file == null) {
-        return emit(state.copyWith(error: 'No image captured.'));
+        emit(state.copyWith(error: ImagePickerError.noImageCaptured));
+        return;
       }
       final next = _merge(state.images, [PickedImageEntity(path: file.path)]);
       emit(state.copyWith(images: next, error: null));
@@ -33,7 +34,8 @@ class ImagePickerCubit extends Cubit<ImagePickerState> {
     try {
       final file = await _helper.pickFromGallery();
       if (file == null) {
-        return emit(state.copyWith(error: 'No image picked.'));
+        emit(state.copyWith(error: ImagePickerError.noImagePicked));
+        return;
       }
       final next = _merge(state.images, [PickedImageEntity(path: file.path)]);
       emit(state.copyWith(images: next, error: null));
@@ -46,7 +48,8 @@ class ImagePickerCubit extends Cubit<ImagePickerState> {
     try {
       final files = await _helper.pickMultipleFromGallery();
       if (files.isEmpty) {
-        return emit(state.copyWith(error: 'No images picked.'));
+        emit(state.copyWith(error: ImagePickerError.noImagesPicked));
+        return;
       }
       final incoming = files
           .map((f) => PickedImageEntity(path: f.path))
@@ -64,6 +67,7 @@ class ImagePickerCubit extends Cubit<ImagePickerState> {
 
   void clearAll() => emit(state.copyWith(images: const []));
 
+  /// Single mode replaces the list; otherwise new paths are appended once.
   List<PickedImageEntity> _merge(
     List<PickedImageEntity> existing,
     List<PickedImageEntity> incoming,
