@@ -1,5 +1,4 @@
-/// Asset routes for the house-ad app logos (assets/images/ads/, registered in
-/// pubspec). One place that maps each promoted app to its bundled logo.
+/// House-ad logos in `assets/images/ads/`, which pubspec.yaml registers.
 class SelfPromotionAssets {
   SelfPromotionAssets._();
 

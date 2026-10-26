@@ -1,1 +1,1 @@
-export 'rewarded_ad/rewarded_interstitial_ad_cubit.dart';
+export 'rewarded_interstitial_ad/rewarded_interstitial_ad.dart';

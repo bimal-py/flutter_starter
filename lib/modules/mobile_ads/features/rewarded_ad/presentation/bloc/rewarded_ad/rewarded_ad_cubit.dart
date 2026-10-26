@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/modules/mobile_ads/mobile_ads.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_starter/common/common.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/rewarded_ad/utils/utils.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 part 'rewarded_ad_state.dart';
 
-class RewardedAdCubit extends Cubit<RewardedAdState> {
+class RewardedAdCubit extends SafeCubit<RewardedAdState> {
   RewardedAdCubit() : super(const RewardedAdState());
 
   RewardedAd? _rewardedAd;
@@ -21,64 +21,73 @@ class RewardedAdCubit extends Cubit<RewardedAdState> {
     Duration(seconds: 60),
   ];
 
-  void loadAd() {
-    _retryTimer?.cancel();
-    emit(state.copyWith(status: RewardedStatus.loading));
+  bool get isAdReady => _rewardedAd != null;
 
-    RewardedAdHelper.loadRewardedAd(
-      onLoaded: (ad) {
-        _retryCount = 0;
-        _rewardedAd = ad;
-        emit(state.copyWith(status: RewardedStatus.loaded));
-      },
-      onFailed: (error) {
-        emit(state.copyWith(status: RewardedStatus.failed, error: error));
-        _scheduleRetry();
-      },
-    );
+  /// First load, and "try again": starts the retries over.
+  void load() {
+    _retryCount = 0;
+    _load();
   }
 
+  /// [onRewarded] runs when the user earns the reward; [onClosed] when the
+  /// ad closes, or at once when none is loaded.
   void showAd({
-    required Function(RewardItem reward) onRewarded,
+    required ValueChanged<RewardItem> onRewarded,
     VoidCallback? onClosed,
   }) {
-    if (_rewardedAd == null) {
+    final ad = _rewardedAd;
+    if (ad == null) {
       onClosed?.call();
       return;
     }
 
-    emit(state.copyWith(status: RewardedStatus.showing));
+    emit(state.copyWith(status: RewardedAdStatus.showing));
 
-    _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+    ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _rewardedAd = null;
         onClosed?.call();
-        loadAd();
+        _load();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _rewardedAd = null;
         onClosed?.call();
-        loadAd();
+        _load();
       },
     );
 
-    _rewardedAd!.show(onUserEarnedReward: (ad, reward) => onRewarded(reward));
+    ad.show(onUserEarnedReward: (_, reward) => onRewarded(reward));
   }
 
-  void retryLoad() {
-    _retryCount = 0;
-    loadAd();
+  void _load() {
+    _retryTimer?.cancel();
+    emit(state.copyWith(status: RewardedAdStatus.loading));
+
+    RewardedAdHelper.loadRewardedAd(
+      onLoaded: (ad) {
+        // Loaded after close: nothing would ever show or dispose it.
+        if (isClosed) {
+          ad.dispose();
+          return;
+        }
+        _retryCount = 0;
+        _rewardedAd = ad;
+        emit(state.copyWith(status: RewardedAdStatus.loaded));
+      },
+      onFailed: (error) {
+        emit(state.copyWith(status: RewardedAdStatus.failed, error: error));
+        _scheduleRetry();
+      },
+    );
   }
 
   void _scheduleRetry() {
-    if (_retryCount >= _retryDelays.length) return;
+    if (isClosed || _retryCount >= _retryDelays.length) return;
     final delay = _retryDelays[_retryCount++];
-    _retryTimer = Timer(delay, loadAd);
+    _retryTimer = Timer(delay, _load);
   }
-
-  bool get isAdReady => _rewardedAd != null;
 
   @override
   Future<void> close() {

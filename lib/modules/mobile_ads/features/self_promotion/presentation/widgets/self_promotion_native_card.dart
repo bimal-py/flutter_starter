@@ -1,47 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/entity/entity.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/domain.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/utils/utils.dart';
 
-/// Opens a promoted app's download page in the external browser.
-Future<void> openSelfPromotion(SelfPromotionApp app) async {
-  final uri = Uri.tryParse(app.shareUrl);
-  if (uri == null) return;
-  await launchUrl(uri, mode: LaunchMode.externalApplication);
-}
-
-/// Small "Ad" attribution chip, shared by the house-ad widgets.
-class SelfPromotionAdBadge extends StatelessWidget {
-  const SelfPromotionAdBadge({super.key, required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(4.r),
-      ),
-      child: Text(
-        'Ad',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 10.r,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-/// House ad shaped like a content grid card — brand-coloured, with the app
-/// logo, name, tagline and an install CTA. Tapping opens the store page.
+/// House ad shaped like a content grid card (logo, name, tagline, CTA).
+/// Tapping opens the app's download page.
 class SelfPromotionNativeCard extends StatelessWidget {
   const SelfPromotionNativeCard({super.key, required this.app});
 
-  final SelfPromotionApp app;
+  final SelfPromotionAppEntity app;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +23,7 @@ class SelfPromotionNativeCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14.r),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => openSelfPromotion(app),
+        onTap: () => SelfPromotionHelper.open(app),
         child: Padding(
           padding: EdgeInsets.all(12.r),
           child: Column(
@@ -78,7 +46,7 @@ class SelfPromotionNativeCard extends StatelessWidget {
                   SelfPromotionAdBadge(color: color),
                 ],
               ),
-              SizedBox(height: 10.h),
+              10.verticalSpace,
               Text(
                 app.name,
                 maxLines: 1,
@@ -87,7 +55,7 @@ class SelfPromotionNativeCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(height: 2.h),
+              2.verticalSpace,
               Expanded(
                 child: Text(
                   app.tagline,
@@ -99,7 +67,7 @@ class SelfPromotionNativeCard extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 8.h),
+              8.verticalSpace,
               Container(
                 width: double.infinity,
                 alignment: Alignment.center,
@@ -110,9 +78,8 @@ class SelfPromotionNativeCard extends StatelessWidget {
                 ),
                 child: Text(
                   app.cta,
-                  style: TextStyle(
+                  style: context.textTheme.labelMedium?.copyWith(
                     color: Colors.white,
-                    fontSize: 12.r,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

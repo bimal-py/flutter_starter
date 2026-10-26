@@ -1,17 +1,17 @@
 part of 'interstitial_ad_cubit.dart';
 
-enum InterstitialStatus { initial, loading, loaded, showing, failed }
+enum InterstitialAdStatus { initial, loading, loaded, showing, failed }
 
 class InterstitialAdState extends Equatable {
-  final InterstitialStatus status;
-  final String? error;
-
   const InterstitialAdState({
-    this.status = InterstitialStatus.initial,
+    this.status = InterstitialAdStatus.initial,
     this.error,
   });
 
-  InterstitialAdState copyWith({InterstitialStatus? status, String? error}) {
+  final InterstitialAdStatus status;
+  final String? error;
+
+  InterstitialAdState copyWith({InterstitialAdStatus? status, String? error}) {
     return InterstitialAdState(
       status: status ?? this.status,
       error: error ?? this.error,

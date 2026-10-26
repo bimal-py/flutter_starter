@@ -1,1 +1,1 @@
-export 'native_template_ad/native_template_ad_cubit.dart';
+export 'native_template_ad/native_template_ad.dart';

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/entity/entity.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/domain.dart';
 import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/presentation/widgets/widgets.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/utils/utils.dart';
 
-/// House ad in a horizontal banner shape (logo · name/tagline · CTA), for the
-/// banner slots. Tapping opens the promoted app's store page.
+/// House ad shaped like a banner (logo, name and tagline, CTA) for banner
+/// slots. Tapping opens the app's download page.
 class SelfPromotionBanner extends StatelessWidget {
   const SelfPromotionBanner({super.key, required this.app, this.height = 64});
 
-  final SelfPromotionApp app;
+  final SelfPromotionAppEntity app;
   final double height;
 
   @override
@@ -23,7 +24,7 @@ class SelfPromotionBanner extends StatelessWidget {
       borderRadius: BorderRadius.circular(12.r),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => openSelfPromotion(app),
+        onTap: () => SelfPromotionHelper.open(app),
         child: Container(
           height: height.r,
           padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -40,7 +41,7 @@ class SelfPromotionBanner extends StatelessWidget {
                       Icon(Icons.apps, size: 40.r, color: color),
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.horizontalSpace,
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -58,7 +59,7 @@ class SelfPromotionBanner extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 6.w),
+                        6.horizontalSpace,
                         SelfPromotionAdBadge(color: color),
                       ],
                     ),
@@ -73,7 +74,7 @@ class SelfPromotionBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 10.w),
+              10.horizontalSpace,
               Container(
                 alignment: Alignment.center,
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -83,9 +84,8 @@ class SelfPromotionBanner extends StatelessWidget {
                 ),
                 child: Text(
                   app.cta,
-                  style: TextStyle(
+                  style: context.textTheme.labelMedium?.copyWith(
                     color: Colors.white,
-                    fontSize: 12.r,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

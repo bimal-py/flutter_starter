@@ -1,19 +1,19 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/modules/mobile_ads/mobile_ads.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/native_ad/utils/utils.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 part 'native_template_ad_state.dart';
 
-class NativeTemplateAdCubit extends Cubit<NativeTemplateAdState> {
+class NativeTemplateAdCubit extends SafeCubit<NativeTemplateAdState> {
   NativeTemplateAdCubit() : super(const NativeTemplateAdState());
 
   Timer? _retryTimer;
   int _retryCount = 0;
-  TemplateType _lastTemplateType = TemplateType.medium;
+  TemplateType _templateType = TemplateType.medium;
 
   static const _retryDelays = [
     Duration(seconds: 5),
@@ -21,20 +21,31 @@ class NativeTemplateAdCubit extends Cubit<NativeTemplateAdState> {
     Duration(seconds: 60),
   ];
 
-  void loadAd({TemplateType templateType = TemplateType.medium}) {
+  /// First load, and "try again": starts the retries over. Retries reuse
+  /// [templateType].
+  void load({TemplateType templateType = TemplateType.medium}) {
+    _retryCount = 0;
+    _templateType = templateType;
+    _load();
+  }
+
+  void _load() {
     _retryTimer?.cancel();
-    _lastTemplateType = templateType;
+    emit(state.copyWith(loadingState: AppLoadingState.loading));
 
-    emit(state.copyWith(appLoadingState: AppLoadingState.loading));
-
-    final nativeAd = NativeAd(
+    NativeAd(
       adUnitId: NativeAdHelper.adUnitId,
       listener: NativeAdListener(
         onAdLoaded: (ad) {
+          // Loaded after close: nothing would ever show or dispose it.
+          if (isClosed) {
+            ad.dispose();
+            return;
+          }
           _retryCount = 0;
           emit(
             state.copyWith(
-              appLoadingState: AppLoadingState.success,
+              loadingState: AppLoadingState.success,
               nativeAd: ad as NativeAd,
             ),
           );
@@ -43,7 +54,7 @@ class NativeTemplateAdCubit extends Cubit<NativeTemplateAdState> {
           ad.dispose();
           emit(
             state.copyWith(
-              appLoadingState: AppLoadingState.failure,
+              loadingState: AppLoadingState.failure,
               error: error.message,
             ),
           );
@@ -51,16 +62,14 @@ class NativeTemplateAdCubit extends Cubit<NativeTemplateAdState> {
         },
       ),
       request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(templateType: templateType),
-    );
-
-    nativeAd.load();
+      nativeTemplateStyle: NativeTemplateStyle(templateType: _templateType),
+    ).load();
   }
 
   void _scheduleRetry() {
-    if (_retryCount >= _retryDelays.length) return;
+    if (isClosed || _retryCount >= _retryDelays.length) return;
     final delay = _retryDelays[_retryCount++];
-    _retryTimer = Timer(delay, () => loadAd(templateType: _lastTemplateType));
+    _retryTimer = Timer(delay, _load);
   }
 
   @override

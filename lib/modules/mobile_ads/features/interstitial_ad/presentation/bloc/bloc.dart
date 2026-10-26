@@ -1,1 +1,1 @@
-export 'interstitial_ad/interstitial_ad_cubit.dart';
+export 'interstitial_ad/interstitial_ad.dart';

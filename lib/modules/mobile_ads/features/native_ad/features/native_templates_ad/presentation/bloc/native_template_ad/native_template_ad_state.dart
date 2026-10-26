@@ -1,28 +1,28 @@
 part of 'native_template_ad_cubit.dart';
 
 class NativeTemplateAdState extends Equatable {
-  final AppLoadingState appLoadingState;
-  final NativeAd? nativeAd;
-  final String? error;
-
   const NativeTemplateAdState({
-    this.appLoadingState = AppLoadingState.initial,
+    this.loadingState = AppLoadingState.initial,
     this.nativeAd,
     this.error,
   });
 
+  final AppLoadingState loadingState;
+  final NativeAd? nativeAd;
+  final String? error;
+
   NativeTemplateAdState copyWith({
-    AppLoadingState? appLoadingState,
+    AppLoadingState? loadingState,
     NativeAd? nativeAd,
     String? error,
   }) {
     return NativeTemplateAdState(
-      appLoadingState: appLoadingState ?? this.appLoadingState,
+      loadingState: loadingState ?? this.loadingState,
       nativeAd: nativeAd ?? this.nativeAd,
       error: error ?? this.error,
     );
   }
 
   @override
-  List<Object?> get props => [appLoadingState, nativeAd, error];
+  List<Object?> get props => [loadingState, nativeAd, error];
 }

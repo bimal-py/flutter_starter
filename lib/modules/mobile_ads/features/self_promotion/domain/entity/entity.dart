@@ -1,1 +1,1 @@
-export 'self_promotion_app.dart';
+export 'self_promotion_app_entity.dart';

@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/modules/mobile_ads/mobile_ads.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_starter/common/common.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/interstitial_ad/utils/utils.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 part 'interstitial_ad_state.dart';
 
-class InterstitialAdCubit extends Cubit<InterstitialAdState> {
+class InterstitialAdCubit extends SafeCubit<InterstitialAdState> {
   InterstitialAdCubit() : super(const InterstitialAdState());
 
   InterstitialAd? _interstitialAd;
@@ -21,24 +21,62 @@ class InterstitialAdCubit extends Cubit<InterstitialAdState> {
     Duration(seconds: 60),
   ];
 
-  void loadAd() {
+  bool get isAdReady => _interstitialAd != null;
+
+  /// First load, and "try again": starts the retries over.
+  void load() {
+    _retryCount = 0;
+    _load();
+  }
+
+  /// [onAdClosed] runs when the ad closes, or at once when none is loaded.
+  void showAd({VoidCallback? onAdClosed}) {
+    final ad = _interstitialAd;
+    if (ad == null) {
+      onAdClosed?.call();
+      return;
+    }
+
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+        onAdClosed?.call();
+        _load();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        _interstitialAd = null;
+        onAdClosed?.call();
+        _load();
+      },
+    );
+
+    ad.show();
+  }
+
+  void _load() {
     _retryTimer?.cancel();
-    emit(state.copyWith(status: InterstitialStatus.loading));
+    emit(state.copyWith(status: InterstitialAdStatus.loading));
 
     InterstitialAd.load(
       adUnitId: InterstitialAdHelper.adUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          // Loaded after close: nothing would ever show or dispose it.
+          if (isClosed) {
+            ad.dispose();
+            return;
+          }
           _retryCount = 0;
-          _interstitialAd = ad;
-          _interstitialAd!.setImmersiveMode(true);
-          emit(state.copyWith(status: InterstitialStatus.loaded));
+          _interstitialAd = ad..setImmersiveMode(true);
+          emit(state.copyWith(status: InterstitialAdStatus.loaded));
         },
         onAdFailedToLoad: (error) {
           emit(
             state.copyWith(
-              status: InterstitialStatus.failed,
+              status: InterstitialAdStatus.failed,
               error: error.message,
             ),
           );
@@ -48,42 +86,11 @@ class InterstitialAdCubit extends Cubit<InterstitialAdState> {
     );
   }
 
-  void showAd({VoidCallback? onAdClosed}) {
-    if (_interstitialAd == null) {
-      onAdClosed?.call();
-      return;
-    }
-
-    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _interstitialAd = null;
-        onAdClosed?.call();
-        loadAd();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _interstitialAd = null;
-        onAdClosed?.call();
-        loadAd();
-      },
-    );
-
-    _interstitialAd!.show();
-  }
-
-  void retryLoad() {
-    _retryCount = 0;
-    loadAd();
-  }
-
   void _scheduleRetry() {
-    if (_retryCount >= _retryDelays.length) return;
+    if (isClosed || _retryCount >= _retryDelays.length) return;
     final delay = _retryDelays[_retryCount++];
-    _retryTimer = Timer(delay, loadAd);
+    _retryTimer = Timer(delay, _load);
   }
-
-  bool get isAdReady => _interstitialAd != null;
 
   @override
   Future<void> close() {

@@ -1,1 +1,2 @@
-export 'banner_ad_widget.dart';
+export 'banner_ad_frame.dart';
+export 'banner_ad_slot.dart';

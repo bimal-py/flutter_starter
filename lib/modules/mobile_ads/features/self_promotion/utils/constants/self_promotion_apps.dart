@@ -1,14 +1,13 @@
-import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/entity/entity.dart';
-import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/utils/constants/constants.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/domain/domain.dart';
+import 'package:flutter_starter/modules/mobile_ads/features/self_promotion/utils/utils.dart';
 
-/// The catalogue of sibling apps promoted through house ads. Each entry links a
-/// bundled logo ([SelfPromotionAssets]) to the app's
-/// `bimalkhatri.com.np/<app>/share` download page. A host app can exclude
-/// itself by filtering [all] on `id`.
+/// The apps promoted through house ads, each with a bundled logo
+/// ([SelfPromotionAssets]) and its `bimalkhatri.com.np/<app>/share` download
+/// page. Replace them with your own apps.
 class SelfPromotionApps {
   SelfPromotionApps._();
 
-  static const SelfPromotionApp callbreak = SelfPromotionApp(
+  static const SelfPromotionAppEntity callbreak = SelfPromotionAppEntity(
     id: 'callbreak',
     name: 'Callbreak Tracker',
     tagline: 'Effortless Callbreak scorekeeping.',
@@ -17,7 +16,7 @@ class SelfPromotionApps {
     colorValue: 0xFF407749,
   );
 
-  static const SelfPromotionApp morselab = SelfPromotionApp(
+  static const SelfPromotionAppEntity morselab = SelfPromotionAppEntity(
     id: 'morselab',
     name: 'MorseLab',
     tagline: 'Learn, translate & decode Morse code.',
@@ -26,7 +25,7 @@ class SelfPromotionApps {
     colorValue: 0xFF43978A,
   );
 
-  static const SelfPromotionApp triad = SelfPromotionApp(
+  static const SelfPromotionAppEntity triad = SelfPromotionAppEntity(
     id: 'triad',
     name: 'Triad',
     tagline: 'Notes, reminders & water tracking in one.',
@@ -35,7 +34,7 @@ class SelfPromotionApps {
     colorValue: 0xFF2563EB,
   );
 
-  static const SelfPromotionApp sudoku = SelfPromotionApp(
+  static const SelfPromotionAppEntity sudoku = SelfPromotionAppEntity(
     id: 'sudoku',
     name: 'Sudoku Master',
     tagline: 'Scan & play the classic 9×9 puzzle.',
@@ -44,7 +43,7 @@ class SelfPromotionApps {
     colorValue: 0xFF325BAD,
   );
 
-  static const SelfPromotionApp pomodoro = SelfPromotionApp(
+  static const SelfPromotionAppEntity pomodoro = SelfPromotionAppEntity(
     id: 'pomodoro',
     name: 'Clean Pomodoro',
     tagline: 'Focus in 25-minute sprints with calming sounds.',
@@ -53,8 +52,9 @@ class SelfPromotionApps {
     colorValue: 0xFF1B3A6B,
   );
 
-  /// Every promotable app. The host app should exclude its own id.
-  static const List<SelfPromotionApp> all = [
+  /// Every promotable app. An app promoting its siblings filters out its own
+  /// `id`.
+  static const List<SelfPromotionAppEntity> all = [
     callbreak,
     morselab,
     triad,

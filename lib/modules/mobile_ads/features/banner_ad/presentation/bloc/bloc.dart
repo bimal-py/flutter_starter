@@ -1,1 +1,1 @@
-export 'banner_ad/banner_ad_cubit.dart';
+export 'banner_ad/banner_ad.dart';

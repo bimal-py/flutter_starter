@@ -1,2 +1,2 @@
-export 'utils/utils.dart';
 export 'presentation/presentation.dart';
+export 'utils/utils.dart';
