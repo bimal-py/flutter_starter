@@ -1,4 +1,4 @@
-import 'package:flutter_starter/core/utils/constants/app_constants.dart';
+import 'package:flutter_starter/core/utils/constants/constants.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 extension HiveAppBoxExtension on HiveInterface {

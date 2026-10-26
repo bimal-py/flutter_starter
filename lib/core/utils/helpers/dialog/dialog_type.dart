@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_starter/core/utils/extensions/context_extension.dart';
+import 'package:flutter_starter/core/utils/extensions/extensions.dart';
 
 /// Visual tone of a [ConfirmationDialog]. Drives the leading icon and the
 /// confirm button's accent color.
@@ -15,10 +15,10 @@ extension DialogTypeX on DialogType {
   };
 
   Color accentColor(BuildContext context) => switch (this) {
-        DialogType.info => context.customTheme.info,
-        DialogType.success => context.customTheme.success,
-        DialogType.warning => context.customTheme.warning,
-        DialogType.danger => context.colorScheme.error,
-        DialogType.question => context.colorScheme.primary,
-      };
+    DialogType.info => context.customTheme.info,
+    DialogType.success => context.customTheme.success,
+    DialogType.warning => context.customTheme.warning,
+    DialogType.danger => context.colorScheme.error,
+    DialogType.question => context.colorScheme.primary,
+  };
 }

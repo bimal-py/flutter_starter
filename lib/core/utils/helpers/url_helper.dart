@@ -1,4 +1,4 @@
-import 'package:flutter_starter/core/errors/exceptions.dart';
+import 'package:flutter_starter/core/errors/errors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Tiny wrapper over `url_launcher` so callers don't have to construct URIs

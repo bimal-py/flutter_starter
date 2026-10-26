@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_starter/core/utils/constants/app_constants.dart';
-import 'package:flutter_starter/core/utils/helpers/dialog/dialog_type.dart';
-import 'package:flutter_starter/core/utils/helpers/permission/permission_flow.dart';
+import 'package:flutter_starter/core/utils/constants/constants.dart';
+import 'package:flutter_starter/core/utils/helpers/dialog/dialog.dart';
+import 'package:flutter_starter/core/utils/helpers/permission/permission.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Single entry point for the OS notification permission used by both

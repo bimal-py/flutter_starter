@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
 
-/// Two-line tile for displaying a labelled value (key + stringified value).
-/// Shared between modules that render flat key/value tables.
-class InfoRowTileWidget extends StatelessWidget {
-  const InfoRowTileWidget({super.key, required this.label, required this.value});
+class InfoRowTile extends StatelessWidget {
+  const InfoRowTile({super.key, required this.label, required this.value});
 
   final String label;
   final String value;

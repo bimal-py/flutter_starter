@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_scale_kit/flutter_scale_kit.dart';
-import 'package:flutter_starter/core/utils/helpers/dialog/dialog_type.dart';
+import 'package:flutter_starter/core/utils/helpers/dialog/dialog.dart';
 
 /// A Material [AlertDialog] with a typed accent icon, centered copy, and
 /// a confirm/cancel pair that resolves to `Future<bool>` via `Navigator.pop`.

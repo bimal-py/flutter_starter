@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+import 'package:flutter_starter/core/core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Full-page failure, e.g. the router's `errorBuilder`. Inline failures use
+/// [ErrorView].
 class ErrorScreen extends StatelessWidget {
   const ErrorScreen({super.key, this.message});
 
@@ -26,7 +28,7 @@ class ErrorScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  'Something went wrong',
+                  AppErrorStrings.somethingWentWrong,
                   style: Theme.of(context).textTheme.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
@@ -40,9 +42,10 @@ class ErrorScreen extends StatelessWidget {
                 ],
                 SizedBox(height: 24.h),
                 FilledButton(
-                  onPressed: () =>
-                      context.canPop() ? context.pop() : context.go('/'),
-                  child: const Text('Go back'),
+                  onPressed: () => context.canPop()
+                      ? context.pop()
+                      : context.go(Routes.splash.path),
+                  child: const Text(CommonStrings.goBack),
                 ),
               ],
             ),

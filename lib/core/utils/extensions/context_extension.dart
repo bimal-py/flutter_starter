@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_starter/core/theme/extension/custom_theme_extension.dart';
+import 'package:flutter_starter/core/theme/theme.dart';
 
 extension BuildContextExtension on BuildContext {
   ScaffoldState get scaffold => Scaffold.of(this);

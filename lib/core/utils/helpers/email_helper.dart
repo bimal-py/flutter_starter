@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/core/utils/helpers/url_helper.dart';
+import 'package:flutter_starter/core/utils/helpers/helpers.dart';
 import 'package:flutter_starter/modules/device_info/device_info.dart';
 import 'package:flutter_starter/modules/package_info/package_info.dart';
 
@@ -37,17 +37,19 @@ class EmailHelper {
     final d = entity.data;
     return switch (entity.platform) {
       'android' => () {
-          final ver = d['version'] as Map? ?? {};
-          return 'Device: ${d['brand']} ${d['model']}\n'
-              'OS: Android ${ver['release']} (API ${ver['sdkInt']})';
-        }(),
-      'ios' => 'Device: ${d['name']} ${d['model']}\nOS: iOS ${d['systemVersion']}',
-      'macos' =>
-        'Device: ${d['computerName']}\nOS: macOS ${d['osRelease']}',
-      'windows' => 'Device: ${d['computerName']}\n'
-          'OS: Windows ${d['majorVersion']}.${d['minorVersion']} (Build ${d['buildNumber']})',
+        final ver = d['version'] as Map? ?? {};
+        return 'Device: ${d['brand']} ${d['model']}\n'
+            'OS: Android ${ver['release']} (API ${ver['sdkInt']})';
+      }(),
+      'ios' =>
+        'Device: ${d['name']} ${d['model']}\nOS: iOS ${d['systemVersion']}',
+      'macos' => 'Device: ${d['computerName']}\nOS: macOS ${d['osRelease']}',
+      'windows' =>
+        'Device: ${d['computerName']}\n'
+            'OS: Windows ${d['majorVersion']}.${d['minorVersion']} (Build ${d['buildNumber']})',
       'linux' => 'Device: ${d['name']}\nOS: Linux ${d['versionId']}',
-      'web' => 'Browser: ${d['browserName']}\nUser Agent: ${d['userAgent'] ?? 'N/A'}',
+      'web' =>
+        'Browser: ${d['browserName']}\nUser Agent: ${d['userAgent'] ?? 'N/A'}',
       _ => 'Device: ${entity.platform}',
     };
   }

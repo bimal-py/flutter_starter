@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_scale_kit/flutter_scale_kit.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 
-/// Wraps the app in a [GlobalLoaderOverlay] so any descendant can call
-/// `context.loaderOverlay.show()` / `.hide()` for a global busy indicator.
+/// Hosts the app-wide blocking loader. Show it with
+/// `context.showPopupLoading()` while a request is in flight.
 class LoadingOverlayWidget extends StatelessWidget {
   const LoadingOverlayWidget({super.key, required this.child});
 
@@ -12,16 +11,12 @@ class LoadingOverlayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlobalLoaderOverlay(
-      overlayWidgetBuilder: (_) => Center(
-        child: Container(
-          padding: EdgeInsets.all(20.r),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: const CircularProgressIndicator(),
-        ),
-      ),
+      closeOnBackButton: false,
+      overlayColor: Colors.transparent,
+      // The barrier stays invisible, but it has to span the screen to swallow
+      // taps: with `false` and no explicit overlayHeight/overlayWidth it
+      // collapses to 0x0, so every tap still reached the page behind it.
+      overlayWholeScreen: true,
       child: child,
     );
   }

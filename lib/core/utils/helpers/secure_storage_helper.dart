@@ -1,5 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_starter/core/di/injection.dart';
+import 'package:flutter_starter/core/di/di.dart';
 
 /// Thin wrapper over [FlutterSecureStorage]. Resolve once from DI and reuse.
 class SecureStorageHelper {

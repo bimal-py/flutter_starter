@@ -12,6 +12,13 @@ extension StringExtension on String {
 
 extension NullableStringExtension on String? {
   bool get isNullOrEmpty => this == null || this!.isEmpty;
+
+  /// People's names as shown in the app: each word starts with a capital
+  /// ("ada lovelace" → "Ada Lovelace"); the rest is kept as typed.
+  String? get capitalizeWords => this
+      ?.split(' ')
+      .map((word) => word.isEmpty ? word : word.capitalize)
+      .join(' ');
   String orDefault([String fallback = '']) =>
       this == null || this!.isEmpty ? fallback : this!;
 }
