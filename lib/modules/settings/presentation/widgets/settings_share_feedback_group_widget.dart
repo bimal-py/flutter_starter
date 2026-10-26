@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/settings/utils/utils.dart';
 import 'package:flutter_starter/modules/qr/qr.dart';
 import 'package:flutter_starter/modules/settings/presentation/widgets/widgets.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -62,7 +63,7 @@ class SettingsShareFeedbackGroupWidget extends StatelessWidget {
 
   Future<void> _report(BuildContext context) async {
     try {
-      await EmailHelper.sendEmail(
+      await FeedbackEmailHelper.sendEmail(
         context: context,
         to: AppUrls.supportEmail,
         subject: 'Report from user (${AppConstants.appName})',

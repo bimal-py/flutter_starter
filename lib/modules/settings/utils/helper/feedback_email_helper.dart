@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/core/utils/helpers/helpers.dart';
+import 'package:flutter_starter/core/core.dart';
 import 'package:flutter_starter/modules/device_info/device_info.dart';
 import 'package:flutter_starter/modules/package_info/package_info.dart';
 
 /// Opens the user's mail app pre-filled with a support/report message and
 /// diagnostic details (device + app version) pulled from the global
 /// [DeviceInfoCubit] and [PackageInfoCubit].
-class EmailHelper {
-  const EmailHelper._();
+class FeedbackEmailHelper {
+  const FeedbackEmailHelper._();
 
   static Future<void> sendEmail({
     required BuildContext context,
