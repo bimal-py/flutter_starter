@@ -1,3 +1,5 @@
+import 'dart:ui' show Locale;
+
 /// App identity values — name, store identifiers, Hive box names.
 ///
 /// URLs live in [AppUrls] (static) or [EnvConfig] (from `.env`).
@@ -7,6 +9,10 @@ class AppConstants {
   static const String appName = 'Flutter Starter';
   static const String defaultNullValue = '-';
   static const Duration splashDuration = Duration(seconds: 2);
+
+  /// The languages the app is written in. MaterialApp and the theme's font
+  /// pick both read it; add a locale together with its translations.
+  static const List<Locale> supportedLocales = [Locale('en')];
 
   // Hive
   static const String appBoxName = 'app_box';

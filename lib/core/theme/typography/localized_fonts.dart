@@ -2,20 +2,28 @@ import 'package:flutter/widgets.dart';
 
 @immutable
 class AppFont {
-  const AppFont({required this.family, this.scale = 1.0});
+  const AppFont({
+    required this.family,
+    this.scale = 1.0,
+    this.fallback = const [],
+  });
 
   /// Font family declared in pubspec.yaml fonts: section, OR null to use the
   /// platform default.
   final String? family;
 
   /// Multiplier applied to every fontSize in the TextTheme. Use to balance
-  /// optically smaller scripts (e.g. Mukta ≈ 1.10 to match Inter).
+  /// optically smaller scripts (Devanagari ≈ 1.10 next to Inter).
   final double scale;
+
+  /// Families tried, in order, for characters [family] lacks: a Nepali
+  /// product name in an English screen. Each must be bundled too.
+  final List<String> fallback;
 }
 
-/// Per-locale font config. The active TextTheme builder reads the current
-/// locale, resolves the [AppFont] for that language, and applies `family` +
-/// `scale` to every Material text style.
+/// Per-locale font config. [AppThemeBuilder.compose] resolves the [AppFont]
+/// for the app's locale and applies `family`, `scale` and `fallback` to every
+/// Material text style.
 @immutable
 class LocalizedFonts {
   const LocalizedFonts({required this.defaultFont, this.byLocale = const {}});
@@ -31,17 +39,23 @@ class LocalizedFonts {
     return byLocale[code] ?? defaultFont;
   }
 
-  /// Pre-populated with sensible defaults — Inter as base + non-Latin pairings.
-  /// Drop or extend in your app. Font files for non-default families must be
-  /// declared in pubspec.yaml AND placed under assets/fonts/.
+  /// The two families bundled in pubspec.yaml: Inter, and NotoSansDevanagari
+  /// for Nepali and Hindi. Another language needs its font under
+  /// assets/fonts/, declared in pubspec.yaml, and an entry here.
   factory LocalizedFonts.defaults() => const LocalizedFonts(
-    defaultFont: AppFont(family: 'Inter', scale: 1.0),
+    defaultFont: AppFont(family: 'Inter', fallback: ['NotoSansDevanagari']),
     byLocale: {
-      // Devanagari (Nepali, Hindi) reads ~10% smaller than Inter optically.
-      'ne': AppFont(family: 'Mukta', scale: 1.10),
-      'hi': AppFont(family: 'Mukta', scale: 1.10),
-      'bn': AppFont(family: 'NotoSansBengali', scale: 1.08),
-      'ar': AppFont(family: 'NotoSansArabic', scale: 1.05),
+      // Devanagari reads ~10% smaller than Inter optically.
+      'ne': AppFont(
+        family: 'NotoSansDevanagari',
+        scale: 1.10,
+        fallback: ['Inter'],
+      ),
+      'hi': AppFont(
+        family: 'NotoSansDevanagari',
+        scale: 1.10,
+        fallback: ['Inter'],
+      ),
     },
   );
 }

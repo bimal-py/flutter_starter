@@ -23,7 +23,7 @@ typedef ThemeExtensionBuilder = CustomThemeExtension Function(
 );
 
 /// Single composer that turns a [ThemeSource] (plus device schemes from
-/// `DynamicColorBuilder` and the active locale) into a {light, dark} pair.
+/// `DynamicColorBuilder` and the app's locale) into a {light, dark} pair.
 /// MaterialApp wiring lives in `lib/app/app_view.dart`.
 class AppThemeBuilder {
   AppThemeBuilder._();
@@ -34,9 +34,12 @@ class AppThemeBuilder {
     ColorScheme? deviceLightScheme,
     ColorScheme? deviceDarkScheme,
     required LocalizedFonts fonts,
+    Locale? locale,
     ThemeExtensionBuilder? extensionBuilder,
   }) {
-    final font = fonts.resolve(Localizations.maybeLocaleOf(context));
+    // Above MaterialApp there is no Localizations yet, so the app passes
+    // its locale in; the lookup serves callers below MaterialApp.
+    final font = fonts.resolve(locale ?? Localizations.maybeLocaleOf(context));
 
     switch (source) {
       case SeedOnlySource(:final seed, :final accent):

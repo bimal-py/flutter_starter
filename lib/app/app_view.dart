@@ -14,6 +14,12 @@ class StarterAppView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
       builder: (context, themeState) {
+        // The locale MaterialApp will pick, for the theme's per-language
+        // font: Localizations doesn't exist yet at this level.
+        final locale = basicLocaleListResolution(
+          WidgetsBinding.instance.platformDispatcher.locales,
+          AppConstants.supportedLocales,
+        );
         return DynamicColorBuilder(
           builder: (deviceLight, deviceDark) {
             final composed = AppThemeBuilder.compose(
@@ -22,6 +28,7 @@ class StarterAppView extends StatelessWidget {
               deviceLightScheme: deviceLight,
               deviceDarkScheme: deviceDark,
               fonts: LocalizedFonts.defaults(),
+              locale: locale,
               extensionBuilder: context.read<ThemeCubit>().extensionBuilder,
             );
             return MaterialApp.router(
@@ -30,6 +37,7 @@ class StarterAppView extends StatelessWidget {
               theme: composed.light,
               darkTheme: composed.dark,
               themeMode: themeState.variant.toThemeMode(),
+              supportedLocales: AppConstants.supportedLocales,
               routerConfig: router,
               builder: (context, child) => MediaQuery(
                 data: MediaQuery.of(context).copyWith(

@@ -9,7 +9,7 @@ The rule: write sizes as `16.w`, `8.h`, `12.r` and text as `context.textTheme.<r
 lib/main.dart                                   ScaleKitBuilder(designWidth: 425, designHeight: 691)
 lib/app/app_view.dart                           system text scale capped at 1.2
 lib/core/theme/typography/app_text_style.dart   AppTextStyle.applyTo: size, weight, line height per role
-lib/core/theme/typography/localized_fonts.dart  LocalizedFonts, AppFont(family:, scale:)
+lib/core/theme/typography/localized_fonts.dart  LocalizedFonts, AppFont(family:, scale:, fallback:)
 pubspec.yaml (flutter: fonts:)                  Inter (100 to 900), NotoSansDevanagari (400 to 700)
 assets/fonts/                                   the .ttf files
 ```
@@ -52,9 +52,10 @@ Text roles and their base sizes (each clamped a few points either way): display 
 
 Fonts per language (`LocalizedFonts.defaults()`):
 
-- Default: `AppFont(family: 'Inter')`.
-- `ne`, `hi`: `Mukta`, scale 1.10. `bn`: `NotoSansBengali`, 1.08. `ar`: `NotoSansArabic`, 1.05.
+- Default: `Inter`, with `NotoSansDevanagari` as fallback, so a Nepali name in an English screen uses the bundled font instead of the phone's.
+- `ne`, `hi`: `NotoSansDevanagari`, scale 1.10, with `Inter` as fallback.
 - `scale` multiplies every size of the text theme, so scripts that look small next to Latin read the same size.
+- The language is the app's locale: `lib/app/app_view.dart` resolves the phone's languages against `AppConstants.supportedLocales` (English only, so far) the way `MaterialApp` does, and passes the result to `AppThemeBuilder.compose(locale:)`.
 
 ## How to change / extend
 
@@ -71,7 +72,8 @@ Fonts per language (`LocalizedFonts.defaults()`):
 
 1. Bundle and declare the font as above.
 2. Add `'<code>': AppFont(family: '<Family>', scale: 1.1)` to `byLocale` (ISO 639-1 code: `'ne'`, `'hi'`).
-3. Make the locale reachable. `AppThemeBuilder.compose` reads `Localizations.maybeLocaleOf(context)` with a context above `MaterialApp`, where it is always null (see Hidden details). Pass the app's locale in, or fall back to `WidgetsBinding.instance.platformDispatcher.locale` as flutter_scale_kit does, and give `MaterialApp.router` its `supportedLocales` and `localizationsDelegates`.
+3. Add the locale to `AppConstants.supportedLocales`, and give `MaterialApp.router` the `localizationsDelegates` for its translations (`flutter_localizations` for Material's own strings).
+4. A language picker in the app: set `MaterialApp.router(locale:)` from its state and pass the same value to `compose(locale:)`.
 
 **Change the text-scale cap**: `textScaler.clamp(maxScaleFactor: 1.2)` in `lib/app/app_view.dart`.
 
@@ -79,8 +81,9 @@ Fonts per language (`LocalizedFonts.defaults()`):
 
 ## Hidden details
 
-- Per-language fonts don't apply today: the locale lookup in `compose` returns null, so `defaultFont` (Inter) is used for every language.
-- The per-language families in `LocalizedFonts.defaults()` (`Mukta`, `NotoSansBengali`, `NotoSansArabic`) are not bundled, and the bundled `NotoSansDevanagari` is not used by any `AppFont`. Once the locale works, `ne` / `hi` would fall back to the system font. Point them at `NotoSansDevanagari` or bundle `Mukta`.
+- The theme is built above `MaterialApp`, where `Localizations` doesn't exist yet, so `compose` takes the locale as an argument. Without one, it reads `Localizations.maybeLocaleOf(context)`, which works only below `MaterialApp`.
+- The theme picks up a change of the phone's language on its next rebuild (a theme change, a resize), not at once. iOS restarts the app on a language change anyway.
+- A family in `fallback` that isn't bundled is skipped without a warning, and the phone's own font fills in.
 - Fonts declared in `pubspec.yaml` ship in the app whether used or not.
 - The system font size applies on top of `.sp`, capped at 1.2 (no lower cap). Don't use `.spf` in styles: it applies the system scale a second time.
 - Scaled values are computed when used. Sizes inside `ThemeData` (`48.h` buttons, `12.r` corners, text sizes) are recomputed because the theme watches flutter_scale_kit and rebuilds when the screen size changes by more than 5% (any change on desktop and web).
