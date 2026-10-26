@@ -50,7 +50,7 @@ What each permission needs natively. Entries marked "(set)" are already in the s
 | `photosAddOnly` | `WRITE_EXTERNAL_STORAGE`, max SDK 28 (set) | `NSPhotoLibraryAddUsageDescription` (set) | `PERMISSION_PHOTOS=1` (set) |
 | `photos` | `READ_MEDIA_IMAGES` (Android 13+; older: `storage`) | `NSPhotoLibraryUsageDescription` (set) | `PERMISSION_PHOTOS=1` (set) |
 | `camera` | `CAMERA` (set) | `NSCameraUsageDescription` (set) | `PERMISSION_CAMERA=1` (set) |
-| `microphone` | `RECORD_AUDIO` | `NSMicrophoneUsageDescription` (set) | `PERMISSION_MICROPHONE=1` (set) |
+| `microphone` | `RECORD_AUDIO` | `NSMicrophoneUsageDescription` | `PERMISSION_MICROPHONE=1` |
 | `locationWhenInUse` | `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` | `NSLocationWhenInUseUsageDescription` | `PERMISSION_LOCATION_WHENINUSE=1` |
 
 Every other permission and its keys: the permission_handler setup page on pub.dev.
@@ -85,6 +85,6 @@ Every other permission and its keys: the permission_handler setup page on pub.de
 - Android 12 and lower grants notifications at install. On 13 and up, the first request shows the prompt.
 - image_picker asks for the camera itself (because `CAMERA` is in the manifest) but has no settings fallback. Run `PermissionFlow.ensure(permission: Permission.camera, ...)` first if you want one. See the [image_picker module](../modules/image_picker.md).
 - The camera `<uses-feature>` entries in the manifest say `android:required="false"`, so Google Play still offers the app to devices without a camera. On those, the camera source fails; offer the gallery too.
-- Info.plist also carries `NSAppleMusicUsageDescription` and a microphone text about voice messages that the starter never uses. Reword or remove them before release.
+- The usage texts in Info.plist are short and neutral. Name your app's real reasons before release: App Review reads them.
 - The two wrappers' dialog texts are English literals in the wrapper files.
 - Local notifications start without prompting on iOS (`requestAlertPermission: false` and friends), so nothing asks before you call `ensure`.

@@ -68,16 +68,12 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>This app requires access to Apple Music for media playback and personalization purposes.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to upload image i.e., notes images, files</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone permission to record voice messages</string>
+	<string>The camera is used to take the photos you add in the app.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>This app requires photo library permission to save images to your photo library i.e., QR, images, notes</string>
+	<string>Photos access is used to save images, such as QR codes, to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs photo library access to upload image i.e., notes images, files</string>
+	<string>Photos access is used to pick the images you add in the app.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>mailto</string>
