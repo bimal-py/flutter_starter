@@ -14,6 +14,11 @@ class AppSettingCubit extends HydratedCubit<AppSettingState> {
   void requestOnboardingReplay() =>
       emit(state.copyWith(showOnboardingAtAppOpen: true));
 
+  /// A fixed key: the default is the runtime type's name, which obfuscated
+  /// and minified builds change (onboarding would show again).
+  @override
+  String get storagePrefix => 'AppSettingCubit';
+
   @override
   AppSettingState fromJson(Map<String, dynamic> json) =>
       AppSettingState.fromJson(json);

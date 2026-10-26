@@ -86,7 +86,7 @@ Find any other caller with `grep -rn "Routes.onboarding\|Routes.splash\|AppSetti
 - "Done" is one flag, `showOnboardingAtAppOpen` in `AppSettingCubit`. It defaults to `true`, so a fresh install shows onboarding. hydrated_bloc saves it in the app documents directory: it survives restarts, and clearing the app's data resets it. Android Auto Backup is on (no `allowBackup` in the manifest), so a reinstall may restore it.
 - Skip and Get started both call `markOnboardingComplete()` and then open the dashboard. Closing the app mid-carousel leaves the flag `true`, so the next launch shows onboarding again.
 - A replay sets the flag back to `true` before opening onboarding, so a replay left halfway also comes back on the next launch.
-- hydrated_bloc keys the saved state by the cubit's runtime type name. Obfuscation or web minification can change that name between builds, and onboarding then shows once more. Override `storagePrefix` in `AppSettingCubit` with a fixed string if you ship such builds.
+- `AppSettingCubit` saves under the fixed key `AppSettingCubit` (`storagePrefix`), so obfuscated and minified builds don't show onboarding again.
 - Both screens leave with `goNamed`, which replaces the stack: back never returns to the splash or to onboarding.
 - The splash wait is a fixed delay. It doesn't wait for anything else; start-up work belongs in `main.dart` or a global bloc (`AuthBloc` restores the session meanwhile, because it is created with `lazy: false`).
 - `AppUpgradeBootstrapper` holds the update dialog until the app has left the splash route.

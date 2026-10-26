@@ -136,8 +136,16 @@ class ThemeCubit extends HydratedCubit<ThemeState> {
 
   // ── Persistence ────────────────────────────────────────────────────
 
+  /// A fixed key: the default is the runtime type's name, which obfuscated
+  /// and minified builds change.
   @override
-  ThemeState fromJson(Map<String, dynamic> json) => ThemeState.fromJson(json);
+  String get storagePrefix => 'ThemeCubit';
+
+  /// `state` is still the constructor's state here, so the developer source
+  /// passed in code wins over anything saved.
+  @override
+  ThemeState fromJson(Map<String, dynamic> json) =>
+      ThemeState.fromJson(json, developerSource: state.developerSource);
 
   @override
   Map<String, dynamic>? toJson(ThemeState state) => state.toJson();

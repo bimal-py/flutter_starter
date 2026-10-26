@@ -23,13 +23,17 @@ sealed class ThemeVariant {
   const factory ThemeVariant.custom(String name, {Brightness brightness}) =
       _Custom;
 
-  static ThemeVariant fromId(String? id) {
+  /// [brightness] is used only by a custom variant's id.
+  static ThemeVariant fromId(
+    String? id, {
+    Brightness brightness = Brightness.light,
+  }) {
     if (id == null) return system;
     if (id == 'light') return light;
     if (id == 'dark') return dark;
     if (id == 'system') return system;
     if (id.startsWith('custom:')) {
-      return _Custom(id.substring('custom:'.length));
+      return _Custom(id.substring('custom:'.length), brightness: brightness);
     }
     return system;
   }

@@ -119,7 +119,7 @@ To remove only the theme playground:
 ## Hidden details
 
 - Theme choices persist. `ThemeCubit` is a `HydratedCubit`, so the mode and the playground's `userOverride` survive restarts. There is no Save button: each choice applies at once.
-- Reset calls `clearUserOverride()`, which goes back to the developer's source (`AppColors.seed` unless you pass `developerSource` to `ThemeCubit`). That source is saved too, so a later brand change reaches existing installs only after their data is cleared ([theme.md](../core/theme.md)).
+- Reset calls `clearUserOverride()`, which goes back to the developer's source (`AppColors.seed` unless you pass `developerSource` to `ThemeCubit`). That source isn't saved, so a later brand change reaches existing installs on their next start ([theme.md](../core/theme.md)).
 - A picked image is stored as a file path, not pixels. `applyUserImage` first applies a `FromImageSource` (drawn with the fallback seed), then swaps it for a `SeedOnlySource` of the extracted color. If extraction fails, the `FromImageSource` stays.
 - Extraction is not on a background isolate. `ThemeCubit` samples every 16th pixel of the image (picked at most 1024 px wide) on the main isolate, reduces them to 16 colors and takes the best-scored one. The hint under the pick button claims a background isolate; that copy is wrong.
 - The popup loader covers the whole image pick: the gallery, then the extraction.

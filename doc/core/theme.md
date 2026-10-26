@@ -137,11 +137,11 @@ BlocProvider<ThemeCubit>(
 
 ## Hidden details
 
-- The developer source is saved with the rest of `ThemeState` (`theme_state.dart`). After the first run the saved copy wins over `AppColors` and over `ThemeCubit(developerSource:)`, so a brand change shows only after the app's data is cleared.
+- Only the variant and the user's override are saved (`theme_state.dart`). The developer source always comes from code, so a new `AppColors.seed` or `ThemeCubit(developerSource:)` reaches existing installs on their next start. The saved state sits under the fixed key `ThemeCubit` (`storagePrefix`), so obfuscated builds keep it.
 - `accent` reaches no color role. `BrandPalette` builds every role, tertiary too, from `seed`. Only `BrandPalette.harmonizedAccent` reads `accent`, and nothing calls it. For a brand accent, override `'tertiary'` (and its `on`/`container` roles) with `SeedWithOverridesSource`.
 - Override keys are `ColorScheme` field names. Unknown keys are ignored without a warning; `surfaceDim` and `surfaceBright` can't be overridden.
-- A `FullCustomSource` saves only its kind. After a restart it comes back as the `AppColors` seed source.
-- `ThemeVariant.custom('amoled', brightness: Brightness.dark)` saves only its name and comes back light after a restart.
+- A `FullCustomSource` saves only its kind, so it can't come back: after a restart the override is dropped and the developer source shows.
+- `ThemeVariant.custom('amoled', brightness: Brightness.dark)` is saved as its id plus its brightness and comes back the same. What `amoled` means is up to your source layer.
 - Device colors come from the wallpaper on Android 12+ (and from the accent color on desktop). On iOS and older Android, `DynamicDeviceSource` uses its fallback seed. `DynamicColorBuilder` always runs, but its schemes are read only for that source.
 - Picking a photo: the cubit samples 1 pixel in 16, keeps the best-scored color and replaces the override with a `SeedOnlySource`. If that fails the fallback seed stays. `NetworkImageRef` is not extracted.
 - `toggle()` cycles light → dark → system.

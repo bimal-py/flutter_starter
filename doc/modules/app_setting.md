@@ -45,5 +45,5 @@ Add a flag: a field in `AppSettingState` (constructor default, `copyWith`, `toJs
 
 - It is a `HydratedCubit`, not a `SafeCubit` like the other cubits, because its state is written to disk after every change and read back at launch.
 - The saved JSON is `{"showOnboardingAtAppOpen": bool}`; a missing or unreadable value falls back to `true`, so a broken entry shows onboarding again rather than crashing.
-- hydrated_bloc keys the saved state by the class name (`storagePrefix` defaults to the runtime type). Renaming `AppSettingCubit`, or an obfuscated / minified build, gives a new key and onboarding shows once more. Override `storagePrefix` with a fixed string if you ship such builds.
+- The saved state sits under the fixed key `AppSettingCubit` (`storagePrefix`). hydrated_bloc's default is the runtime type's name, which obfuscated and minified builds change; onboarding would then show once more. Keep the string if you rename the class.
 - The storage lives in the app documents directory (`HydratedStorageDirectory.web` on the web): it survives restarts and updates, and clearing the app's data resets it.
