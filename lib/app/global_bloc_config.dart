@@ -28,10 +28,9 @@ class GlobalBlocConfig extends StatelessWidget {
         ),
         // Optional. Delete with lib/modules/app_upgrade/ to remove update popup.
         BlocProvider<AppUpgradeCubit>(create: (_) => AppUpgradeCubit()),
-        // Optional. The bloc resolves use cases via getIt — write your own
-        // `@LazySingleton(as: AuthRepository)` class before shipping (REST /
-        // Firebase / Supabase). Delete with lib/modules/auth/ to remove.
-        BlocProvider<AuthBloc>(create: (_) => AuthBloc()),
+        // Optional. Eager so the saved session is restored at launch.
+        // Delete with lib/modules/auth/ to remove.
+        BlocProvider<AuthBloc>(lazy: false, create: (_) => AuthBloc()),
       ],
       child: child,
     );

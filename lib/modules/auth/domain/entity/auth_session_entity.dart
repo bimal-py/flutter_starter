@@ -1,14 +1,15 @@
 import 'package:equatable/equatable.dart';
 
-// Tokens live in secure storage; this entity holds session metadata only.
+/// Who is signed in. Tokens are kept in secure storage, not here.
 class AuthSessionEntity extends Equatable {
-  const AuthSessionEntity({this.roles = const []});
+  final String? userId;
+  final String? email;
 
-  final List<String> roles;
+  /// "Remember me": when false the session ends with the app process.
+  final bool? remember;
 
-  AuthSessionEntity copyWith({List<String>? roles}) =>
-      AuthSessionEntity(roles: roles ?? this.roles);
+  const AuthSessionEntity({this.userId, this.email, this.remember});
 
   @override
-  List<Object?> get props => [roles];
+  List<Object?> get props => [userId, email, remember];
 }

@@ -1,12 +1,18 @@
 import 'dart:convert';
 
 class AuthSessionModel {
-  AuthSessionModel({this.roles});
+  final String? userId;
+  final String? email;
+  final bool? remember;
 
-  final List<String>? roles;
+  AuthSessionModel({this.userId, this.email, this.remember});
 
-  AuthSessionModel copyWith({List<String>? roles}) =>
-      AuthSessionModel(roles: roles ?? this.roles);
+  AuthSessionModel copyWith({String? userId, String? email, bool? remember}) =>
+      AuthSessionModel(
+        userId: userId ?? this.userId,
+        email: email ?? this.email,
+        remember: remember ?? this.remember,
+      );
 
   factory AuthSessionModel.fromRawJson(String str) =>
       AuthSessionModel.fromJson(json.decode(str) as Map<String, dynamic>);
@@ -15,14 +21,14 @@ class AuthSessionModel {
 
   factory AuthSessionModel.fromJson(Map<String, dynamic> json) =>
       AuthSessionModel(
-        roles: json['roles'] == null
-            ? []
-            : List<String>.from(
-                (json['roles'] as List).map((x) => x.toString()),
-              ),
+        userId: json["user_id"]?.toString(),
+        email: json["email"]?.toString(),
+        remember: json["remember"] as bool?,
       );
 
   Map<String, dynamic> toJson() => {
-    'roles': roles == null ? [] : List<dynamic>.from(roles!),
+    "user_id": userId,
+    "email": email,
+    "remember": remember,
   };
 }

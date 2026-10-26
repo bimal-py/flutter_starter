@@ -1,1 +1,1 @@
-export 'local_user_session_repository.dart';
+export 'local_auth_session_repository.dart';

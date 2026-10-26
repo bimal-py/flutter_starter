@@ -1,37 +1,63 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_starter/common/common.dart';
 import 'package:flutter_starter/core/core.dart';
-import 'package:flutter_starter/core/errors/exceptions.dart';
-import 'package:flutter_starter/modules/auth/domain/use_case/use_case.dart';
+import 'package:flutter_starter/modules/auth/domain/domain.dart';
 
 part 'reset_password_state.dart';
 
-class ResetPasswordCubit extends Cubit<ResetPasswordState> {
-  ResetPasswordCubit() : super(const ResetPasswordInitial());
+/// Reset step 2: set the new password with the code, or resend the code.
+class ResetPasswordCubit extends SafeCubit<ResetPasswordState> {
+  ResetPasswordCubit({required String email})
+    : super(ResetPasswordState(email: email));
 
-  final ResetPasswordUseCase _resetPasswordUseCase =
-      getIt<ResetPasswordUseCase>();
+  final ConfirmPasswordResetUseCase _confirmUseCase =
+      getIt<ConfirmPasswordResetUseCase>();
+  final RequestPasswordResetUseCase _requestUseCase =
+      getIt<RequestPasswordResetUseCase>();
 
-  Future<void> resetPasswordSubmitted({
-    required String oldPassword,
+  Future<void> resetPassword({
+    required String code,
     required String newPassword,
-  }) async {
-    emit(const ResetPasswordLoading());
+  }) => _run(ResetPasswordAction.reset, () async {
+    await _confirmUseCase.execute(
+      ConfirmPasswordResetUseCaseParams(
+        email: state.email,
+        code: code,
+        newPassword: newPassword,
+      ),
+    );
+    return null;
+  });
+
+  Future<void> resendCode() => _run(
+    ResetPasswordAction.resend,
+    () => _requestUseCase.execute(
+      RequestPasswordResetUseCaseParams(email: state.email),
+    ),
+  );
+
+  Future<void> _run(
+    ResetPasswordAction action,
+    Future<VerificationCodeEntity?> Function() request,
+  ) async {
+    if (state.loadingState.isLoading) return;
+    emit(
+      state.copyWith(
+        action: action,
+        loadingState: AppLoadingState.loading,
+        clearError: true,
+      ),
+    );
     try {
-      if (oldPassword == newPassword) {
-        throw const ParseException(
-          message: 'New password cannot be the same as the old password',
-        );
-      }
-      await _resetPasswordUseCase.execute(
-        ResetPasswordParams(
-          oldPassword: oldPassword,
-          newPassword: newPassword,
+      final code = await request();
+      emit(state.copyWith(loadingState: AppLoadingState.success, code: code));
+    } catch (error) {
+      emit(
+        state.copyWith(
+          loadingState: AppLoadingState.failure,
+          error: AppErrorHandler.getErrorMessage(error),
         ),
       );
-      emit(const ResetPasswordSuccess());
-    } catch (e) {
-      emit(ResetPasswordError(error: AppErrorHandler.getErrorMessage(e)));
     }
   }
 }

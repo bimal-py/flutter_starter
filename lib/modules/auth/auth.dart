@@ -1,4 +1,4 @@
-export 'bootstrapper/auth_bootstrapper.dart';
+export 'bootstrapper/bootstrapper.dart';
 export 'data/data.dart';
 export 'domain/domain.dart';
 export 'features/features.dart';

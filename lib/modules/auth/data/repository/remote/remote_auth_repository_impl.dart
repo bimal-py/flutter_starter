@@ -1,215 +1,211 @@
-import 'dart:async';
-
-import 'package:flutter_starter/core/errors/exceptions.dart';
-import 'package:flutter_starter/core/network/dio/interceptors/logout_interceptor.dart';
-import 'package:flutter_starter/core/network/service/remote_service.dart';
-import 'package:flutter_starter/modules/auth/auth.dart';
+import 'package:flutter_starter/core/core.dart';
+import 'package:flutter_starter/modules/auth/data/mapper/mapper.dart';
+import 'package:flutter_starter/modules/auth/domain/domain.dart';
+import 'package:flutter_starter/modules/auth/utils/utils.dart';
+import 'package:flutter_starter/modules/user/user.dart';
 import 'package:injectable/injectable.dart';
 
-@LazySingleton(as: AuthRepository)
-class RemoteAuthRepositoryImpl implements AuthRepository {
+@LazySingleton(as: RemoteAuthRepository)
+class RemoteAuthRepositoryImpl implements RemoteAuthRepository {
   RemoteAuthRepositoryImpl(
     this._remote,
-    this._store,
-    this._thirdParty,
-    this._logoutHandler,
+    this._session,
     this._logoutInterceptor,
+    this._thirdParty,
+    this._remoteUsers,
+    this._users,
   );
 
   final RemoteService _remote;
-  final LocalUserSessionRepository _store;
-  final ThirdPartyAuthProvider _thirdParty;
-  final LogoutHandler _logoutHandler;
+  final LocalAuthSessionRepository _session;
   final LogoutInterceptor _logoutInterceptor;
+  final ThirdPartyAuthProvider _thirdParty;
+  final RemoteUserRepository _remoteUsers;
+  final LocalUserRepository _users;
 
   @override
-  Future<void> loginWithEmailAndPassword({
+  Future<void> login({
     required String email,
     required String password,
+    required bool remember,
+  }) => _signIn(
+    endPoint: AuthApiRoute.login,
+    payload: {'email': email, 'password': password},
+    remember: remember,
+  );
+
+  @override
+  Future<VerificationCodeEntity> sendVerificationCode({
+    required String email,
   }) async {
-    _logoutInterceptor.clearLoggedOut();
-    try {
-      final response = await _remote.post(
-        endpoint: AuthApiRoute.login,
-        body: {'username': email, 'password': password},
-      );
-      await _persistSession(response);
-      await _fetchAndSaveUser();
-    } catch (_) {
-      await _store.clearSession();
-      rethrow;
-    }
+    final response = await _remote.postResponse(
+      endPoint: AuthApiRoute.sendVerificationCode,
+      payloadObj: {'email': email},
+    );
+    return VerificationCodeMapper.fromJsonToEntity(_data(response));
   }
 
   @override
-  Future<void> loginWithGoogle() =>
-      _exchangeThirdParty(_thirdParty.retrieveGoogleCredential());
-
-  @override
-  Future<void> loginWithApple() =>
-      _exchangeThirdParty(_thirdParty.retrieveAppleCredential());
-
-  Future<void> _exchangeThirdParty(
-    Future<ThirdPartyCredential> retrieve,
-  ) async {
-    _logoutInterceptor.clearLoggedOut();
-    try {
-      final cred = await retrieve;
-      final isGoogle = cred.provider == ThirdPartyProvider.google;
-      final response = await _remote.post(
-        endpoint: isGoogle ? AuthApiRoute.googleLogin : AuthApiRoute.appleLogin,
-        body: isGoogle
-            ? {
-                'access_token': cred.token,
-                'provider': 'google',
-              }
-            : {
-                'state': cred.state,
-                'code': cred.token,
-                'is_iphone': cred.isFromIos,
-              },
-      );
-      await _persistSession(response);
-      await _fetchAndSaveUser();
-    } catch (_) {
-      await _thirdParty.signOut();
-      await _store.clearSession();
-      rethrow;
-    }
-  }
-
-  // Backend returns tokens in three known shapes:
-  //   1. top-level {access_token, refresh_token, roles}
-  //   2. envelope {data: {access_token, refresh_token, ...}}
-  //   3. nested tokens {data: {tokens: {access, refresh}, ...}}
-  Future<void> _persistSession(dynamic response) async {
-    if (response is! Map<String, dynamic>) {
-      throw const AuthenticationException(
-        message: AuthError.invalidAuthResponse,
-      );
-    }
-    final accessToken = _extractToken(response, const ['access_token', 'access']);
-    final refreshToken = _extractToken(response, const ['refresh_token', 'refresh']);
-    if (accessToken == null || refreshToken == null) {
-      throw const AuthenticationException(message: AuthError.missingTokens);
-    }
-    await _store.saveTokens(
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    );
-    final sessionRoot = _sessionRoot(response);
-    await _store.saveAuthSession(
-      AuthSessionMapper.fromJsonToEntity(sessionRoot),
-    );
-  }
-
-  String? _extractToken(Map<String, dynamic> body, List<String> keys) {
-    String? pick(Map source) {
-      for (final key in keys) {
-        final value = source[key];
-        if (value is String && value.isNotEmpty) return value;
-      }
-      return null;
-    }
-
-    return pick(body) ??
-        (body['data'] is Map
-            ? (pick(body['data'] as Map) ??
-                  (body['data']['tokens'] is Map
-                      ? pick(body['data']['tokens'] as Map)
-                      : null))
-            : null);
-  }
-
-  Map<String, dynamic> _sessionRoot(Map<String, dynamic> body) {
-    if (body.containsKey('roles')) return body;
-    final data = body['data'];
-    if (data is Map<String, dynamic>) return data;
-    return body;
-  }
-
-  Future<void> _fetchAndSaveUser() async {
-    final response = await _remote.get(
-      endpoint: AuthApiRoute.user,
-      authRequired: true,
-    );
-    final data = response is Map<String, dynamic>
-        ? (response['data'] ?? response)
-        : null;
-    if (data is! Map<String, dynamic> || data.isEmpty) {
-      await _store.clearSession();
-      throw const AuthenticationException(message: AuthError.userFetchFailed);
-    }
-    await _store.saveUser(UserMapper.fromJsonToEntity(data));
-  }
-
-  @override
-  Future<void> registerEmail({required String email}) async {
-    final response = await _remote.post(
-      endpoint: AuthApiRoute.registerEmail,
-      body: {'email': email},
-    );
-    if (response is Map<String, dynamic> && response['status'] == false) {
-      throw const AuthenticationException(
-        message: AuthError.registerEmailFailed,
-      );
-    }
-  }
-
-  @override
-  Future<void> registerUser({
+  Future<bool> register({
     required String email,
-    required String password,
     required String code,
+    required String password,
   }) async {
     _logoutInterceptor.clearLoggedOut();
-    try {
-      final response = await _remote.post(
-        endpoint: AuthApiRoute.register,
-        body: {'email': email, 'code': code, 'password': password},
-      );
-      if (response is Map<String, dynamic> && response['status'] == false) {
-        throw const AuthenticationException(message: AuthError.registerFailed);
-      }
-      await _persistSession(response);
-      await _fetchAndSaveUser();
-    } catch (_) {
-      await _store.clearSession();
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> forgetPassword({required String email}) async {
-    await _remote.post(
-      endpoint: AuthApiRoute.forgetPassword,
-      body: {'email': email},
-    );
-  }
-
-  @override
-  Future<void> resetPassword({
-    required String oldPassword,
-    required String newPassword,
-  }) async {
-    await _remote.post(
-      endpoint: AuthApiRoute.resetPassword,
-      authRequired: true,
-      body: {
-        'old_password': oldPassword,
-        'new_password1': newPassword,
-        'new_password2': newPassword,
+    // A failure here means no account was created.
+    final response = await _remote.postResponse(
+      endPoint: AuthApiRoute.register,
+      payloadObj: {
+        'email': email,
+        'code': code,
+        // The form has no name field yet: use the part before the @.
+        'full_name': email.split('@').first,
+        'password': password,
+        'confirm_password': password,
       },
     );
+    // The account exists now. If signing in fails, the user just logs in.
+    try {
+      await _finishSignIn(response, remember: false);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
-  Future<UserEntity?> getLoggedInUser() => _store.getUser();
+  Future<void> loginWithGoogle({required bool remember}) async {
+    final credential = await _thirdParty.retrieveGoogleCredential();
+    return _socialSignIn(
+      endPoint: AuthApiRoute.googleLogin,
+      payload: {'id_token': credential.token},
+      remember: remember,
+    );
+  }
 
   @override
-  Stream<UserEntity?> watchUser() => _store.watchUser();
+  Future<void> loginWithApple({required bool remember}) async {
+    final credential = await _thirdParty.retrieveAppleCredential();
+    return _socialSignIn(
+      endPoint: AuthApiRoute.appleLogin,
+      payload: {
+        'code': credential.token,
+        'is_iphone': credential.isFromIos,
+        if (credential.fullName != null) 'full_name': credential.fullName,
+        if (credential.redirectUri != null)
+          'redirect_uri': credential.redirectUri,
+      },
+      remember: remember,
+    );
+  }
+
+  Future<void> _socialSignIn({
+    required String endPoint,
+    required Map<String, dynamic> payload,
+    required bool remember,
+  }) async {
+    try {
+      await _signIn(endPoint: endPoint, payload: payload, remember: remember);
+    } catch (_) {
+      // Let the user pick another Google account on the next try.
+      await _thirdParty.signOut();
+      rethrow;
+    }
+  }
+
+  /// Sign-in answers with tokens only; then `users/me/` says who signed in.
+  Future<void> _signIn({
+    required String endPoint,
+    required Map<String, dynamic> payload,
+    required bool remember,
+  }) async {
+    // A forced logout blocks token requests; a fresh sign-in lifts it.
+    _logoutInterceptor.clearLoggedOut();
+    final response = await _remote.postResponse(
+      endPoint: endPoint,
+      payloadObj: payload,
+    );
+    await _finishSignIn(response, remember: remember);
+  }
+
+  /// After a sign-in reply: save the tokens, load who signed in
+  /// (`users/me/`), keep the user, then save the session. The session goes
+  /// last: it is what tells the app someone signed in.
+  Future<void> _finishSignIn(dynamic response, {required bool remember}) async {
+    try {
+      final tokens = _data(response)['tokens'];
+      await _saveTokens(tokens is Map<String, dynamic> ? tokens : const {});
+      final user = await _remoteUsers.fetchUser();
+      await _users.saveUser(user);
+      await _session.saveSession(
+        AuthSessionEntity(
+          userId: user.id,
+          email: user.email,
+          remember: remember,
+        ),
+      );
+      final email = user.email;
+      if (remember && email != null) {
+        await _session.saveRememberedEmail(email);
+      } else {
+        await _session.clearRememberedEmail();
+      }
+    } catch (_) {
+      await _session.clearSession();
+      await _users.clear();
+      rethrow;
+    }
+  }
+
+  Future<void> _saveTokens(Map<String, dynamic> data) async {
+    final access = data['access'];
+    final refresh = data['refresh'];
+    if (access is! String || refresh is! String) {
+      throw const AuthenticationException(message: AuthError.missingTokens);
+    }
+    await _session.saveTokens(accessToken: access, refreshToken: refresh);
+  }
 
   @override
-  Future<void> logout({bool wasStillAuthenticated = true}) =>
-      _logoutHandler.logout(wasStillAuthenticated: wasStillAuthenticated);
+  Future<VerificationCodeEntity> requestPasswordReset({
+    required String email,
+  }) async {
+    final response = await _remote.postResponse(
+      endPoint: AuthApiRoute.passwordReset,
+      payloadObj: {'email': email},
+    );
+    return VerificationCodeMapper.fromJsonToEntity(_data(response));
+  }
+
+  @override
+  Future<void> confirmPasswordReset({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await _remote.postResponse(
+      endPoint: AuthApiRoute.passwordResetConfirm,
+      payloadObj: {'email': email, 'code': code, 'new_password': newPassword},
+    );
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // Every device stays signed in, so the current tokens stay valid.
+    await _remote.postResponse(
+      endPoint: AuthApiRoute.password,
+      payloadObj: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+      isTokenRequired: true,
+    );
+  }
+
+  // `data` of the envelope, or an empty map.
+  static Map<String, dynamic> _data(dynamic response) =>
+      ApiResponseEnvelope.asObject(response) ?? const {};
 }

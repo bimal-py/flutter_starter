@@ -2,15 +2,19 @@ class AuthApiRoute {
   AuthApiRoute._();
 
   static const String login = 'auth/login/';
-  static const String logout = 'auth/logout/';
-  static const String googleLogin = 'auth/oauth/google/';
-  static const String appleLogin = 'auth/oauth/apple/';
-  static const String refresh = 'auth/token/refresh/';
-  static const String registerEmail = 'auth/register/email/';
-  static const String register = 'auth/register/';
-  static const String forgetPassword = 'auth/password/reset/';
-  static const String resetPassword = 'auth/password/change/';
 
-  // Fetch / validate current user; also used as a token-validity check.
-  static const String user = 'auth/user/';
+  /// Email sign-up: code first, then register.
+  static const String sendVerificationCode = 'auth/send/verify-email/';
+  static const String register = 'auth/register/';
+  static const String googleLogin = 'auth/google/';
+  static const String appleLogin = 'auth/apple/';
+  static const String logout = 'auth/logout/';
+  static const String passwordReset = 'auth/password/reset/';
+  static const String passwordResetConfirm = 'auth/password/reset/confirm/';
+
+  /// Change password (no password yet → Forgot password).
+  static const String password = 'auth/password/';
+
+  /// SimpleJWT refresh.
+  static const String refresh = 'auth/token/refresh/';
 }

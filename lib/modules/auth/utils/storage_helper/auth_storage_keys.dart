@@ -3,8 +3,11 @@ class AuthStorageKeys {
 
   static const String boxName = 'auth_box';
 
-  static const String loggedInUserKey = '${boxName}_logged_in_user';
-  static const String authSessionKey = '${boxName}_session';
+  // Hive box entries.
+  static const String sessionKey = '${boxName}_session';
+
+  /// Login email kept while "Remember me" is on; survives logout.
+  static const String rememberedEmailKey = '${boxName}_remembered_email';
 
   // Secure-storage entries, namespaced under the box name.
   static const String accessTokenKey = '${boxName}_access_token';
