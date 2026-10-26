@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter_starter/core/errors/app_error_strings.dart';
-import 'package:flutter_starter/core/errors/exceptions.dart';
+import 'package:flutter_starter/core/errors/errors.dart';
 
 class AppErrorHandler {
   AppErrorHandler._();

@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 /// Injects `Authorization: Bearer <token>` on requests that opt in via
-/// [authRequired]. Token is read lazily via [accessToken] so the storage
-/// lookup happens per-request and the caller controls the source.
+/// [isTokenRequired]. Token is read lazily via [accessToken] so the storage
+/// lookup happens per-request and a refreshed token is picked up at once.
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor({required this.authRequired, this.accessToken});
+  AuthInterceptor({required this.isTokenRequired, this.accessToken});
 
-  final bool authRequired;
+  final bool isTokenRequired;
   final AsyncValueGetter<String?>? accessToken;
 
   @override
@@ -15,11 +15,11 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    if (authRequired) {
-      final token = await accessToken?.call();
-      if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
+    if (!isTokenRequired) return super.onRequest(options, handler);
+
+    final token = await accessToken?.call();
+    if (token != null && token.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $token';
     }
     super.onRequest(options, handler);
   }

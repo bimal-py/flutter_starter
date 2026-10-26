@@ -13,7 +13,16 @@ class CacheException extends AppException {
 }
 
 class ServerException extends AppException {
-  const ServerException({required super.message, super.code});
+  const ServerException({required super.message, super.code, this.statusCode});
+
+  /// HTTP status of the reply; null when the server wasn't reached
+  /// (offline, timeout).
+  final int? statusCode;
+
+  /// The server answered and refused the request (4xx): the request itself
+  /// was the problem, not the connection or the server.
+  bool get isRejected =>
+      statusCode != null && statusCode! >= 400 && statusCode! < 500;
 }
 
 class AuthenticationException extends AppException {

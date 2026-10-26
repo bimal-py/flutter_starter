@@ -1,83 +1,82 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_starter/core/network/dio/error_handler/api_error_strings.dart';
+import 'package:flutter_starter/core/network/dio/error_handler/error_handler.dart';
 
+/// Turns a [DioException] into the message shown to the user.
+///
+/// The backend answers failures with
+/// `{status: false, message, data: null, errors: {fields: {...}} | {detail} | {field: [..]}}`
+/// and a readable `message`. The server `message` wins unless it is the
+/// generic [ApiErrorStrings.genericServerMessage], in which case the first
+/// specific error is used; status-code copy is the last resort (e.g. an HTML
+/// error page).
 class DioExceptionUtil {
   DioExceptionUtil._();
 
   static String handleError(DioException error) {
     return switch (error.type) {
       DioExceptionType.cancel => ApiErrorStrings.requestCancelled,
-      DioExceptionType.connectionError => ApiErrorStrings.connectionFailed,
+      DioExceptionType.connectionError => ApiErrorStrings.cannotReachServer,
       DioExceptionType.connectionTimeout => ApiErrorStrings.requestTimedOut,
       DioExceptionType.receiveTimeout => ApiErrorStrings.requestTimedOut,
+      DioExceptionType.transformTimeout => ApiErrorStrings.requestTimedOut,
       DioExceptionType.sendTimeout => ApiErrorStrings.sendTimeout,
       DioExceptionType.badCertificate => ApiErrorStrings.badCertificate,
-      DioExceptionType.badResponse => _handleResponseError(error),
-      DioExceptionType.unknown => ApiErrorStrings.unknownError,
+      DioExceptionType.badResponse => _handleResponseError(error.response),
+      DioExceptionType.unknown =>
+        error.response == null
+            ? ApiErrorStrings.cannotReachServer
+            : _handleResponseError(error.response),
     };
   }
 
-  static String _handleResponseError(DioException error) {
-    final statusCode = error.response?.statusCode ?? 0;
-    final data = error.response?.data;
+  /// Field errors from a 400 (`errors.fields` or the bare `errors` map), for
+  /// forms that highlight individual inputs.
+  static Map<String, dynamic>? fieldErrors(DioException error) {
+    final body = error.response?.data;
+    if (body is! Map<String, dynamic>) return null;
+    final errors = body['errors'];
+    if (errors is! Map<String, dynamic>) return null;
+    final fields = errors['fields'];
+    return fields is Map<String, dynamic> ? fields : errors;
+  }
 
-    return switch (statusCode) {
-      400 => _parseValidationErrors(data) ?? ApiErrorStrings.badRequest,
-      401 => ApiErrorStrings.unauthorized,
+  static String _handleResponseError(Response<dynamic>? response) {
+    final message = _serverMessage(response?.data);
+    if (message != null) return message;
+    return switch (response?.statusCode ?? 0) {
+      400 => ApiErrorStrings.badRequest,
+      401 => ApiErrorStrings.sessionExpired,
       403 => ApiErrorStrings.forbidden,
       404 => ApiErrorStrings.notFound,
       429 => ApiErrorStrings.tooManyRequests,
-      500 => ApiErrorStrings.serverError,
-      502 || 503 || 504 => ApiErrorStrings.serviceUnavailable,
-      _ => () {
-        debugPrint('[DIO ERROR] $statusCode: ${data.toString()}');
-        return '${ApiErrorStrings.unknownError} ($statusCode)';
-      }(),
+      final code when code >= 500 => ApiErrorStrings.serverError,
+      _ => ApiErrorStrings.unknownError,
     };
   }
 
-  /// Unpacks `{field: [msg]}` / `{errors: {...}}` / `{message: '...'}` shapes
-  /// from 400 responses into a single user-facing string. Returns null when
-  /// the payload doesn't match any known shape so the caller falls back to
-  /// [ApiErrorStrings.badRequest].
-  static String? _parseValidationErrors(dynamic data) {
-    if (data is! Map<String, dynamic>) return null;
-    final messages = <String>[];
-
-    void extract(dynamic node, String parentKey) {
-      if (node is Map<String, dynamic>) {
-        node.forEach((key, value) {
-          extract(value, _humanizeKey(key));
-        });
-      } else if (node is List) {
-        for (final element in node) {
-          extract(element, parentKey);
-        }
-      } else if (node is String) {
-        if (node.contains('null') || node.contains('blank')) {
-          messages.add('$parentKey is required');
-        } else if (node.contains('unique')) {
-          messages.add('$parentKey already exists');
-        } else if (node.contains('field is required')) {
-          messages.add('$parentKey is required');
-        } else {
-          messages.add(node);
-        }
-      }
+  static String? _serverMessage(dynamic body) {
+    if (body is! Map<String, dynamic>) return null;
+    final message = body['message'];
+    if (message is String &&
+        message.isNotEmpty &&
+        message != ApiErrorStrings.genericServerMessage) {
+      return message;
     }
-
-    if (data.containsKey('errors')) extract(data['errors'], '');
-    if (messages.isEmpty && data.containsKey('message')) {
-      messages.add(data['message'].toString());
+    final errors = body['errors'];
+    if (errors is Map<String, dynamic>) {
+      final specific = errors['message'] ?? errors['detail'];
+      if (specific != null) return specific.toString();
+      return _firstError(errors);
     }
-
-    return messages.isEmpty ? null : messages.join(' & ');
+    return _firstError(body['detail']);
   }
 
-  static String _humanizeKey(String key) {
-    final cleaned = key.replaceAll('_', ' ');
-    if (cleaned.isEmpty) return cleaned;
-    return cleaned[0].toUpperCase() + cleaned.substring(1);
+  static String? _firstError(Object? value) {
+    if (value is String) return value.isEmpty ? null : value;
+    if (value is List && value.isNotEmpty) return _firstError(value.first);
+    if (value is Map && value.isNotEmpty) {
+      return _firstError(value.values.first);
+    }
+    return null;
   }
 }
