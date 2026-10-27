@@ -163,13 +163,13 @@ AdsController.instance.isPremium = true;
 
 1. Delete `lib/modules/mobile_ads/`.
 2. In `lib/main.dart`, delete:
-   - `import 'package:flutter_starter/modules/mobile_ads/mobile_ads.dart';` (line 11 today);
-   - the comment that starts with `// Mobile Ads SDK — deferred to after the first frame`, and the `WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(MobileAdsInitializer.instance.init()));` call under it (lines 48–54);
+   - `import 'package:flutter_starter/modules/mobile_ads/mobile_ads.dart';`;
+   - the `// Optional. Remove with lib/modules/mobile_ads/.` comment with the three comment lines under it, and the `WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(MobileAdsInitializer.instance.init()));` call they describe;
    - `import 'dart:async';`, because `unawaited` was the only thing that used it.
 3. Find anything else that uses the module, such as a provider you added in `lib/app/global_bloc_config.dart` or a slot in a screen: `grep -rn "modules/mobile_ads" lib test`. In the starter as shipped, `lib/main.dart` is the only one.
 4. In `pubspec.yaml`, remove `google_mobile_ads: ^9.2.0` and `app_tracking_transparency: ^2.0.6` with their comment lines, and `- assets/images/ads/` under `flutter: assets:`. Then delete the `assets/images/ads/` folder. Keep `url_launcher`, because core uses it.
-5. In `android/app/src/main/AndroidManifest.xml`, remove the "AdMob App ID" comment and the `com.google.android.gms.ads.APPLICATION_ID` `<meta-data>` (lines 38–43). Also remove `<uses-permission android:name="com.google.android.gms.permission.AD_ID"/>` (line 7) unless something else in the app needs the advertising ID.
-6. In `ios/Runner/Info.plist`, remove `GADApplicationIdentifier`, `NSUserTrackingUsageDescription` and `SKAdNetworkItems`, with their comments (lines 87–156 today).
+5. In `android/app/src/main/AndroidManifest.xml`, remove the "AdMob App ID" comment and the `com.google.android.gms.ads.APPLICATION_ID` `<meta-data>` under it. Also remove `<uses-permission android:name="com.google.android.gms.permission.AD_ID"/>` unless something else in the app needs the advertising ID.
+6. In `ios/Runner/Info.plist`, remove `GADApplicationIdentifier`, `NSUserTrackingUsageDescription` and `SKAdNetworkItems`, with the comment above each.
 7. In `.env` and `.env_example`, remove the "Google Mobile Ads" section (the 24 `*_AD_UNIT_ID` keys).
 8. Run `flutter pub get`, `dart run build_runner build` and `flutter analyze`. The module registers nothing with get_it, so `injection.config.dart` should not change.
 
