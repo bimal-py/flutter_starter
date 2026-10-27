@@ -2,7 +2,7 @@
 
 How to set up [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) for an app made from this starter, so it writes code that follows the starter's conventions, checks its own work and spends few tokens doing it. It follows the practices in [How to Use Claude Code to Build Flutter Apps Faster](https://www.freecodecamp.org/news/how-to-use-claude-code-to-build-flutter-apps-faster-best-practices/) (freeCodeCamp, 2026) and adapts them to this starter.
 
-The article's main point: what you set up around the assistant matters more than how you word a prompt. The setup has five parts, in order of payoff: a consistent architecture, a short `CLAUDE.md`, skills for repeated tasks, subagents for parallel work, and hooks that enforce the rules.
+The article's main point: what you set up around the assistant matters more than how you word a prompt. The setup has five parts, in order of payoff: a consistent architecture, a short `CLAUDE.md`, skills for repeated tasks, subagents for parallel work, and hooks that enforce the rules. The starter already has the first; steps 1 to 5 below add the rest, and loops on top.
 
 ## What the starter already gives an assistant
 
@@ -12,7 +12,7 @@ The article's main point: what you set up around the assistant matters more than
 - **One topic per page.** The [index](README.md) lets the assistant open only the page a task needs instead of reading everything. That is where most of the token saving comes from.
 - **Commands that judge the work**: `flutter analyze` (kept clean) and `flutter test`.
 
-## 1. `CLAUDE.md`: the rules loaded every session
+## Step 1: Add `CLAUDE.md`, the rules loaded every session
 
 Claude Code reads `CLAUDE.md` at the project root at the start of every session, and its text counts against every turn. Keep it short: what to read, the commands, the rules, the don'ts. Details belong in `doc/`, which it opens when needed. A starting point (replace the first line with your app):
 
@@ -53,7 +53,7 @@ Then read the neighbouring feature and mirror it.
 - Run `flutter build`, `flutter run`, `pod install` or `xcodebuild`: the owner builds.
 ```
 
-## 2. Skills: instructions for tasks you repeat
+## Step 2: Add skills for the tasks you repeat
 
 A skill is `.claude/skills/<name>/SKILL.md`: front matter with a `name` and a `description`, then the steps. Claude Code picks a skill when your request matches its description, and you can call one directly with `/<name>`. Four that fit the starter:
 
@@ -128,7 +128,7 @@ description: Commit the current changes with a conventional commit message after
 4. Commit with the configured git identity. No co-author or tool attribution lines.
 ```
 
-## 3. Subagents: parallel work in their own context
+## Step 3: Add a subagent for parallel work
 
 A subagent is `.claude/agents/<name>.md`: front matter (`name`, `description`, optional `tools`) and its instructions. It runs in a fresh context and returns only a summary, so the main session stays small. Several can run at once on separate screens. Give each one its own files: two agents editing the same barrel or route file at the same time overwrite each other.
 
@@ -154,7 +154,7 @@ You build exactly one screen in this Flutter project.
 
 A typical flow from the article: write the entity, repository and cubit yourself (or with one session), then ask for the screens with one `screen-builder` each, then run the `check` skill and the `commit` skill.
 
-## 4. Hooks: rules that don't depend on the model
+## Step 4: Add hooks, rules that don't depend on the model
 
 Hooks are shell commands Claude Code runs at fixed points, configured in `.claude/settings.json` (shared) or `.claude/settings.local.json` (yours only). A command that exits with code 2 blocks the action, and what it prints to stderr goes back to Claude. Two hooks fit the starter: refuse edits to generated files, and refuse to finish while `flutter analyze` reports problems. They need `jq`.
 
@@ -188,7 +188,7 @@ Hooks are shell commands Claude Code runs at fixed points, configured in `.claud
 
 The `stop_hook_active` check stops the second hook from looping: once Claude is already continuing because of it, the hook lets it finish. The article's own hook JSON has broken escaping; test any hook by piping sample input into its command before relying on it, for example `echo '{"tool_input":{"file_path":"lib/core/di/injection.config.dart"}}' | sh -c '<command>'; echo $?` should print the message and `2`.
 
-## 5. Loops: let it correct itself
+## Step 5: Use loops so it corrects itself
 
 `/loop` repeats a prompt until a stop condition, which suits work with an objective check. From the article:
 
