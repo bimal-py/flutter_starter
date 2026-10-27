@@ -22,7 +22,10 @@ class SettingsTile extends StatelessWidget {
     final colorScheme = context.colorScheme;
     return ListTile(
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.gutter,
+        vertical: AppSpacing.xs,
+      ),
       leading: Container(
         padding: EdgeInsets.all(8.r),
         decoration: BoxDecoration(

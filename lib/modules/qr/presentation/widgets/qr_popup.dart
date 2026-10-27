@@ -24,7 +24,7 @@ class QrPopup extends StatelessWidget {
       context: context,
       builder: (_) => Dialog(
         // Surface, elevation and shape come from the Dialog theme.
-        insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+        insetPadding: EdgeInsets.symmetric(horizontal: AppSpacing.gutterWide),
         child: QrPopup(qrData: qrData, fileName: fileName),
       ),
     );

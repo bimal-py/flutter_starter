@@ -23,17 +23,27 @@ class HomeView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.gutter,
+            AppSpacing.md,
+            AppSpacing.gutter,
+            AppSpacing.sm,
+          ),
           sliver: const SliverToBoxAdapter(child: HomeHeroBanner()),
         ),
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.gutter,
+            AppSpacing.lg,
+            AppSpacing.gutter,
+            AppSpacing.sm,
+          ),
           sliver: const SliverToBoxAdapter(
             child: HomeSectionLabel(text: HomeStrings.demosLabel),
           ),
         ),
         SliverPadding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: AppSpacing.horizontal,
           sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,

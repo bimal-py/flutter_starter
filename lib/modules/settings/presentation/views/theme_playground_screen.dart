@@ -25,7 +25,7 @@ class ThemePlaygroundView extends StatelessWidget {
       ),
       body: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) => ListView(
-          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+          padding: AppSpacing.page,
           children: [
             ThemePlaygroundStatusBanner(hasOverride: state.hasUserOverride),
             16.verticalSpace,

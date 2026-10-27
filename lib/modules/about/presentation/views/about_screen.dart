@@ -20,7 +20,7 @@ class AboutView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text(AboutStrings.title)),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+        padding: AppSpacing.page,
         children: [
           const AboutDescription(),
           20.verticalSpace,

@@ -24,7 +24,7 @@ class SettingsView extends StatelessWidget {
         centerTitle: false,
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
+        padding: AppSpacing.page,
         children: [
           const SettingsAppCard(),
           20.verticalSpace,

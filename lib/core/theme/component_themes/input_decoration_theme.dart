@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+import 'package:flutter_starter/core/theme/spacing/spacing.dart';
 
 class InputDecorationThemeBuilder {
   InputDecorationThemeBuilder._();
@@ -12,7 +13,10 @@ class InputDecorationThemeBuilder {
     return InputDecorationTheme(
       filled: true,
       fillColor: colorScheme.surfaceContainerHighest,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.gutter,
+        vertical: 14.h,
+      ),
       hintStyle: textTheme.bodyMedium?.copyWith(
         color: colorScheme.onSurfaceVariant,
       ),

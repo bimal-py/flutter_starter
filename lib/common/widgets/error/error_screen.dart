@@ -17,7 +17,7 @@ class ErrorScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.gutterWide),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

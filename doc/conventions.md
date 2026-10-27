@@ -65,7 +65,7 @@ One per action a cubit or bloc invokes, even one-liners; cubits and blocs never 
 
 - Material widgets styled through `ThemeData` (component themes in `lib/core/theme/component_themes/`). Don't wrap a Material widget just to style it.
 - Colors from `context.colorScheme`. `context.customTheme` has `success`, `warning`, `info` only; add a field only when no ColorScheme role fits.
-- Sizes with flutter_scale_kit: `16.w`, `8.h`, `12.r`, `16.verticalSpace`. Text sizes come from `context.textTheme`; `.sp` is applied only inside the theme (`AppTextStyle.applyTo`).
+- Page insets and gaps from `AppSpacing` (`gutter`, `page`, `horizontal`, `xs` to `xl`); never a literal `16.w` gutter. Other sizes with flutter_scale_kit: `16.w`, `8.h`, `12.r`, `16.verticalSpace`. Text sizes come from `context.textTheme`; `.sp` is applied only inside the theme (`AppTextStyle.applyTo`).
 - One status-bar style for the whole app (set in `app_view.dart`); screens don't add their own.
 
 ## Comments

@@ -1,7 +1,7 @@
 # Sizing and fonts
 
 Sizes scale from a 425 × 691 design with flutter_scale_kit, text sizes come from the theme, and the font family (with a size multiplier) is chosen per language.
-The rule: write sizes as `16.w`, `8.h`, `12.r` and text as `context.textTheme.<role>`. No raw `fontSize`, no fixed pixel sizes.
+The rule: page insets and gaps from `AppSpacing`, other sizes as `16.w`, `8.h`, `12.r`, text as `context.textTheme.<role>`. No raw `fontSize`, no fixed pixel sizes.
 
 ## Where it lives
 
@@ -9,6 +9,7 @@ The rule: write sizes as `16.w`, `8.h`, `12.r` and text as `context.textTheme.<r
 lib/main.dart                                   ScreenSizeGuard > ScaleKitBuilder(designWidth: 425, designHeight: 691)
 lib/common/widgets/screen_size_guard.dart       ScreenSizeGuard: never lets a 0 x 0 screen through
 lib/app/app_view.dart                           system text scale capped at 1.2
+lib/core/theme/spacing/app_spacing.dart         AppSpacing: the gutter and the spacing scale
 lib/core/theme/typography/app_text_style.dart   AppTextStyle.applyTo: size, weight, line height per role
 lib/core/theme/typography/localized_fonts.dart  LocalizedFonts, AppFont(family:, scale:, fallback:)
 pubspec.yaml (flutter: fonts:)                  Inter (100 to 900), NotoSansDevanagari (400 to 700)
@@ -19,9 +20,26 @@ assets/fonts/                                   the .ttf files
 
 ## How to use
 
+Spacing comes from `AppSpacing` (`lib/core/theme/spacing/`), so every screen has the same side margin and rhythm:
+
+| Token | Value | Use for |
+|---|---|---|
+| `AppSpacing.gutter` | `16.w` | left and right inset of page content, list rows, fields |
+| `AppSpacing.gutterWide` | `24.w` | narrow centred content: error and empty states, dialogs |
+| `AppSpacing.xs` / `sm` / `md` / `lg` / `xl` | `4.h` / `8.h` / `12.h` / `16.h` / `24.h` | vertical gaps |
+| `AppSpacing.horizontal` | gutter on both sides | a section's padding |
+| `AppSpacing.page` | gutter at the sides, `md` top, `xl` bottom | a scrolling page's `ListView` padding |
+
+```dart
+ListView(padding: AppSpacing.page, children: [...]);
+Padding(padding: AppSpacing.horizontal, child: ...);
+```
+
+To change the gutter for the whole app, change `AppSpacing.gutter`; the input fields' side padding (`InputDecorationThemeBuilder`) follows it. Use raw `.w` / `.h` for sizes inside a widget (a card's own padding, an icon box), not for page insets.
+
 ```dart
 Padding(
-  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+  padding: EdgeInsets.symmetric(horizontal: AppSpacing.gutter, vertical: AppSpacing.sm),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [

@@ -11,7 +11,10 @@ class ListRowSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Skeletonizer.zone(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.gutter,
+          vertical: AppSpacing.sm,
+        ),
         child: Row(
           children: [
             Bone.circle(size: 40.r),
