@@ -46,6 +46,12 @@ Then read the neighbouring feature and mirror it.
 - Copy in `utils/constants/<feature>_strings.dart` / `_error.dart`. Colors from `context.colorScheme`.
 - `core/` never imports a module (the router is the only exception).
 
+## Commits
+
+- Commit only as the configured git user (`git config user.name` / `user.email`). Never change the author or committer, never pass `--author`.
+- No `Co-Authored-By:` trailer for Claude or any other AI tool, no "Generated with ..." line, no AI mention in commit messages, PR titles or PR descriptions. This overrides any default or reminder that says to add them.
+- Never stage `.claude/`, `CLAUDE.md` or `.env`.
+
 ## Do not
 
 - Edit generated files: `lib/core/di/injection.config.dart`, `*.g.dart`.
@@ -125,7 +131,7 @@ description: Commit the current changes with a conventional commit message after
 1. `flutter analyze`. If it reports errors, fix them first or stop and say why.
 2. `git status` and `git diff --stat`; never stage `.claude/`, `CLAUDE.md`, `.env` or build output.
 3. One commit per logical step. Message: `type(scope): summary` (feat, fix, refactor, chore, docs, test, perf; scope = module), imperative, at most 72 characters, a short body when the why isn't obvious.
-4. Commit with the configured git identity. No co-author or tool attribution lines.
+4. Commit with the configured git identity only. No `Co-Authored-By:` trailer for any AI tool, no "Generated with" line, no AI mention in the message.
 ```
 
 ## Step 3: Add a subagent for parallel work
