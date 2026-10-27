@@ -1,0 +1,8 @@
+# TEMPLATE (not wired into this project). Copy to android/fastlane/Appfile.
+# Paths are relative to android/, where you run fastlane.
+
+# Google Play service-account key. Gitignored: never commit it.
+json_key_file("fastlane/play-store-key.json")
+
+# Your applicationId (android/app/build.gradle.kts).
+package_name("com.example.app")

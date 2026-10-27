@@ -1,0 +1,354 @@
+# TEMPLATE: Codemagic reads codemagic.yaml only from the repository root, so
+# this copy does nothing. To activate it: copy it to the root of your app,
+# replace every `com.example.app` / `my_app` / `you@example.com`, do the
+# one-time setup in doc/cicd/codemagic/README.md, and push to main.
+#
+# Builds a signed .aab and .ipa and uploads both WITHOUT releasing anything:
+#   Android -> Google Play internal track, as a draft release
+#   iOS     -> App Store Connect (TestFlight), not submitted for any review
+# A person promotes each build from Play Console / App Store Connect.
+# Tester builds stay in GitHub Actions (doc/cicd/firebase_app_distribution/).
+
+definitions:
+  # mac_mini_m2 is the only machine on Codemagic's free plan, and Android
+  # builds on it too. With billing on, linux_x2 is cheaper for Android.
+  instance: &instance
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+  # Match the version you develop with. `fvm` reads it from .fvmrc instead.
+  flutter_version: &flutter_version "3.47.0"
+
+  vars: &vars
+    APP_NAME: "my_app"                # artifact file names
+    PACKAGE_NAME: "com.example.app"   # Android applicationId
+    # Only for the automatic iOS build number (see "Build IPA"): the app's
+    # numeric Apple ID, App Store Connect -> App Information -> Apple ID.
+    # APP_STORE_APPLE_ID: "1234567890"
+
+  scripts:
+    - &show_versions
+      name: Show versions
+      script: |
+        flutter --version
+        echo "branch=${CM_BRANCH:-unknown} commit=$(git rev-parse --short HEAD)"
+
+    # .env is a declared asset, so analyze, test and build fail without it.
+    # ENV_FILE_BASE64 lives in the `app_env` group:  base64 -i .env | pbcopy
+    - &create_env
+      name: Create .env
+      script: |
+        set -euo pipefail
+        if [ -z "${ENV_FILE_BASE64:-}" ]; then
+          echo "ERROR: ENV_FILE_BASE64 is not set. Add it to the app_env group." >&2
+          exit 1
+        fi
+        echo "$ENV_FILE_BASE64" | base64 --decode > .env
+        test -s .env || { echo "ERROR: ENV_FILE_BASE64 decoded to an empty file." >&2; exit 1; }
+        echo ".env written with $(grep -cE '^[A-Za-z_][A-Za-z0-9_]*=' .env) keys"
+
+    # Only for apps that use Firebase (both files are gitignored in the
+    # starter). A variable that isn't set skips its file.
+    - &firebase_files
+      name: Create Firebase config files
+      script: |
+        set -euo pipefail
+        if [ -n "${GOOGLE_SERVICES_JSON_BASE64:-}" ]; then
+          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
+          echo "Wrote android/app/google-services.json"
+        fi
+        if [ -n "${GOOGLE_SERVICE_INFO_PLIST_BASE64:-}" ]; then
+          echo "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > ios/Runner/GoogleService-Info.plist
+          echo "Wrote ios/Runner/GoogleService-Info.plist"
+        fi
+        if [ -n "${FIREBASE_OPTIONS_DART_BASE64:-}" ]; then
+          echo "$FIREBASE_OPTIONS_DART_BASE64" | base64 --decode > lib/firebase_options.dart
+          echo "Wrote lib/firebase_options.dart"
+        fi
+
+    - &pub_get
+      name: Install packages
+      script: flutter pub get
+
+    - &build_runner
+      name: Generate code
+      script: dart run build_runner build --delete-conflicting-outputs
+
+    # Delete from the release workflows to save minutes if every change
+    # already passes a pull-request gate.
+    - &analyze_and_test
+      name: Analyze and test
+      script: |
+        set -euo pipefail
+        flutter analyze
+        flutter test
+
+  # Build result emails. Codemagic also sends them to the person who pushed.
+  email: &email
+    email:
+      recipients:
+        - you@example.com
+      notify:
+        success: true
+        failure: true
+
+workflows:
+  # ===========================================================================
+  # 1. QUALITY GATE: analyze + test. No signing, no upload.
+  #    Manual start only until you uncomment `triggering`.
+  # ===========================================================================
+  quality-gate:
+    name: Quality gate
+    <<: *instance
+    max_build_duration: 30
+
+    # triggering:
+    #   events:
+    #     - pull_request
+    #   branch_patterns:
+    #     - pattern: main          # pull requests INTO main
+    #       include: true
+    #       source: false          # false = match the target branch
+    #   cancel_previous_builds: true
+
+    environment:
+      flutter: *flutter_version
+      groups:
+        - app_env
+
+    scripts:
+      - *show_versions
+      - *create_env
+      - *firebase_files
+      - *pub_get
+      - *build_runner
+      - name: Check formatting
+        script: dart format --output=none --set-exit-if-changed lib test
+        # Reported but not enforced. Delete this line to fail on it.
+        ignore_failure: true
+      - *analyze_and_test
+
+    publishing:
+      <<: *email
+
+  # ===========================================================================
+  # 2. ANDROID RELEASE: signed .aab -> Google Play internal track, draft.
+  # ===========================================================================
+  android-release:
+    name: Android release (.aab to Play, draft)
+    <<: *instance
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        # Only main. Merging a pull request into main is a push to main.
+        # Don't add a '*' exclude after it: the LAST matching pattern wins.
+        - pattern: main
+          include: true
+          source: true
+      cancel_previous_builds: true
+
+    environment:
+      flutter: *flutter_version
+      java: 21
+      groups:
+        - app_env       # ENV_FILE_BASE64 (+ optional Firebase files)
+        - google_play   # GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+      # Reference name of the keystore uploaded under Codemagic ->
+      # Team settings -> Code signing identities -> Android keystores.
+      # Exports CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD.
+      android_signing:
+        - upload_keystore
+      vars:
+        <<: *vars
+
+    scripts:
+      - *show_versions
+      - *create_env
+      - *firebase_files
+
+      # android/app/build.gradle.kts reads android/key.properties (see
+      # doc/cicd/README.md "Release signing"). Without it the build would be
+      # signed with the debug key, and Play rejects that upload.
+      - name: Set up Android signing
+        script: |
+          set -euo pipefail
+          cat > android/key.properties <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=$CM_KEYSTORE_PATH
+          EOF
+          keytool -list -keystore "$CM_KEYSTORE_PATH" -storepass "$CM_KEYSTORE_PASSWORD" -alias "$CM_KEY_ALIAS" > /dev/null \
+            || { echo "ERROR: alias '$CM_KEY_ALIAS' not found in the keystore, or the password is wrong." >&2; exit 1; }
+
+      - *pub_get
+      - *build_runner
+      - *analyze_and_test
+
+      - name: Build app bundle
+        # versionName / versionCode come from `version: X.Y.Z+N` in
+        # pubspec.yaml. Bump +N before every push: Play rejects a versionCode
+        # it has already seen. To let Codemagic pick the next number instead,
+        # replace the build line with:
+        #   LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME")
+        #   flutter build appbundle --release --build-number=$((LATEST + 1))
+        script: |
+          set -euo pipefail
+          flutter build appbundle --release
+
+      # Uncomment to also build an installable .apk (a second full release
+      # build, so about twice the Android build time). Uncomment its artifact.
+      # - name: Build APK
+      #   script: flutter build apk --release
+
+      - name: Name artifacts
+        # my_app-1.2.0-14-a1b2c3d.aab, so the .aab and .ipa of one commit match.
+        script: |
+          set -euo pipefail
+          version="$(sed -nE 's/^version:[[:space:]]*([^[:space:]#]+).*/\1/p' pubspec.yaml)"
+          label="${APP_NAME}-${version/+/-}-$(git rev-parse --short HEAD)"
+          mkdir -p build/dist
+          cp build/app/outputs/bundle/release/app-release.aab "build/dist/$label.aab"
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            cp build/app/outputs/flutter-apk/app-release.apk "build/dist/$label.apk"
+          fi
+          # R8 mapping: de-obfuscates crash stack traces. Play also gets it
+          # from inside the .aab.
+          if [ -f build/app/outputs/mapping/release/mapping.txt ]; then
+            cp build/app/outputs/mapping/release/mapping.txt "build/dist/$label-mapping.txt"
+          fi
+          ls -la build/dist
+
+    artifacts:
+      - build/dist/*.aab
+      # - build/dist/*.apk   # together with the "Build APK" step
+      - build/dist/*-mapping.txt
+
+    publishing:
+      <<: *email
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        # Draft: nothing reaches anyone until you roll it out in Play Console.
+        submit_as_draft: true
+
+  # ===========================================================================
+  # 3. iOS RELEASE: signed .ipa -> App Store Connect / TestFlight, not
+  #    submitted for review. A push to main starts this AND android-release;
+  #    on the free plan (1 build at a time) they queue.
+  # ===========================================================================
+  ios-release:
+    name: iOS release (.ipa to App Store Connect)
+    <<: *instance
+    max_build_duration: 90
+
+    # App Store Connect API key added under Codemagic -> Team settings ->
+    # Team integrations -> Developer Portal. The name must match exactly.
+    integrations:
+      app_store_connect: Codemagic API Key
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+      cancel_previous_builds: true
+
+    environment:
+      flutter: *flutter_version
+      xcode: latest
+      cocoapods: default
+      groups:
+        - app_env
+      # Automatic: Codemagic picks the App Store profile for this bundle id
+      # from your Code signing identities (fetched through the API key) and
+      # the matching distribution certificate you uploaded.
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.example.app
+      # Manual alternative: list the reference names of an uploaded .p12 and
+      # .mobileprovision instead. Never mix the two forms.
+      # ios_signing:
+      #   certificates:
+      #     - my_app_distribution_certificate
+      #   provisioning_profiles:
+      #     - my_app_app_store_profile
+      vars:
+        <<: *vars
+
+    scripts:
+      - *show_versions
+
+      # Only if `flutterfire configure` added the "upload Crashlytics symbols"
+      # build phase: it calls `flutterfire`, and the archive fails with
+      # "flutterfire: command not found" without it.
+      # - name: Install FlutterFire CLI
+      #   script: dart pub global activate flutterfire_cli
+
+      - *create_env
+      - *firebase_files
+      - *pub_get
+      - *build_runner
+      - *analyze_and_test
+
+      - name: Install pods
+        # After pub get, which writes ios/Flutter/Generated.xcconfig. `pod
+        # install` (not update) keeps the versions in the committed Podfile.lock.
+        script: |
+          set -euo pipefail
+          cd ios
+          pod install
+
+      - name: Apply signing to the Xcode project
+        # Switches Runner to the profile Codemagic fetched and writes
+        # /Users/builder/export_options.plist for the build step.
+        script: xcode-project use-profiles
+
+      - name: Build IPA
+        # Version and build number come from pubspec.yaml. Bump +N before
+        # every push: App Store Connect rejects a build number it has seen.
+        # To let Codemagic pick the next number instead (needs
+        # APP_STORE_APPLE_ID in vars), replace the build line with:
+        #   LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
+        #   flutter build ipa --release --build-number=$((LATEST + 1)) \
+        #     --export-options-plist=/Users/builder/export_options.plist
+        script: |
+          set -euo pipefail
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+      - name: Name artifacts
+        script: |
+          set -euo pipefail
+          version="$(sed -nE 's/^version:[[:space:]]*([^[:space:]#]+).*/\1/p' pubspec.yaml)"
+          label="${APP_NAME}-${version/+/-}-$(git rev-parse --short HEAD)"
+          dist="$PWD/build/dist"
+          mkdir -p "$dist"
+          # The .ipa is named after the app's display name, so find it.
+          ipa="$(find build/ios/ipa -maxdepth 1 -name '*.ipa' -type f | head -n1)"
+          test -n "$ipa" || { echo "ERROR: no .ipa in build/ios/ipa" >&2; exit 1; }
+          cp "$ipa" "$dist/$label.ipa"
+          # dSYMs: the iOS mapping file, for readable crash reports.
+          if [ -d build/ios/archive/Runner.xcarchive/dSYMs ]; then
+            (cd build/ios/archive/Runner.xcarchive && zip -qr "$dist/$label-dSYMs.zip" dSYMs)
+          fi
+          ls -la "$dist"
+
+    artifacts:
+      - build/dist/*.ipa
+      - build/dist/*-dSYMs.zip
+      # Xcode's logs: the first thing to read when an archive fails.
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      <<: *email
+      app_store_connect:
+        auth: integration
+        # Upload only. The build appears in TestFlight once Apple has
+        # processed it, but goes to no beta review and no App Store review.
+        submit_to_testflight: false
+        submit_to_app_store: false

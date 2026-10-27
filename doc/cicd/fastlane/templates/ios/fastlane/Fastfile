@@ -1,0 +1,26 @@
+# TEMPLATE (not wired into this project). Copy to ios/fastlane/Fastfile.
+#
+# App Store STORE LISTING only. Builds are uploaded by CI (doc/cicd/codemagic/).
+# Settings (sign-in, safety switches) live in the Deliverfile. Run from ios/:
+#
+#   bundle exec fastlane upload_listing preview:true    # writes Preview.html and asks before uploading
+#   bundle exec fastlane upload_listing                 # text + screenshots
+#   bundle exec fastlane upload_listing text:true       # text only, much faster
+#   bundle exec fastlane upload_listing version:1.3.0   # create (or rename) the editable version first
+#
+# deliver writes into the version that is currently EDITABLE in App Store
+# Connect (Prepare for Submission, Rejected, ...). With none editable and no
+# version:, it fails. Nothing is submitted for review.
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Upload the App Store listing (text, screenshots) to the editable version, no binary"
+  lane :upload_listing do |options|
+    deliver(
+      force: options[:preview] != true,             # skip the HTML preview prompt
+      skip_screenshots: options[:text] == true,
+      app_version: options[:version]&.to_s
+    )
+  end
+end

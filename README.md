@@ -57,7 +57,9 @@ Everything is in [`doc/`](doc/README.md), one topic per page. Go through it in t
 
 ### Step 5: Release it
 
-1. [Store screenshots](doc/tools/screenshots.md): give each shot an image, a title and a description; get framed screenshots for every App Store and Play Store size.
+1. [Optimize images](doc/tools/optimize_images.md): shrink `assets/` before a release with `tool/optimize_images.py` (report first, lossless by default).
+2. [Store screenshots](doc/tools/screenshots.md): give each shot an image, a title and a description; get framed screenshots for every App Store and Play Store size.
+3. [CI/CD](doc/cicd/README.md): templates to copy in when you need them: [Firebase App Distribution](doc/cicd/firebase_app_distribution/README.md) for testers (GitHub Actions), [Codemagic](doc/cicd/codemagic/README.md) for Play Store and App Store uploads, [Fastlane](doc/cicd/fastlane/README.md) for store listings.
 
 ### Step 6: Work faster with Claude Code
 

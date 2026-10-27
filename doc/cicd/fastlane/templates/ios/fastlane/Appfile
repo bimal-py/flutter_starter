@@ -1,0 +1,7 @@
+# TEMPLATE (not wired into this project). Copy to ios/fastlane/Appfile.
+
+# Your iOS bundle identifier.
+app_identifier("com.example.app")
+
+# Sign-in uses an App Store Connect API key (see Deliverfile), so apple_id,
+# itc_team_id and team_id stay unset: no Apple ID password, no 2FA prompts.

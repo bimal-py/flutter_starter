@@ -1,0 +1,73 @@
+# TEMPLATE (not wired into this project). Copy to android/fastlane/Fastfile.
+#
+# Google Play STORE LISTING only. Builds are uploaded by CI
+# (doc/cicd/codemagic/), so no lane here builds or uploads an app binary.
+# Run from android/:
+#
+#   bundle exec fastlane upload_listing validate:true   # dry run: Google checks it, nothing changes
+#   bundle exec fastlane upload_listing                 # title, short + full description, video, every locale
+#   bundle exec fastlane upload_listing whats_new:true  # + "What's new" on the release with pubspec's +N
+#   bundle exec fastlane upload_images validate:true    # dry run
+#   bundle exec fastlane upload_images                  # icon, feature graphic, screenshots
+#
+# Every upload that is not a dry run is committed straight away and sent to
+# Google's review. The Play API has no "draft" for listing changes; to choose
+# when reviewed changes go live, turn on Managed publishing in Play Console.
+
+default_platform(:android)
+
+platform :android do
+  # Text from fastlane/metadata/android/<locale>/: title.txt,
+  # short_description.txt, full_description.txt, video.txt.
+  #
+  # "What's new" belongs to a RELEASE, not to the listing, so it is off by
+  # default. whats_new:true writes changelogs/<versionCode>.txt (else
+  # default.txt) onto the release that already holds that versionCode, for
+  # example the internal draft CI uploaded. versionCode defaults to the +N in
+  # pubspec.yaml (override: version_code:15); the track defaults to internal
+  # (override: track:production once the release has been promoted).
+  desc "Upload store listing text for every locale (no binary, no images)"
+  lane :upload_listing do |options|
+    release = {}
+    if options[:whats_new] == true
+      pubspec = File.read(File.expand_path("../../pubspec.yaml", __dir__))
+      version_code = options[:version_code] || pubspec[/^version:\s*\S+\+(\d+)/, 1]
+      UI.user_error!("No versionCode found in pubspec.yaml; pass version_code:N") unless version_code
+      release = { track: options[:track] || "internal", version_code: version_code.to_i }
+    end
+
+    upload_to_play_store(
+      validate_only: options[:validate] == true,
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: options[:whats_new] != true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      **release
+    )
+  end
+
+  # Graphics from fastlane/metadata/android/<locale>/images/: icon.png,
+  # featureGraphic.png, and the screenshot folders (phoneScreenshots/,
+  # sevenInchScreenshots/, tenInchScreenshots/, ...).
+  #
+  # The local screenshots REPLACE a locale's set on Play; they are not added
+  # to it. Download the live listing first if you are not sure your local copy
+  # is complete.
+  desc "Upload icon, feature graphic and screenshots for every locale (no text, no binary)"
+  lane :upload_images do |options|
+    upload_to_play_store(
+      validate_only: options[:validate] == true,
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+      # Skip files Play already has (compared by SHA-256), so a run that
+      # changes one screenshot uploads one screenshot.
+      sync_image_upload: true
+    )
+  end
+end

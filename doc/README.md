@@ -24,9 +24,11 @@ One topic per file. Read the line, open the file you need.
 - [Sizing and fonts](core/sizing_and_fonts.md): flutter_scale_kit, text scale, per-locale fonts.
 - [Utilities](core/utilities.md): constants, `.env` keys, extensions, helpers, services, shared widgets.
 
-## Tools
+## Tools and release
 
+- [Optimize images](tools/optimize_images.md): `tool/optimize_images.py` compresses `assets/` images, losslessly unless asked.
 - [Store screenshots](tools/screenshots.md): `tool/marketing/make_screenshots.py` turns captures, titles and descriptions into App Store and Play Store screenshots.
+- [CI/CD](cicd/README.md): templates, not active: Firebase App Distribution for testers, Codemagic for store uploads, Fastlane for store listings, and release signing.
 
 ## Modules (optional, each removable)
 

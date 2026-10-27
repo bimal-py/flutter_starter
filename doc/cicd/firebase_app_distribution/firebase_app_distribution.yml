@@ -1,0 +1,273 @@
+# TEMPLATE: this file does nothing where it is.
+# To activate it, copy it to .github/workflows/firebase_app_distribution.yml,
+# add the secrets listed in doc/cicd/firebase_app_distribution/README.md, and push.
+#
+# What it does: on every push to `main_dev_release` (or a manual run), it
+# checks the code (analyze + test), builds a signed release APK and sends it to
+# your Firebase App Distribution tester groups, with the commit message as the
+# release notes.
+
+name: Firebase App Distribution (Android)
+
+on:
+  push:
+    branches: [main_dev_release]
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "Release notes for testers (empty = the last commit message)"
+        required: false
+        default: ""
+      tester_groups:
+        description: "Tester group aliases, comma-separated (empty = TESTER_GROUPS below)"
+        required: false
+        default: ""
+
+# The jobs only read the repository.
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the run still in progress.
+concurrency:
+  group: firebase-distribution-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Empty = use .fvmrc if the project has one, else the version in
+  # pubspec.yaml (environment: flutter:). Set "3.47.0" to pin it here.
+  FLUTTER_VERSION: ""
+  JAVA_VERSION: "21"
+  # Firebase console -> App Distribution -> Testers & Groups -> the group ALIAS.
+  TESTER_GROUPS: "android-testers"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Gate: nothing is built or sent to testers unless this passes.
+  # ---------------------------------------------------------------------------
+  check:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      flutter_version: ${{ steps.flutter.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve Flutter version
+        id: flutter
+        shell: bash
+        run: |
+          version="$FLUTTER_VERSION"
+          if [ -z "$version" ] && [ -f .fvmrc ]; then
+            version="$(jq -r '.flutter // empty' .fvmrc)"
+          fi
+          if [ -z "$version" ]; then
+            version="$(yq '.environment.flutter // ""' pubspec.yaml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || true)"
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::No Flutter version found. Set FLUTTER_VERSION in the workflow, add .fvmrc, or set environment: flutter: in pubspec.yaml."
+            exit 1
+          fi
+          echo "Flutter $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          channel: stable
+          cache: true
+
+      # .env is a declared asset: analyze, test and build all fail without it.
+      - name: Create .env
+        shell: bash
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          printf '%s\n' "$ENV_FILE" > .env
+          if [ -z "$ENV_FILE" ]; then
+            echo "::error::Secret ENV_FILE is empty. Paste the whole .env into it."
+            exit 1
+          fi
+
+      # Once firebase_service.dart imports firebase_options.dart, analyze and
+      # test need the file too. A missing secret skips it.
+      - name: Create firebase_options.dart
+        shell: bash
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          if [ -n "$FIREBASE_OPTIONS_DART" ]; then
+            printf '%s\n' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+          fi
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # Uncomment to also fail on unformatted code.
+      # - name: Check formatting
+      #   run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+  # ---------------------------------------------------------------------------
+  # 2. Build a signed APK and send it to testers.
+  # ---------------------------------------------------------------------------
+  distribute:
+    name: Build APK and distribute
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Optional: scope the secrets below to a GitHub Environment (and require a
+    # reviewer before a release goes out). Create it under Settings ->
+    # Environments, move the secrets there, then uncomment:
+    # environment: firebase-distribution
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.check.outputs.flutter_version }}
+          channel: stable
+          cache: true
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Create .env
+        shell: bash
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: printf '%s\n' "$ENV_FILE" > .env
+
+      # Only for apps that use Firebase in the app itself (Crashlytics,
+      # Analytics, FCM). Both files are gitignored in the starter. A missing
+      # secret skips the file.
+      - name: Create Firebase config files
+        shell: bash
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s\n' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "Wrote android/app/google-services.json"
+          fi
+          if [ -n "$FIREBASE_OPTIONS_DART" ]; then
+            printf '%s\n' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+            echo "Wrote lib/firebase_options.dart"
+          fi
+
+      # The keystore goes to the runner's temp folder, outside the checkout.
+      # android/key.properties is what android/app/build.gradle.kts reads.
+      - name: Set up release signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret $name is empty."
+              exit 1
+            fi
+          done
+          keystore="$RUNNER_TEMP/upload-keystore.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=$keystore
+          EOF
+          # Fail here, in seconds, if the alias or password is wrong.
+          keytool -list -keystore "$keystore" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null \
+            || { echo "::error::Alias '$KEY_ALIAS' not found in the keystore, or the password is wrong."; exit 1; }
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # versionName and versionCode come from `version: X.Y.Z+N` in pubspec.yaml.
+      # To give every CI build its own versionCode instead, add
+      #   --build-number=${{ github.run_number }}
+      # (read the README first: testers cannot install a lower versionCode).
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # A build that silently fell back to the debug key would install for
+      # testers but could never be updated by the Play Store build. Stop it here.
+      - name: Check the APK is signed with the release key
+        shell: bash
+        run: |
+          apk=build/app/outputs/flutter-apk/app-release.apk
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n1)"
+          certs="$("${build_tools}apksigner" verify --print-certs "$apk")"
+          grep -m1 'certificate DN' <<< "$certs" || true
+          if grep -q 'CN=Android Debug' <<< "$certs"; then
+            echo "::error::The APK is signed with the debug key. Check the signingConfig in android/app/build.gradle.kts."
+            exit 1
+          fi
+
+      - name: Name the APK
+        id: apk
+        shell: bash
+        run: |
+          name="$(yq '.name' pubspec.yaml)"
+          version="$(yq '.version' pubspec.yaml)"
+          file="build/app/outputs/flutter-apk/${name}-${version/+/-}-${GITHUB_SHA::7}.apk"
+          mv build/app/outputs/flutter-apk/app-release.apk "$file"
+          echo "path=$file" >> "$GITHUB_OUTPUT"
+          echo "$file"
+
+      # Passed through an env var, never pasted into the script, so text typed
+      # into the manual-run form cannot run as shell code.
+      - name: Write release notes
+        shell: bash
+        env:
+          NOTES_INPUT: ${{ inputs.release_notes }}
+        run: |
+          if [ -n "$NOTES_INPUT" ]; then
+            printf '%s\n' "$NOTES_INPUT" > "$RUNNER_TEMP/release_notes.txt"
+          else
+            git log -1 --pretty=%B > "$RUNNER_TEMP/release_notes.txt"
+          fi
+          printf '\n%s @ %s\n' "$GITHUB_REF_NAME" "${GITHUB_SHA::7}" >> "$RUNNER_TEMP/release_notes.txt"
+          cat "$RUNNER_TEMP/release_notes.txt"
+
+      # Keeps the APK downloadable from the run page for 14 days.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: apk
+          path: ${{ steps.apk.outputs.path }}
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          groups: ${{ inputs.tester_groups || env.TESTER_GROUPS }}
+          file: ${{ steps.apk.outputs.path }}
+          releaseNotesFile: ${{ runner.temp }}/release_notes.txt
+
+      # GitHub-hosted runners are thrown away after the job. This matters only
+      # on a self-hosted runner, where files would otherwise stay on disk.
+      - name: Remove signing files
+        if: always()
+        shell: bash
+        run: rm -f android/key.properties "$RUNNER_TEMP/upload-keystore.jks" .env android/app/google-services.json
