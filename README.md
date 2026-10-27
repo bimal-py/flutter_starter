@@ -54,3 +54,7 @@ Everything is in [`doc/`](doc/README.md), one topic per page. Read it in this or
 **4. Keep it up to date**
 
 9. [Upgrading](doc/upgrading.md): moving to newer Flutter and packages, and what is held back and why.
+
+**Working with Claude Code**
+
+10. [Using Claude Code](doc/using_claude_code.md): the `CLAUDE.md`, skills, subagent and hooks that make it follow the starter's conventions, check its own work and spend fewer tokens.
