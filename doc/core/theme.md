@@ -149,6 +149,7 @@ BlocProvider<ThemeCubit>(
 - Device colors come from the wallpaper on Android 12+ (and from the accent color on desktop). On iOS, web and older Android, `DynamicDeviceSource` uses its fallback seed. `DynamicColorBuilder` always runs, but its schemes are read only for that source. They arrive a moment after launch, so the first frames use the fallback seed.
 - Picking a photo: the cubit samples 1 pixel in 16, keeps the best-scored color and replaces the override with a `SeedOnlySource`. If that fails the fallback seed stays, after a restart too: nothing tries the image again. `NetworkImageRef` is not extracted.
 - `toggle()` cycles light → dark → system.
+- Filled, outlined and elevated buttons are at least 64 × 48 and as wide as their label. For a full-width button, put it in a stretched `Column`, an `Expanded` or a `SizedBox(width: double.infinity)`. Don't give a button theme `Size.fromHeight`: an infinite minimum width throws as soon as the button sits in a `Row`.
 - Sizes in the theme (`48.h` buttons, `12.r` corners) are computed when it is built. `ResponsiveThemeData.create` watches flutter_scale_kit, so the theme rebuilds when the screen size changes by more than 5% (any change on desktop and web).
 - One status-bar style for the app, set in `app_view.dart` from the app bar theme or the brightness. Screens don't set their own.
 - `AppText` and the deprecated `AppTextScale` are kept for compatibility. Use `context.textTheme` styles.

@@ -11,7 +11,9 @@ class ButtonThemes {
   }) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        minimumSize: Size.fromHeight(48.h),
+        // Not Size.fromHeight: an infinite minimum width throws in a Row.
+        // A stretched Column or a SizedBox makes a button full width.
+        minimumSize: Size(64.w, 48.h),
         shape: RoundedRectangleBorder(borderRadius: radius),
         textStyle: textTheme.labelLarge,
       ),
@@ -25,7 +27,9 @@ class ButtonThemes {
   }) {
     return FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: Size.fromHeight(48.h),
+        // Not Size.fromHeight: an infinite minimum width throws in a Row.
+        // A stretched Column or a SizedBox makes a button full width.
+        minimumSize: Size(64.w, 48.h),
         shape: RoundedRectangleBorder(borderRadius: radius),
         textStyle: textTheme.labelLarge,
       ),
@@ -39,7 +43,9 @@ class ButtonThemes {
   }) {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: Size.fromHeight(48.h),
+        // Not Size.fromHeight: an infinite minimum width throws in a Row.
+        // A stretched Column or a SizedBox makes a button full width.
+        minimumSize: Size(64.w, 48.h),
         shape: RoundedRectangleBorder(borderRadius: radius),
         textStyle: textTheme.labelLarge,
         side: BorderSide(color: colorScheme.outline),
