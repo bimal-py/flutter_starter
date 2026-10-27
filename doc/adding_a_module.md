@@ -286,10 +286,13 @@ class NotesScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => NotesCubit()..load(),
       child: BlocListener<NotesCubit, NotesState>(
-        // A failed refresh with notes on screen: toast. With nothing on
-        // screen the view shows ErrorView instead.
+        // A failed refresh or next page with notes on screen: toast, but
+        // not as the next page starts (the state is still `failure` then).
+        // With nothing on screen the view shows ErrorView instead.
         listenWhen: (prev, curr) =>
-            curr.loadingState.isFailure && curr.notes.isNotEmpty,
+            curr.loadingState.isFailure &&
+            !curr.isLoadingMore &&
+            curr.notes.isNotEmpty,
         listener: (_, state) => CustomSnackbar.show(
           type: ToastType.error,
           message: state.error ?? AppErrorStrings.somethingWentWrong,
@@ -324,12 +327,12 @@ class NotesView extends StatelessWidget {
 }
 ```
 
-`widgets/note_list.dart` wraps a `ListView` in `PaginationScrollBuilder(onLoadMore: cubit.loadMore, builder: (context, controller) => ...)` with `PaginationLoadingFooter(isLoading: isLoadingMore)` as the last item, inside a `RefreshIndicator(onRefresh: cubit.refresh)`. `widgets/note_list_skeleton.dart` is `Skeletonizer(child: NoteList(notes: kNoteListSkeletonDummy))`, with `kNoteListSkeletonDummy` in `utils/constants/note_dummy.dart`.
+`widgets/note_list.dart` wraps a `ListView` in `PaginationScrollBuilder(onLoadMore: cubit.loadMore, builder: (context, controller) => ...)` with `PaginationLoadingFooter(isLoading: isLoadingMore)` as the last item, inside a `RefreshIndicator(onRefresh: cubit.refresh)`. Give the `ListView` `physics: const AlwaysScrollableScrollPhysics()`: a `ListView` with a controller doesn't get it by default, and without it a list shorter than the screen can't be pulled to refresh. `widgets/note_list_skeleton.dart` is `Skeletonizer(child: NoteList(notes: kNoteListSkeletonDummy))`, with `kNoteListSkeletonDummy` in `utils/constants/note_dummy.dart`.
 
 ## 11. Wire it in
 
-1. Route: add `notes(name: 'notes', path: 'notes')` to `lib/core/router/routes.dart` and a `GoRoute` in `app_router.dart`.
-2. If the module keeps a Hive box: add its opener and clearer to `lib/app/hive_bootstrap.dart`.
+1. Route: add `notes(name: 'notes', path: 'notes'), // note` to `Routes` in `lib/core/router/routes.dart`, and a `GoRoute` for it to the dashboard route's `routes:` in `app_router.dart`, under a `// Optional. Remove with lib/modules/note/.` line. A path without a leading `/` matches only as a child: a top-level route needs `path: '/notes'`, or go_router shows the error page. See [routing](core/routing.md#how-to-change--extend).
+2. If the module keeps a Hive box: add its opener and clearer to `lib/app/hive_bootstrap.dart`, each under the same marker ([storage](core/storage.md#how-to-change--extend)). The clearer runs only through `Hive.clearAllBoxes()`, which nothing calls: logout clears just the session and the saved user.
 3. `dart run build_runner build` (registers the repository and use cases).
 4. `flutter analyze`.
 

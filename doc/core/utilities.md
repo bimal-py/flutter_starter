@@ -20,10 +20,10 @@ Toasts and dialogs: [errors and messages](errors_and_messages.md). Permissions: 
 
 ## Constants and `.env`
 
-- `AppConstants`: `appName`, `defaultNullValue` (`'-'`), `splashDuration` (2 s), `appBoxName`, store ids (`appIosAppId`, `appAndroidPackageId`), About-screen copy. Replace the placeholders before shipping.
-- `AppUrls`: website, privacy policy, terms, support email, developer links, demo site.
+- `AppConstants`: `appName`, `defaultNullValue` (`'-'`), `splashDuration` (2 s), `supportedLocales` (`[Locale('en')]`), `appBoxName`, store ids (`appIosAppId`, `appAndroidPackageId`), About-screen copy. Replace the placeholders before shipping.
+- `AppUrls`: download link, website, privacy policy, terms, support email, developer links, demo site. Replace them too: most point at the starter's author.
 - `CommonStrings`: `loading`, `goBack`, `cancel`, `done`.
-- `EnvConfig`: one getter per `.env` key the core reads.
+- `EnvConfig`: one getter per `.env` key the core reads (a DEV/PROD pair shares one).
 
 | Key | Read by | Notes |
 |---|---|---|
@@ -31,13 +31,13 @@ Toasts and dialogs: [errors and messages](errors_and_messages.md). Permissions: 
 | `API_BASE_URL` | `EnvConfig.apiBaseUrl` → `DioConfig` | a trailing `/` is trimmed |
 | `DEV_AUTH_KEY`, `PROD_AUTH_KEY` | `EnvConfig.authKey` | PROD in release builds only |
 | `GOOGLE_SERVER_CLIENT_ID`, `APPLE_CLIENT_ID`, `APPLE_REDIRECT_URL` | `EnvConfig.googleServerClientId`, `appleClientId`, `appleRedirectUrl` | for the Google / Apple provider you add |
-| `{DEV,PROD}_{ANDROID,IOS}_<AD>_AD_UNIT_ID` | the mobile_ads helpers | `<AD>`: `APP_OPEN`, `BANNER`, `INTERSTITIAL`, `REWARDED`, `REWARDED_INTERSTITIAL`, `NATIVE`; DEV in debug |
+| `{DEV,PROD}_{ANDROID,IOS}_<AD>_AD_UNIT_ID` | the mobile_ads helpers | `<AD>`: `APP_OPEN`, `BANNER`, `INTERSTITIAL`, `REWARDED`, `REWARDED_INTERSTITIAL`, `NATIVE`; PROD in release builds only |
 
 `.env_example` lists every key; copy it to `.env`.
 
 ## Enums and extensions
 
-`AppLoadingState`: `initial`, `loading`, `success`, `failure`, with `isInitial`, `isLoading`, `isSuccess`, `isFailure`. Every bloc state uses it; don't invent per-bloc status enums.
+`AppLoadingState`: `initial`, `loading`, `success`, `failure`, with `isInitial`, `isLoading`, `isSuccess`, `isFailure`. A state that loads something uses it; don't invent a per-bloc status enum for that. The status enums that do exist track something else: `AuthStatus` (signed in or out), `AppUpgradeStatus` (the version check) and the full-screen ads' `…AdStatus` (`loaded`, `showing`).
 
 - `BuildContext`: `context.theme`, `colorScheme`, `textTheme`, `customTheme` (success, warning, info), `scaffold`, `screenSize`, `screenWidth`, `screenHeight`.
 - `String`: `capitalize` (`'ada'` → `'Ada'`), `isValidEmail`.
@@ -67,7 +67,7 @@ IconButton(
 ```
 
 - `EnvHelper`: `init()` (called in `main`), `get(key)` (`''` when missing), `getBool(key)`.
-- `FirebaseService`: `init()` (before `runApp`), `setupCrashlyticsAndAnalytics()` (end of `main`), `logScreenView`, `analyticsObserver`, `isInitialised`. Everything is a no-op unless `FIREBASE_ENABLED=true` and `Firebase.initializeApp()` succeeds. In release builds it turns on Crashlytics (Flutter and platform errors, as fatal) and logs `app_open`; in debug it turns Crashlytics collection off.
+- `FirebaseService`: `init()` (before `runApp`), `setupCrashlyticsAndAnalytics()` (end of `main`), `logScreenView`, `analyticsObserver`, `isInitialised`. Everything is a no-op unless `FIREBASE_ENABLED=true` and `Firebase.initializeApp()` succeeds. In release builds it turns on Crashlytics (Flutter and platform errors, as fatal) and logs `app_open`; in debug and profile builds it turns Crashlytics collection off.
 - `ShareService`: `shareText`, `shareFiles` (absolute paths), `shareImageBytes` (written to the temp folder first).
 
 ## `lib/common/`
@@ -84,7 +84,7 @@ IconButton(
 | `TextFieldDefaults` | no suggestions or autocorrect, capitalisation by keyboard type, unfocus on tap outside |
 | `FieldWithError`, `InputAffix`, `RequiredLabel` | error under a non-text control; always-visible unit (`Rs.`, `%`); label with a red `*` |
 | `ErrorView`, `ErrorScreen` | inline failure with retry; full-page failure |
-| `showPopupLoading()`, `ListRowSkeleton` | blocking loader for submits; shimmer row for a next page |
+| `context.showPopupLoading()`, `ListRowSkeleton` | blocking loader for submits; shimmer row for a next page |
 | `LazyIndexedStack` | tabs built on first visit, then kept alive |
 | `RefreshableScrollView` | pull-to-refresh for a short or empty state |
 | `CachedNetworkImageWrapper`, `SvgViewer` | network image with shimmer and error box; asset SVG with optional tint |
@@ -115,7 +115,7 @@ CachedNetworkImageWrapper(
 **Add a `.env` key**
 
 1. Add it, empty and commented, to `.env_example`, and give it a value in your `.env`.
-2. Add a getter to `EnvConfig` (a getter, not a `const`, so hot reload sees new values).
+2. Add a getter to `EnvConfig` (a getter, not a `static final`, so a change to it applies on hot reload).
 3. Read `EnvConfig.<key>` everywhere.
 
 **Add an extension or helper**: app-wide ones go in `lib/core/utils/extensions/` or `helpers/` and in that folder's barrel. Module-only ones go in the module's `utils/`.
@@ -127,12 +127,13 @@ CachedNetworkImageWrapper(
 ## Hidden details
 
 - `.env` is bundled as an asset: anyone can read it from the APK or IPA. Only public values go there.
+- `.env` loads once, in `main` (`EnvHelper.init()`). After editing it, restart the app: hot reload keeps the old values.
 - Every `DEV_*` / `PROD_*` pair follows `kReleaseMode`: release builds read `PROD_*`, debug and profile builds read `DEV_*` (so a profile build never serves real ads).
 - `FirebaseService.init()` returns `false` on web, when the flag is off, or when init throws. Crashlytics is wired after `runApp`, so errors before that aren't reported.
 - `ShareService` needs the tapped widget's `context`: iPad uses its position for the share popover. `shareFiles` gives each file the MIME type at the same index of `mimeTypes`.
 - `isValidEmail` (string extension) is the app's one email rule; `AuthValidators` uses it. It accepts `+` tags, subdomains and any TLD length.
 - There's no endpoint class in core. Endpoint paths live in each module's `<feature>_api_route.dart`, without a leading `/`.
-- `awaitSettled()` is an extension on `Bloc`, so a `Cubit` can't use it.
+- `awaitSettled()` is an extension on `Bloc`, so a `Cubit` can't use it. It waits for the next settled state: emit `loading` when the refresh starts, or a refresh whose result equals the current state (a Bloc doesn't re-emit it) leaves the indicator spinning.
 - `context.customTheme` force-unwraps the extension: it throws in a context without the app theme.
 - `AppPasswordField` creates its own `PasswordVisibilityCubit`, so two password fields toggle independently. Provide the cubit yourself only for a custom field.
 - `LazyIndexedStack` keeps every visited tab alive: a tab loads on first visit and switching back never reloads it (pull-to-refresh does).

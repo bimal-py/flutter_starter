@@ -16,10 +16,10 @@ lib/modules/<feature>/utils/storage_helper/       <Feature>StorageKeys + <featur
 
 | Data | Store | In the starter |
 |---|---|---|
-| Data the app reads back (cache, drafts, the signed-in user) | Hive, one box per module | `auth_box` (session), `auth_user_box` (user), `app_box` (ignored update version) |
+| Data the app reads back (cache, drafts, the signed-in user) | Hive, one box per module | `auth_box` (session, remembered email), `auth_user_box` (user), `app_box` (ignored update version) |
 | Tokens, passwords, anything secret | `SecureStorageHelper` | access and refresh tokens |
 | Cubit state to restore at launch | `HydratedCubit` | `ThemeCubit`, `AppSettingCubit` |
-| Images and files from the network | `CachedNetworkImageWrapper` | avatars, pictures |
+| Images from the network | `CachedNetworkImageWrapper` | nothing yet (meant for avatars and pictures) |
 
 There is no SharedPreferences: Hive covers what it would store. Add `shared_preferences` only for a package that asks for an instance.
 
@@ -63,7 +63,7 @@ await SecureStorageHelper.instance.write(AuthStorageKeys.accessTokenKey, token);
 final accessToken = await SecureStorageHelper.instance.read(AuthStorageKeys.accessTokenKey);
 ```
 
-Cubit state that survives a restart: extend `HydratedCubit` and implement `fromJson` / `toJson` (see `AppSettingCubit` in `lib/modules/app_setting/`).
+Cubit state that survives a restart: extend `HydratedCubit`, implement `fromJson` / `toJson` and override `storagePrefix` with a fixed string (see `AppSettingCubit` in `lib/modules/app_setting/`).
 
 ## The cache-first load flow
 
@@ -107,15 +107,15 @@ The screen side (a `BlocListener` for the toast, `ErrorView` only when the list 
 
 **Store a secret**: add the key to `<Feature>StorageKeys` (namespaced the same way) and use `SecureStorageHelper.instance`.
 
-**Persist cubit state**: extend `HydratedCubit`, keep `toJson` small, provide it in `lib/app/global_bloc_config.dart` when it is app-wide.
+**Persist cubit state**: extend `HydratedCubit`, override `storagePrefix` with a fixed string, keep `toJson` small, provide it in `lib/app/global_bloc_config.dart` when it is app-wide. The default `storagePrefix` is the runtime type's name, which obfuscated and minified builds change: the saved state would be lost.
 
-**Wipe everything** ("delete my data"): `Hive.clearAllBoxes()`, `SecureStorageHelper.instance.removeAllData()` and `HydratedBloc.storage.clear()`. Each clears only its own store.
+**Wipe everything** ("delete my data"): sign out first (`LogoutUseCase`), then `Hive.clearAllBoxes()`, `SecureStorageHelper.instance.removeAllData()`, `HydratedBloc.storage.clear()` and, for downloaded images, `CachedNetworkImageProvider.defaultCacheManager.emptyCache()`. Each clears only its own store. They go around the repositories, so without the sign-out `AuthBloc` isn't told and keeps the old session.
 
 ## Hidden details
 
-- Values are JSON strings (the mapper's `toRawJson…`), so there are no Hive `TypeAdapter`s and no codegen. A value that fails to parse counts as "nothing saved" (see `LocalAuthSessionRepositoryImpl.getSession`).
+- Values are strings: a record as JSON (the mapper's `toRawJson…`), a single value such as the remembered email as it is. So there are no Hive `TypeAdapter`s and no codegen. A value that fails to parse counts as "nothing saved": the local repository catches the error (`LocalAuthSessionRepositoryImpl.getSession`, `LocalUserRepositoryImpl.user`), which is why the cache-first `load()` can read outside its `try`.
 - Every box is opened in `main()` before `runApp`. `Hive.box(name)` throws for a box that wasn't opened, so a box missing from `_boxOpeners` crashes on first use.
-- Logout clears the session and the user only. A module's box survives logout unless the module clears it (see the [auth module](../modules/auth.md)).
+- Logout clears the session and the user only; nothing calls `Hive.clearAllBoxes()`. The remembered email, `app_box` and any other module's box survive logout unless their module clears them (see the [auth module](../modules/auth.md)).
 - HydratedBloc 11 uses `hive_ce` and a box named `hydrated_box` in the same documents folder as the app's Hive boxes (`hive` 2.2.3). Never name a box `hydrated_box`. `Hive.clearAllBoxes()` leaves theme and settings state alone.
 - The session record is in Hive and the tokens are in secure storage. iOS keeps Keychain entries after the app is deleted, but the Hive record goes with the app, so a reinstall starts signed out; the next sign-in overwrites the old tokens.
 - iOS secure storage uses `KeychainAccessibility.first_unlock`: background code (the push handler) can read it while the phone is locked, once it was unlocked after boot.

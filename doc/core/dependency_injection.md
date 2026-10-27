@@ -19,10 +19,10 @@ lib/core/di/
 |---|---|---|
 | `@injectable` | no, a new one per lookup | use cases, `DioClient`, `DioConfig` |
 | `@Injectable(as: X)` | no; registered as the contract `X` | `RemoteServiceImpl`, `RemoteUserRepositoryImpl` |
-| `@LazySingleton(as: X)` | yes, made on first lookup | repository impls, `AuthTokenHandlerImpl`, `LogoutHandlerImpl` |
+| `@LazySingleton(as: X)` | yes, made on first lookup | the other repository impls, `AuthTokenHandlerImpl`, `LogoutHandlerImpl`, `ThirdPartyAuthProviderStub` |
 | `@lazySingleton` | yes, made on first lookup | `NotificationPayloadMapper` |
 | `@singleton` | yes, made during `init()` | `LogoutInterceptor`, the `ServiceModule` getters |
-| `@preResolve` | awaited during `init()` | none yet (e.g. `SharedPreferences.getInstance()` in `ServiceModule`) |
+| `@preResolve` | awaited during `init()` | none yet (e.g. `SharedPreferences.getInstance()` in `ServiceModule`, after adding the `shared_preferences` package) |
 | `@module` | a class whose getters register other packages' types | `ServiceModule` |
 
 ## How to use
@@ -42,7 +42,7 @@ class GetDeviceInfoUseCase extends UseCase<DeviceInfoEntity, NoParams> {
 }
 ```
 
-The implementation, `RemoteDeviceInfoRepositoryImpl`, carries `@LazySingleton(as: RemoteDeviceInfoRepository)`: it registers under its contract, so nothing outside `data/` names the impl class.
+The implementation, `RemoteDeviceInfoRepositoryImpl`, carries `@LazySingleton(as: RemoteDeviceInfoRepository)`: it registers under its contract, so outside `data/` only the generated `injection.config.dart` names the impl class.
 
 A cubit is not annotated. It pulls what it needs:
 
@@ -86,7 +86,7 @@ tearDown(() => getIt.reset());
 InAppReview get inAppReview => InAppReview.instance;
 ```
 
-**When to run build_runner**: after you add, delete, rename or move an annotated class, change its annotation or its `as:` type, or change its constructor parameters. Not after edits inside method bodies. Use `dart run build_runner watch` while you work on DI-heavy code.
+**When to run build_runner**: after you add, delete, rename or move an annotated class or a `ServiceModule` getter, change its annotation or its `as:` type, or change its constructor parameters. Not after edits inside method bodies. Use `dart run build_runner watch` while you work on DI-heavy code.
 
 **Remove a module**
 
@@ -96,11 +96,12 @@ InAppReview get inAppReview => InAppReview.instance;
 
 ## Hidden details
 
-- `@injectable` gives a new instance on every lookup, so it must not hold state. Each `RemoteServiceImpl` gets its own `DioClient`, for example.
+- `@injectable` gives a new instance on every lookup, so it must not hold state that others need to see. Each `RemoteServiceImpl` gets its own `DioClient`, and the auth module's token refresh and server logout take a bare one from `getIt<DioClient>()`, without the auth and retry interceptors, so a 401 there can't start another refresh. Keep `DioClient` a factory.
 - `@singleton` objects are built at startup inside `init()`; `@LazySingleton` waits for the first lookup. Both give one shared instance, which is what `LogoutInterceptor` needs: one logged-out flag for every Dio client. Prefer the lazy one.
 - `@preResolve` makes `init()` wait for the future, so the lookup is synchronous afterwards. With none in the app, the generated `init()` is synchronous; `configureDependencyInjection()` still awaits it, so adding one changes nothing else.
 - Field initializers run when the cubit is constructed. That is why `main()` awaits DI before `runApp`, and why tests register fakes before creating the cubit.
 - A missing registration gives a build_runner warning, and an error the first time the type is looked up at runtime.
+- Not every service is in `getIt`. `SecureStorageHelper`, `NotificationService`, `FcmService`, `RemoteConfigService`, `AdsController` and `MobileAdsInitializer` are hand-written `X.instance` singletons, `FirebaseService` and `ShareService` are static, and `NotificationService` builds its own `LocalNotificationsRepositoryImpl`. `getIt<FcmService>()` throws; call `FcmService.instance`.
 - `getIt.maybeGet` is how `core/` uses something a module provides without importing the module (the [network](network.md) layer finds the auth tokens this way).
 - The generated file uses import prefixes (`_i526`); review the registrations in a diff, not the imports.
 - `--delete-conflicting-outputs` is no longer needed: build_runner 2.16 does it by default and ignores the flag. `dart run build_runner build --only-check` fails when the committed file is out of date (useful in CI).

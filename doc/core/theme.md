@@ -23,12 +23,12 @@ How it fits together:
 
 1. `ThemeCubit` holds `variant` (brightness mode), `developerSource` (what you ship; by default a `SeedOnlySource` of `AppColors.seed` and `accent`) and `userOverride` (what the user picked). `state.effectiveSource` is the override, else the developer source.
 2. `StarterAppView` wraps `MaterialApp.router` in `DynamicColorBuilder` and calls `AppThemeBuilder.compose` on every theme change.
-3. `compose` gets a `ColorScheme` pair from `BrandPalette` (built on `material_color_utilities`, like `ColorScheme.fromSeed`) or from the device, then `_buildOne` adds the text theme, the component themes and the `CustomThemeExtension`.
+3. `compose` gets a `ColorScheme` pair from `BrandPalette` (built on `material_color_utilities`, like `ColorScheme.fromSeed`), from the device or from a `FullCustomSource`, then `_buildOne` adds the text theme, the component themes and the `CustomThemeExtension`.
 
 | Source | Renders | Survives a restart |
 |---|---|---|
 | `SeedOnlySource(seed:, accent:)` | the palette of one seed (default) | yes |
-| `SeedWithOverridesSource` | a seed, then per-role overrides (`{'tertiary': Color(...)}`) | yes |
+| `SeedWithOverridesSource(seed:, lightSchemeOverrides:, darkSchemeOverrides:)` | a seed, then per-role overrides for each mode (`{'tertiary': Color(...)}`) | yes |
 | `FullCustomSource` | your own schemes, extension, `TextTheme`, font family | no |
 | `DynamicDeviceSource(fallbackSeed:)` | wallpaper colors (Android 12+), else the fallback seed | yes |
 | `FromImageSource(imageRef:, fallbackSeed:)` | the fallback seed until the image's dominant color is found | yes |
@@ -67,7 +67,7 @@ Theme playground: Settings → "Customize theme" (`ThemePlaygroundScreen`, route
 
 1. Set `AppColors.seed` in `lib/core/theme/colors/app_colors.dart`.
 2. To ship device colors instead: `ThemeCubit(developerSource: const DynamicDeviceSource(fallbackSeed: AppColors.seed))` in `global_bloc_config.dart`.
-3. Clear the app's data (or reinstall) on devices that already ran the app. The stored developer source wins over the code (see Hidden details).
+3. Existing installs get it on their next start. A theme the user picked in the playground still wins until they tap "Reset".
 4. Check light and dark in the playground.
 
 **Add a preset**
@@ -93,6 +93,9 @@ Theme playground: Settings → "Customize theme" (`ThemePlaygroundScreen`, route
 1. Create `lib/core/theme/component_themes/chip_theme.dart`:
 
    ```dart
+   import 'package:flutter/material.dart';
+   import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+
    class ChipThemeBuilder {
      ChipThemeBuilder._();
 
@@ -121,7 +124,7 @@ Theme playground: Settings → "Customize theme" (`ThemePlaygroundScreen`, route
 3. Add it to `copyWith` and `lerp`.
 4. Read it with `context.customTheme.<field>`.
 
-**Use your own success / warning / info colors**: pass an `extensionBuilder` in `global_bloc_config.dart`, so they apply under every source:
+**Use your own success / warning / info colors**: pass an `extensionBuilder` in `global_bloc_config.dart`, so they apply under every source (a `FullCustomSource` that brings its own extensions keeps those):
 
 ```dart
 BlocProvider<ThemeCubit>(
@@ -139,12 +142,14 @@ BlocProvider<ThemeCubit>(
 
 - Only the variant and the user's override are saved (`theme_state.dart`). The developer source always comes from code, so a new `AppColors.seed` or `ThemeCubit(developerSource:)` reaches existing installs on their next start. The saved state sits under the fixed key `ThemeCubit` (`storagePrefix`), so obfuscated builds keep it.
 - `accent` reaches no color role. `BrandPalette` builds every role, tertiary too, from `seed`. Only `BrandPalette.harmonizedAccent` reads `accent`, and nothing calls it. For a brand accent, override `'tertiary'` (and its `on`/`container` roles) with `SeedWithOverridesSource`.
-- Override keys are `ColorScheme` field names. Unknown keys are ignored without a warning; `surfaceDim` and `surfaceBright` can't be overridden.
+- Override keys are `ColorScheme` field names. Unknown keys are ignored without a warning; `surfaceDim`, `surfaceBright` and the twelve `*Fixed*` roles (`primaryFixed`, `onPrimaryFixedVariant`, ...) can't be overridden.
+- A `FullCustomSource` with one scheme uses it in both modes. Its `TextTheme` still goes through `AppTextStyle.applyTo`, so the starter's sizes, weights, line heights and font apply; `fontFamily` sets the family for every language, at scale 1.
 - A `FullCustomSource` saves only its kind, so it can't come back: after a restart the override is dropped and the developer source shows.
-- `ThemeVariant.custom('amoled', brightness: Brightness.dark)` is saved as its id plus its brightness and comes back the same. What `amoled` means is up to your source layer.
-- Device colors come from the wallpaper on Android 12+ (and from the accent color on desktop). On iOS and older Android, `DynamicDeviceSource` uses its fallback seed. `DynamicColorBuilder` always runs, but its schemes are read only for that source.
-- Picking a photo: the cubit samples 1 pixel in 16, keeps the best-scored color and replaces the override with a `SeedOnlySource`. If that fails the fallback seed stays. `NetworkImageRef` is not extracted.
+- `ThemeVariant.custom('amoled', brightness: Brightness.dark)` is saved as its id (`custom:amoled`) plus its brightness and comes back with both. Compare `variant.id`: the restored variant isn't `==` to your `const` one. Nothing reads the name: `app_view.dart` gives `MaterialApp` only `variant.toThemeMode()`, so `amoled` shows the normal dark theme until you read `themeState.variant` there.
+- Device colors come from the wallpaper on Android 12+ (and from the accent color on desktop). On iOS, web and older Android, `DynamicDeviceSource` uses its fallback seed. `DynamicColorBuilder` always runs, but its schemes are read only for that source. They arrive a moment after launch, so the first frames use the fallback seed.
+- Picking a photo: the cubit samples 1 pixel in 16, keeps the best-scored color and replaces the override with a `SeedOnlySource`. If that fails the fallback seed stays, after a restart too: nothing tries the image again. `NetworkImageRef` is not extracted.
 - `toggle()` cycles light → dark → system.
-- Sizes in the theme (`48.h` buttons, `12.r` corners) are computed when it is built. `ResponsiveThemeData.create` watches flutter_scale_kit, so the theme rebuilds when the screen size changes.
+- Sizes in the theme (`48.h` buttons, `12.r` corners) are computed when it is built. `ResponsiveThemeData.create` watches flutter_scale_kit, so the theme rebuilds when the screen size changes by more than 5% (any change on desktop and web).
 - One status-bar style for the app, set in `app_view.dart` from the app bar theme or the brightness. Screens don't set their own.
 - `AppText` and the deprecated `AppTextScale` are kept for compatibility. Use `context.textTheme` styles.
+- `context.customTheme` throws when the theme has no `CustomThemeExtension`, as under a widget test's bare `MaterialApp`. Give that `MaterialApp` `theme: ThemeData(extensions: [CustomThemeExtension.lightDefault()])`.

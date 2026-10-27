@@ -11,7 +11,7 @@ How to move the starter (or an app built from it) to newer Flutter and packages,
 ## Steps
 
 1. `flutter upgrade`.
-2. `flutter pub upgrade --major-versions`, then `flutter pub outdated` to see what stayed behind and why.
+2. `flutter pub upgrade --major-versions`, then `flutter pub outdated` to see what stayed behind and why. `--major-versions` also lifts the three holds below (`go_router`, `dynamic_color`, `cached_network_image`); put those constraints back.
 3. Read the changelog of every package that changed major version (`~/.pub-cache/hosted/pub.dev/<package>-<version>/CHANGELOG.md`). Look for "BREAKING", minimum SDK, minSdk, compileSdk, iOS deployment target.
 4. `flutter analyze` and fix the errors. Then fix the deprecations (or note why one stays).
 5. Native: create a throwaway project with the new Flutter and diff its platform files against yours:
@@ -21,9 +21,13 @@ How to move the starter (or an app built from it) to newer Flutter and packages,
    diff /tmp/fresh/android/settings.gradle.kts android/settings.gradle.kts
    diff /tmp/fresh/android/app/build.gradle.kts android/app/build.gradle.kts
    diff /tmp/fresh/android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
+   diff /tmp/fresh/android/gradle.properties android/gradle.properties
+   diff /tmp/fresh/android/app/src/main/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+   diff /tmp/fresh/ios/Runner/AppDelegate.swift ios/Runner/AppDelegate.swift
+   diff /tmp/fresh/ios/Runner/Info.plist ios/Runner/Info.plist
    ```
 
-   Copy the version bumps; keep your own manifest entries, permissions and Info.plist keys.
+   Copy the version bumps; keep your own additions: `compileSdk = 37` and desugaring in `app/build.gradle.kts`, manifest entries, permissions, Info.plist keys, and the `UNUserNotificationCenter` delegate in `AppDelegate.swift`.
 6. Build both platforms and smoke-test start-up, login, push and ads.
 
 ## Held back on purpose
@@ -34,16 +38,17 @@ How to move the starter (or an app built from it) to newer Flutter and packages,
 | `dynamic_color` | 1.x | 2 returns `material_ui` `ColorScheme`s, a different type from the SDK's, so the theme won't compile. |
 | `cached_network_image` | 3.x | 4 also moved to `material_ui`. |
 
-Flutter is moving Material and Cupertino out of the SDK into `material_ui` / `cupertino_ui`. When the packages the app uses (skeletonizer, flutter_scale_kit, loader_overlay, ...) have moved too, migrate the app (`dart fix` ships the import changes) and lift these three holds together.
+Flutter is moving Material and Cupertino out of the SDK into `material_ui` / `cupertino_ui`. When the packages the app uses (flutter_scale_kit, loader_overlay, flutter_colorpicker, ...) have moved too, migrate the app (`dart fix` ships the import changes) and lift these three holds together.
 
 ## Deprecations left in place
 
-- `firebase_messaging` 17 deprecates `getToken()`, `deleteToken()` and `onTokenRefresh` in favour of `register()` / `onRegistered`, which hand out a Firebase Installation ID for FCM's direct send instead of the registration token backends store today. `FcmService` keeps the token APIs with a note until the backend sends by installation ID.
+- `firebase_messaging` 17 deprecates `getToken()` and `onTokenRefresh` in favour of `register()` / `onRegistered`, and `deleteToken()` in favour of `unregister()` / `onUnregistered`. The new APIs hand out a Firebase Installation ID for FCM's direct send instead of the registration token backends store today. `FcmService` keeps the token APIs with a note until the backend sends by installation ID.
 
 ## Hidden details
 
 - `permission_handler` 13 compiles against Android SDK 37 and requires the app to as well; that's why `compileSdk = 37` is set by hand instead of `flutter.compileSdkVersion`.
-- Firebase (BoM 35, Apple SDK 13), `flutter_local_notifications` 22 and `flutter_secure_storage` 11 need Android `minSdk` 24; Flutter's default is already 24.
+- Firebase (BoM 35), `flutter_local_notifications` 22 and `flutter_secure_storage` 11 need Android `minSdk` 24; Flutter's default is already 24.
+- On iOS the app gets Firebase Apple SDK 12.19.3, not 13. `firebase_core` 5.1 pins 13.1.1 only for Swift Package Manager; for CocoaPods it pins 12.19.3 and notes that new Firebase releases stop publishing to CocoaPods in October 2026. This project builds with CocoaPods (`enable-swift-package-manager: false` in `pubspec.yaml`).
 - `flutter_secure_storage` 11 drops the old Android ciphers. An app that still has data from a version before 10 must ship a 10.x release first so the data is migrated.
-- `flutter analyze` may add an `analyzer: exclude:` block to `analysis_options.yaml`; that's the Flutter tool migrating the file, keep it.
-- The newer `lints` flag `prefer_initializing_formals` for private fields set from named parameters: use private named parameters (`{this._field}`, callers still write `field:`), which this project's language version (3.13) supports.
+- The `analyzer: exclude:` block in `analysis_options.yaml` (`build/**` and the platform folders) comes from the Flutter tool: every command that runs pub (`flutter pub get`, `flutter analyze`, `flutter test`, ...) adds any entry that is missing, such as `macos/**` once that folder exists. Keep it.
+- From language version 3.12, `prefer_initializing_formals` (enabled through `flutter_lints`) also flags a private field set from a named parameter. Use a private named parameter (`{this._field}`, callers still write `field:`), which 3.12 added; this project is on 3.13.

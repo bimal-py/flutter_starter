@@ -1,6 +1,6 @@
 # Permissions
 
-`lib/core/utils/helpers/permission/` wraps permission_handler in one flow: ask the system once, and after a denial offer to open the app's settings.
+`lib/core/utils/helpers/permission/` wraps permission_handler in one flow: ask the system, and after a denial offer to open the app's settings.
 The rule: ask when the user starts the action that needs it, or on an onboarding step that explains why. Never on app open.
 
 ## Where it lives
@@ -18,8 +18,8 @@ ios/Podfile                                PERMISSION_* macros in post_install
 `PermissionFlow.ensure` returns `true` when the feature may go ahead:
 
 1. Granted, limited or provisional: `true` at once.
-2. Never asked (`isDenied`): the system prompt. Granted: `true`.
-3. Still denied, or permanently denied: a `ConfirmationDialog` with "Open settings" and "Not now". "Not now" returns `false`.
+2. Denied (`isDenied`): `request()`, which shows the system prompt if the OS still allows one. Granted: `true`. On iOS `denied` means never asked. On Android it is every denial, because a status check there never reads `permanentlyDenied`.
+3. Anything else (still denied, permanently denied, restricted): a `ConfirmationDialog` with "Open settings" and "Not now" (`confirmText:` / `cancelText:` change them). "Not now" or a tap outside returns `false`.
 4. "Open settings": `openAppSettings()`, then `ensure` waits until the app is in front again and reads the status once more (see Hidden details).
 
 ## How to use
@@ -31,7 +31,8 @@ final granted = await NotificationPermission.ensure(context);
 // Before saving an image (the qr module does this).
 if (!await GalleryPermission.ensure(context)) return;
 
-// Any other permission.
+// Any other permission. Permission comes from package:permission_handler;
+// ScanStrings stands for your feature's strings class.
 final canScan = await PermissionFlow.ensure(
   context,
   permission: Permission.camera,
@@ -40,15 +41,15 @@ final canScan = await PermissionFlow.ensure(
 );
 ```
 
-With the fcm module, prefer `FcmService.instance.ensureNotificationPermission(context)`: it runs `NotificationPermission.ensure` and records that the user was asked. It returns `false` without asking while `FIREBASE_ENABLED` is off, so an app with only local notifications calls `NotificationPermission.ensure` itself. See the [fcm module](../modules/fcm.md).
+With the fcm module, prefer `FcmService.instance.ensureNotificationPermission(context)`: it runs `NotificationPermission.ensure` and records that the user was asked. It returns `false` without asking until Firebase is running (`FIREBASE_ENABLED=true` and `Firebase.initializeApp()` succeeded), so an app with only local notifications calls `NotificationPermission.ensure` itself. See the [fcm module](../modules/fcm.md).
 
 What each permission needs natively. Entries marked "(set)" are already in the starter.
 
 | Permission | AndroidManifest.xml | Info.plist | Podfile macro |
 |---|---|---|---|
 | `notification` | `POST_NOTIFICATIONS` (set) | none | `PERMISSION_NOTIFICATIONS=1` (set) |
-| `photosAddOnly` | `WRITE_EXTERNAL_STORAGE`, max SDK 28 (set) | `NSPhotoLibraryAddUsageDescription` (set) | `PERMISSION_PHOTOS=1` (set) |
-| `photos` | `READ_MEDIA_IMAGES` (Android 13+; older: `storage`) | `NSPhotoLibraryUsageDescription` (set) | `PERMISSION_PHOTOS=1` (set) |
+| `photosAddOnly` (iOS) / `storage` (Android 9 and lower) | `WRITE_EXTERNAL_STORAGE`, max SDK 28 (set) | `NSPhotoLibraryAddUsageDescription` (set) | `PERMISSION_PHOTOS=1` (set) |
+| `photos` | `READ_MEDIA_IMAGES` (Android 13+; older: `storage`, with `READ_EXTERNAL_STORAGE` max SDK 32) | `NSPhotoLibraryUsageDescription` (set) | `PERMISSION_PHOTOS=1` (set) |
 | `camera` | `CAMERA` (set) | `NSCameraUsageDescription` (set) | `PERMISSION_CAMERA=1` (set) |
 | `microphone` | `RECORD_AUDIO` | `NSMicrophoneUsageDescription` | `PERMISSION_MICROPHONE=1` |
 | `locationWhenInUse` | `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` | `NSLocationWhenInUseUsageDescription` | `PERMISSION_LOCATION_WHENINUSE=1` |
@@ -66,7 +67,7 @@ Every other permission and its keys: the permission_handler setup page on pub.de
 5. Put the settings-dialog title and message in the feature's `<feature>_strings.dart`.
 6. Call `PermissionFlow.ensure` right before the action, or wrap it like `NotificationPermission` does.
 
-**Remove a permission**: delete its macro, its Info.plist key and its manifest entry together, and drop the wrapper if nothing calls it.
+**Remove a permission**: delete its macro, its Info.plist key and its manifest entry together, and drop the wrapper if nothing calls it. Keep a key another plugin still uses: image_picker needs `NSCameraUsageDescription` and `NSPhotoLibraryUsageDescription` whether or not their macros are set.
 
 **When to ask**
 
@@ -76,15 +77,16 @@ Every other permission and its keys: the permission_handler setup page on pub.de
 
 ## Hidden details
 
-- After "Open settings", `ensure` waits for the next resume (an `AppLifecycleListener`), because `openAppSettings()` returns as soon as Settings opens. If Settings can't open, it returns `false` at once. On iOS a changed permission restarts the app, so the waiting call never returns; the new process reads the new status.
-- iOS ends the app when the user changes one of its permissions in Settings; it starts fresh when they come back.
-- Without its Podfile macro, iOS never prompts: the status reads `denied` and a request returns `permanentlyDenied`, so the flow goes straight to the settings dialog, and Settings has no switch for it.
+- After "Open settings", `ensure` waits for the next resume (an `AppLifecycleListener`), because `openAppSettings()` returns as soon as Settings opens. If Settings can't open, it returns `false` at once.
+- iOS ends the app when the user changes a privacy permission such as Photos or Camera in Settings, so the waiting call never returns; the app starts fresh when they come back, and the next `ensure` reads the new status. Changing notifications doesn't end the app, so `ensure` returns the new status.
+- Call `ensure` before you show the popup loader: the loader sits above the navigator, so it would cover the settings dialog and block taps on it. The qr module's save asks first for this reason.
+- Without its Podfile macro, iOS never prompts: the status reads `denied` and a request returns `permanentlyDenied` (`denied` for the microphone, which shares the camera's code while `PERMISSION_CAMERA` is on), so the flow goes straight to the settings dialog, and Settings has no switch for it.
 - Each macro compiles code that uses that API. App Store Connect rejects an upload that uses an API without its usage description (ITMS-90683): add the macro and the key together.
 - In permission_handler_apple 9.6.4 `photosAddOnly` is turned on by `PERMISSION_PHOTOS`. The `PERMISSION_PHOTOS_ADD_ONLY` define exists but is never read.
-- `GalleryPermission`: iOS asks for `photosAddOnly` (limited counts as granted), Android 9 and lower asks for `storage`, Android 10 and up needs nothing and returns `true`.
+- `GalleryPermission`: iOS asks for `photosAddOnly` (limited counts as granted), Android 9 and lower asks for `storage`, Android 10 and up needs nothing and returns `true`. `photosAddOnly` is iOS only: on Android it maps to no manifest entry and always reads `denied`.
 - Android 12 and lower grants notifications at install. On 13 and up, the first request shows the prompt.
-- image_picker asks for the camera itself (because `CAMERA` is in the manifest) but has no settings fallback. Run `PermissionFlow.ensure(permission: Permission.camera, ...)` first if you want one. See the [image_picker module](../modules/image_picker.md).
+- image_picker asks for the camera itself (on Android because `CAMERA` is in the manifest) but has no settings fallback. Run `PermissionFlow.ensure(context, permission: Permission.camera, ...)` first if you want one. See the [image_picker module](../modules/image_picker.md).
 - The camera `<uses-feature>` entries in the manifest say `android:required="false"`, so Google Play still offers the app to devices without a camera. On those, the camera source fails; offer the gallery too.
 - The usage texts in Info.plist are short and neutral. Name your app's real reasons before release: App Review reads them.
-- The two wrappers' dialog texts are English literals in the wrapper files.
+- The two wrappers' dialog texts, and `PermissionFlow`'s default "Open settings" / "Not now" labels, are English literals in the code.
 - Local notifications start without prompting on iOS (`requestAlertPermission: false` and friends), so nothing asks before you call `ensure`.

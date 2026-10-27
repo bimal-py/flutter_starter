@@ -30,7 +30,7 @@ Turn this starter into your app: rename it, pick the modules you need, run it.
    ```
 
    - `--package`: the Dart package name (`pubspec.yaml` and every import).
-   - `--bundle-id`: Android `applicationId` and iOS bundle identifier. Segments start with a letter and use letters, digits or `_`.
+   - `--bundle-id`: Android `applicationId` and iOS bundle identifier. Two or more segments, each starting with a letter and using letters, digits or `_`. Leave out `_` if you ship on iOS: Apple bundle ids don't allow it, and the tool writes the same id to both.
    - `--label`: the name under the app icon (keep it short).
    - `--name`: the full name shown inside the app (`AppConstants.appName`). Defaults to `--label`.
 
@@ -40,7 +40,7 @@ Turn this starter into your app: rename it, pick the modules you need, run it.
    cp .env_example .env
    ```
 
-   Fill in `API_BASE_URL` (with a trailing `/`). Everything else can stay empty until you use that feature. See [utilities](core/utilities.md) for every key.
+   Fill in `API_BASE_URL`, with or without a trailing `/` (`DioConfig` trims it). Everything else can stay empty until you use that feature. See [utilities](core/utilities.md) for every key.
 
 4. Generate code and check the project:
 
@@ -61,9 +61,10 @@ Turn this starter into your app: rename it, pick the modules you need, run it.
 Every optional feature is a folder in `lib/modules/`. Open the [module catalog](modules/README.md), and for each module you don't need follow its **Remove** steps. They are always the same shape:
 
 1. Delete `lib/modules/<module>/`.
-2. Remove its lines from the composition points (`lib/main.dart`, `lib/app/*.dart`, `lib/core/router/*.dart`). Each line is marked `// Optional. Remove with lib/modules/<module>/`.
-3. Remove the packages only that module used from `pubspec.yaml`, and its native keys (AndroidManifest.xml, Info.plist).
-4. Run `dart run build_runner build` and `flutter analyze`.
+2. Remove its lines from the composition points (`lib/main.dart`, `lib/app/*.dart`, `lib/core/router/*.dart`): its imports, the code under each `// Optional. Remove with lib/modules/<module>/` comment, and its `Routes` entries in `routes.dart`, which end with `// <module>`.
+3. Edit the modules that use it (the catalog's **Used by** column), or remove them too.
+4. Remove the packages only that module used from `pubspec.yaml`, and its native keys (AndroidManifest.xml, Info.plist, Podfile).
+5. Run `dart run build_runner build` and `flutter analyze`.
 
 ## 3. Set up Firebase (only if you use it)
 
@@ -72,8 +73,9 @@ Crashlytics, Analytics, push (fcm) and update alerts (app_upgrade) need Firebase
 1. `dart pub global activate flutterfire_cli`
 2. `flutterfire configure` (writes `lib/firebase_options.dart`, which is gitignored).
 3. Set `FIREBASE_ENABLED=true` in `.env`.
+4. In `lib/core/services/firebase_service.dart`, uncomment the `firebase_options.dart` import and the `options: DefaultFirebaseOptions.currentPlatform,` line.
 
-Without these steps the app runs and the Firebase features stay off.
+Without these steps the app runs and the Firebase features stay off. After step 4 the app needs `lib/firebase_options.dart` to compile, so run `flutterfire configure` on every fresh clone (or stop ignoring the file). Crashlytics collects in release builds only.
 
 ## 4. Build your first feature
 
@@ -93,6 +95,7 @@ Follow [adding a module](adding_a_module.md). It walks one feature from entity t
 ## Hidden details
 
 - `.env` is bundled into the app binary. Put only public values there (API base URL, ad unit ids, OAuth client ids). Real secrets stay on your server.
-- `lib/core/di/injection.config.dart` is generated but committed, so a fresh clone builds before you run `build_runner`. Regenerate it whenever you add, rename or delete an annotated class.
+- `.env` is gitignored but required: `pubspec.yaml` lists it under `assets`, so a clone without it doesn't build, and `EnvHelper.init()` throws at start-up if it is empty.
+- `lib/core/di/injection.config.dart` is generated but committed, so a fresh clone compiles before you run `build_runner`. Regenerate it whenever you add, rename or delete an annotated class.
 - `pubspec.lock` is committed on purpose: everyone builds with the same versions.
 - iOS uses CocoaPods (`enable-swift-package-manager: false` in `pubspec.yaml`). Flip it to `true` once every plugin you keep supports Swift Package Manager.

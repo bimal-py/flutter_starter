@@ -4,7 +4,7 @@ One topic per file. Read the line, open the file you need.
 
 ## Start here
 
-- [Getting started](getting_started.md): rename the starter into your app, set `.env`, run it, everyday commands.
+- [Getting started](getting_started.md): rename the starter into your app, set `.env`, run it, the optional Firebase setup, everyday commands.
 - [Architecture](architecture.md): layers, who may import whom, composition points, start-up order.
 - [Project structure](project_structure.md): every folder, and where a new file goes.
 - [Conventions](conventions.md): naming, imports, screens and widgets, cubits, loading UI, copy, theme, commits.
@@ -15,7 +15,7 @@ One topic per file. Read the line, open the file you need.
 
 - [Network](core/network.md): `RemoteService`, token refresh, retries, error messages, the backend shape it expects.
 - [Theme](core/theme.md): ColorScheme-first theming, presets, dynamic color, typography.
-- [Routing](core/routing.md): routes, arguments, where a route guard goes.
+- [Routing](core/routing.md): routes, arguments, where a route guard goes, asset paths (`AssetRoutes`).
 - [Dependency injection](core/dependency_injection.md): get_it + injectable, when to run build_runner.
 - [Storage](core/storage.md): Hive boxes, secure storage, the cache-first load flow.
 - [Errors and messages](core/errors_and_messages.md): exceptions, toasts, dialogs, popup loader, error views.
