@@ -1,0 +1,26 @@
+{
+  "background": "seed",
+  "sizes": ["iphone-6.9", "iphone-6.5", "iphone-6.3", "ipad-13", "phone", "tablet-7", "tablet-10"],
+  "shots": [
+    {
+      "name": "01_home",
+      "image": "inputs/example_home.png",
+      "title": "Everything you need, on one screen",
+      "description": "Your day at a glance: progress, quick actions and what is coming up next."
+    },
+    {
+      "name": "02_own_colour",
+      "image": "inputs/example_home.png",
+      "title": "Give any shot its own colour",
+      "description": "One colour builds a gradient. Two colours are used as they are.",
+      "background": "#0F766E"
+    },
+    {
+      "name": "03_nepali",
+      "image": "inputs/example_home.png",
+      "title": "नेपालीमा पनि राम्रो देखिन्छ",
+      "description": "देवनागरी शीर्षक र विवरण एपकै फन्टमा, हरेक कम्प्युटरमा उस्तै।",
+      "background": ["#6D28D9", "#DB2777"]
+    }
+  ]
+}

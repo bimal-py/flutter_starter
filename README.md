@@ -55,6 +55,10 @@ Everything is in [`doc/`](doc/README.md), one topic per page. Go through it in t
 
 [Upgrading](doc/upgrading.md): moving to newer Flutter and packages, and what is held back and why.
 
-### Step 5: Work faster with Claude Code
+### Step 5: Release it
+
+1. [Store screenshots](doc/tools/screenshots.md): give each shot an image, a title and a description; get framed screenshots for every App Store and Play Store size.
+
+### Step 6: Work faster with Claude Code
 
 [Using Claude Code](doc/using_claude_code.md): the `CLAUDE.md`, skills, subagent and hooks that make it follow the starter's conventions, check its own work and spend fewer tokens.

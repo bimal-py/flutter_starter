@@ -69,3 +69,6 @@ figma-flutter-prompt.md
 feature-module-prompt.md
 .vscode/
 .codex-temp/
+
+# Store screenshots made by tool/marketing/make_screenshots.py (inputs/ and shots.json are committed)
+/tool/marketing/screenshots/

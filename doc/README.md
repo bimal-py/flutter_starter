@@ -24,6 +24,10 @@ One topic per file. Read the line, open the file you need.
 - [Sizing and fonts](core/sizing_and_fonts.md): flutter_scale_kit, text scale, per-locale fonts.
 - [Utilities](core/utilities.md): constants, `.env` keys, extensions, helpers, services, shared widgets.
 
+## Tools
+
+- [Store screenshots](tools/screenshots.md): `tool/marketing/make_screenshots.py` turns captures, titles and descriptions into App Store and Play Store screenshots.
+
 ## Modules (optional, each removable)
 
 - [Module catalog](modules/README.md): what each module does, what it depends on, how to remove it.
