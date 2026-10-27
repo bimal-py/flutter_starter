@@ -29,8 +29,8 @@ Future<void> main() async {
   // Optional. Remove with lib/modules/notifications/.
   await NotificationService.instance.initialize();
 
-  // Core. A no-op unless FIREBASE_ENABLED=true in .env and
-  // firebase_options.dart exists (see firebase_service.dart).
+  // Core. A no-op unless FIREBASE_ENABLED=true in .env; the setup steps
+  // are in firebase_service.dart.
   await FirebaseService.init();
 
   // Optional. Remove with lib/modules/fcm/. A no-op until Firebase starts.

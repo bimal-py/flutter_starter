@@ -49,7 +49,8 @@ dependencies:
   flutter_local_notifications: ^22.3.3
   timezone: ^0.11.2
 
-  # Firebase (optional — only initialised when firebase_options.dart is present)
+  # Firebase (optional: only started when FIREBASE_ENABLED=true; setup in
+  # lib/core/services/firebase_service.dart)
   firebase_core: ^5.1.0
   firebase_analytics: ^13.0.1
   firebase_crashlytics: ^6.0.1

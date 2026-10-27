@@ -25,10 +25,11 @@ class FirebaseService {
   static bool _initialised = false;
   static bool get isInitialised => _initialised;
 
-  /// Initialises Firebase if `FIREBASE_ENABLED=true` in `.env` AND
-  /// `firebase_options.dart` is present. Returns `true` when Firebase came up
-  /// successfully so callers can decide whether to initialise Crashlytics /
-  /// Analytics afterwards.
+  /// Initialises Firebase when `FIREBASE_ENABLED=true` in `.env` (never on
+  /// the web). Until the `options:` line below is uncommented it relies on
+  /// the native config files, so finish the setup steps above first. Returns
+  /// `true` when Firebase came up, so callers can decide whether to start
+  /// Crashlytics and Analytics.
   static Future<bool> init() async {
     if (kIsWeb) return false;
     if (!EnvConfig.firebaseEnabled) return false;

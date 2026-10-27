@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_starter/modules/app_upgrade/app_upgrade.dart';
 import 'package:flutter_starter/modules/auth/auth.dart';
 
-/// App-wide listeners wrapped around every route. They sit above the
-/// navigator: to show a dialog or a loader they use the router's navigator
-/// (`router.routerDelegate.navigatorKey`). Each one is optional and goes
-/// with its module.
+/// App-wide listeners wrapped around every route. They sit inside the popup
+/// loader but above the navigator: a dialog needs the root navigator
+/// (`navigatorKey`). Each one is optional and goes with its module.
 class AppBootstrappers extends StatelessWidget {
   const AppBootstrappers({super.key, required this.child});
 
