@@ -6,7 +6,8 @@ The rule: write sizes as `16.w`, `8.h`, `12.r` and text as `context.textTheme.<r
 ## Where it lives
 
 ```
-lib/main.dart                                   ScaleKitBuilder(designWidth: 425, designHeight: 691)
+lib/main.dart                                   ScreenSizeGuard > ScaleKitBuilder(designWidth: 425, designHeight: 691)
+lib/common/widgets/screen_size_guard.dart       ScreenSizeGuard: never lets a 0 x 0 screen through
 lib/app/app_view.dart                           system text scale capped at 1.2
 lib/core/theme/typography/app_text_style.dart   AppTextStyle.applyTo: size, weight, line height per role
 lib/core/theme/typography/localized_fonts.dart  LocalizedFonts, AppFont(family:, scale:, fallback:)
@@ -91,4 +92,5 @@ Fonts per language (`LocalizedFonts.defaults()`):
 - In landscape, flutter_scale_kit swaps the design width and height, so sizes don't shrink to the short edge. On phones and tablets it also multiplies sizes and font sizes by 1.2 (`ScaleKitBuilder`'s landscape boosts, on by default): an 820 × 1180 iPad gives `16.w` = 20.8 in portrait, 26.9 in landscape.
 - `main.dart` locks phones to portrait. iPad ignores the lock while multitasking is on (Info.plist allows every iPad orientation), and so does Android 16+ on tablets and unfolded foldables (smallest width 600dp and up), because the app targets SDK 36 (`flutter.targetSdkVersion`).
 - `ScaleKitBuilder.designType` is accepted but not used yet by flutter_scale_kit 2.0.2.
+- **Blank text after the app comes back from the background.** Android reports a 0 × 0 view while the app is in the background (iOS can before the first frame). flutter_scale_kit 2.0.2 turns that into a zero scale and, measuring the next change as a share of a zero width, never recomputes it: every `.sp` stays 0. `ScreenSizeGuard` in `lib/main.dart` passes the last real size down instead, so the scale never sees zero, and builds nothing until the first real size. Keep it above `ScaleKitBuilder`. `test/common/screen_size_guard_test.dart` checks the fix and pins the package's behaviour; when a release fixes it, that test fails and the guard can go.
 - `AppTextStyle.applyTo` copies onto Material's text theme, so Material's text colors stay. Building a `TextTheme` from scratch with null colors would lose them.

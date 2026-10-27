@@ -40,10 +40,14 @@ Future<void> main() async {
   );
 
   runApp(
-    const ScaleKitBuilder(
-      designWidth: 425,
-      designHeight: 691,
-      child: StarterApp(),
+    // Keeps flutter_scale_kit from ever seeing a 0 x 0 screen (the app in
+    // the background), which left all text 0 px tall on return.
+    const ScreenSizeGuard(
+      child: ScaleKitBuilder(
+        designWidth: 425,
+        designHeight: 691,
+        child: StarterApp(),
+      ),
     ),
   );
 
