@@ -32,4 +32,25 @@ Needs Flutter 3.47+ (Dart 3.13). Details and the optional Firebase setup: [getti
 
 ## Documentation
 
-Everything is in [`doc/`](doc/README.md): architecture, project structure, conventions, adding a module, the core layer, and one page per module with **how to remove it**.
+Everything is in [`doc/`](doc/README.md), one topic per page. Read it in this order.
+
+**1. Set up your app**
+
+1. [Getting started](doc/getting_started.md): copy and rename the starter, fill `.env`, run it, and set up Firebase only if you use it.
+2. [Module catalog](doc/modules/README.md): decide which modules you keep. Each module page ends with **Remove** steps; follow them for every module you don't need.
+
+**2. Learn how the code is organised**
+
+3. [Architecture](doc/architecture.md): the layers, who may import whom, and how the app starts.
+4. [Project structure](doc/project_structure.md): every folder, and where a new file goes.
+5. [Conventions](doc/conventions.md): names, imports, screens, cubits, loading states, copy and commits. Read this before you write code.
+
+**3. Build your features**
+
+6. [Adding a module](doc/adding_a_module.md): one feature from entity to screen, step by step.
+7. The core page for what your feature touches: [network](doc/core/network.md) (API calls), [storage](doc/core/storage.md) (saving data), [routing](doc/core/routing.md) (screens), [theme](doc/core/theme.md) (colors and text), [errors and messages](doc/core/errors_and_messages.md) (toasts, dialogs, loaders), [permissions](doc/core/permissions.md), [dependency injection](doc/core/dependency_injection.md), [sizing and fonts](doc/core/sizing_and_fonts.md), [utilities](doc/core/utilities.md).
+8. The page of each module you kept, in [`doc/modules/`](doc/modules/README.md), when you use or change it.
+
+**4. Keep it up to date**
+
+9. [Upgrading](doc/upgrading.md): moving to newer Flutter and packages, and what is held back and why.
