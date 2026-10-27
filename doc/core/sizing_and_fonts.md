@@ -28,7 +28,7 @@ Spacing comes from `AppSpacing` (`lib/core/theme/spacing/`), so every screen has
 | `AppSpacing.gutterWide` | `24.w` | narrow centred content: error and empty states, dialogs |
 | `AppSpacing.xs` / `sm` / `md` / `lg` / `xl` | `4.h` / `8.h` / `12.h` / `16.h` / `24.h` | vertical gaps |
 | `AppSpacing.horizontal` | gutter on both sides | a section's padding |
-| `AppSpacing.page` | gutter at the sides, `md` top, `xl` bottom | a scrolling page's `ListView` padding |
+| `AppSpacing.page` | gutter at the sides, `sm` top, `xl` bottom | a scrolling page's `ListView` padding |
 
 ```dart
 ListView(padding: AppSpacing.page, children: [...]);

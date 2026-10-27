@@ -26,7 +26,7 @@ class AppSpacing {
   /// The gutter on both sides, nothing above or below.
   static EdgeInsets get horizontal => EdgeInsets.symmetric(horizontal: gutter);
 
-  /// A scrolling page's content: the gutter at the sides, [md] at the top and
+  /// A scrolling page's content: the gutter at the sides, [sm] at the top and
   /// [xl] at the bottom so the last item clears the edge.
-  static EdgeInsets get page => EdgeInsets.fromLTRB(gutter, md, gutter, xl);
+  static EdgeInsets get page => EdgeInsets.fromLTRB(gutter, sm, gutter, xl);
 }
