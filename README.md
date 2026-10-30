@@ -35,17 +35,9 @@ Needs Flutter 3.47+ (Dart 3.13). Details and the optional Firebase setup: [getti
 
 Shipping takes more than the app code, so the starter comes with the tools for it as well.
 
-<p align="center">
-  <img src="doc/tools/images/screenshots/ios-iphone-6.9-01_scoreboard.jpg" width="160" alt="iPhone 6.9 inch screenshot">
-  <img src="doc/tools/images/screenshots/ios-iphone-6.9-02_new_game.jpg" width="160" alt="iPhone 6.9 inch screenshot with its own colours">
-  <img src="doc/tools/images/screenshots/android-phone-01_scoreboard.jpg" width="160" alt="Play Store phone screenshot">
-  <img src="doc/tools/images/screenshots/ios-ipad-13-01_scoreboard.jpg" width="215" alt="iPad 13 inch screenshot">
-</p>
-<p align="center"><sub>Made by <code>tool/marketing/make_screenshots.py</code> from two plain app captures, a title and a description each.</sub></p>
-
 | Tool | What you get | Start here |
 |---|---|---|
-| [Store screenshots](doc/tools/screenshots.md) | Framed screenshots for every App Store and Play Store size, from your captures, a title and a description each, in your brand colour or one per shot | `python3 tool/marketing/make_screenshots.py` |
+| [Store screenshots](doc/tools/screenshots.md) | Framed screenshots for every App Store and Play Store size, from your captures, a title and a description each, in your brand colour or one per shot ([samples](doc/tools/screenshots.md#samples)) | `python3 tool/marketing/make_screenshots.py` |
 | [Image optimizer](doc/tools/optimize_images.md) | Smaller `assets/`: PNG, JPEG, WebP, GIF, AVIF and SVG, lossless by default, a report before anything changes, filters by folder, name and size | `python3 tool/optimize_images.py` |
 | [Firebase App Distribution](doc/cicd/firebase_app_distribution/README.md) | A GitHub Actions workflow that checks the code, builds a signed APK and sends it to your testers | copy the workflow into `.github/workflows/` |
 | [Codemagic](doc/cicd/codemagic/README.md) | Signed `.aab` and `.ipa` builds uploaded to Play internal testing and App Store Connect, built on Codemagic's Macs | copy `codemagic.yaml` to the repo root |
