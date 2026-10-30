@@ -9,6 +9,7 @@ One topic per file. Read the line, open the file you need.
 - [Project structure](project_structure.md): every folder, and where a new file goes.
 - [Conventions](conventions.md): naming, imports, screens and widgets, cubits, loading UI, copy, theme, commits.
 - [Adding a module](adding_a_module.md): one feature from entity to screen, step by step.
+- [Testing](testing.md): what each sample test shows, fakes instead of mocks, the screens smoke test.
 - [Upgrading](upgrading.md): moving to newer Flutter and packages; what is held back and why.
 - [Using Claude Code](using_claude_code.md): `CLAUDE.md`, skills, subagents, hooks and loops set up for this starter.
 
