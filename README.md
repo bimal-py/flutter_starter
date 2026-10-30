@@ -1,6 +1,8 @@
 # Flutter Starter
 
-A production-ready Flutter starting point: feature-first clean architecture, BLoC, get_it/injectable, go_router, Material 3 theming, a Dio network layer with token refresh, auth, and a set of optional modules you delete when you don't need them.
+A production-ready Flutter starter template (boilerplate): feature-first clean architecture, BLoC, get_it/injectable, go_router, Material 3 theming, a Dio network layer with token refresh, auth, and a set of optional modules you delete when you don't need them. Documented page by page, tested, with CI/CD templates and store-screenshot tooling.
+
+<p align="center"><img src="doc/images/demo.gif" width="270" alt="Flutter Starter demo: onboarding, sign in, home, dark mode, theme playground, settings, about"></p>
 
 ## What's inside
 
@@ -51,6 +53,7 @@ Everything is in [`doc/`](doc/README.md), one topic per page. Go through it in t
 1. [Adding a module](doc/adding_a_module.md): one feature from entity to screen, step by step.
 2. The core page for what your feature touches: [network](doc/core/network.md) (API calls), [storage](doc/core/storage.md) (saving data), [routing](doc/core/routing.md) (screens), [theme](doc/core/theme.md) (colors and text), [errors and messages](doc/core/errors_and_messages.md) (toasts, dialogs, loaders), [permissions](doc/core/permissions.md), [dependency injection](doc/core/dependency_injection.md), [sizing and fonts](doc/core/sizing_and_fonts.md), [utilities](doc/core/utilities.md).
 3. The page of each module you kept, in [`doc/modules/`](doc/modules/README.md), when you use or change it.
+4. [Testing](doc/testing.md): copy the closest sample test for each feature you add.
 
 ### Step 4: Keep it up to date
 
