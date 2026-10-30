@@ -1,6 +1,6 @@
 # Auth
 
-Sign-in state for the whole app: email + password login, email-code sign-up, forgot / reset / change password, Google and Apple sign-in (through a provider you plug in), "Remember me", token refresh and logout. It ships the logic (repositories, use cases, cubits, `AuthBloc`) and a placeholder login screen; you build the screens. Keep it when your app has accounts on a REST backend.
+Sign-in state for the whole app: email + password login, email-code sign-up, forgot / reset / change password, Google and Apple sign-in (through a provider you plug in), "Remember me", token refresh and logout. It ships the logic (repositories, use cases, cubits, `AuthBloc`) and a sample sign-in screen (`LoginScreen`: email, password, Remember me); you build the other screens on the cubits. Keep it when your app has accounts on a REST backend.
 
 ## What it provides
 
@@ -22,7 +22,7 @@ Sign-in state for the whole app: email + password login, email-code sign-up, for
 
 1. Set `API_BASE_URL` in `.env`.
 2. Match `AuthApiRoute` and the payloads in `RemoteAuthRepositoryImpl` to your backend.
-3. Build your screens on the feature cubits (see Use). Replace `LoginScreen` (a placeholder).
+3. Build your screens on the feature cubits (see Use). `LoginScreen` is a working sample: restyle it or replace it. It opens the dashboard after signing in; wire other auth edges in `lib/app/app_bootstrappers.dart`.
 4. Navigation on auth edges: in `lib/app/app_bootstrappers.dart` give `AuthBootstrapper` an `onUnauthenticated: (_) => router.goNamed(Routes.login.name)`, or `onChanged: (_, _) => router.refresh()` plus a `redirect` in the router.
 5. Social login: implement `ThirdPartyAuthProvider` with `google_sign_in` / `sign_in_with_apple` (return the Google ID token; the Apple authorization code, `isFromIos`, the first-time full name, and the redirect URI on Android; throw `ThirdPartyAuthCancelled` when the sheet is closed), register it `@LazySingleton(as: ThirdPartyAuthProvider)`, delete the stub, run `dart run build_runner build`. Fill `GOOGLE_SERVER_CLIENT_ID`, `APPLE_CLIENT_ID`, `APPLE_REDIRECT_URL`.
 
