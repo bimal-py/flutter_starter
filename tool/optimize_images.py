@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Shrink the PNG, JPEG and WebP images in a Flutter project's assets.
+"""Shrink the images in a Flutter project's assets: PNG, JPEG, WebP, GIF,
+AVIF and SVG (BMP, TIFF and HEIC are converted when you ask with --format).
 
 Safe by default:
 
@@ -16,12 +17,16 @@ Safe by default:
   not resized (that would change their on-screen size) unless you pass
   --resize-variants.
 * Animated images, 16-bit PNGs and unusual colour modes are skipped.
+* SVGs are only minified (comments, editor metadata, whitespace between
+  tags), and only when the result parses to the same elements.
 
 Setup:  pip install pillow
 
 Examples:
-    python3 tool/optimize_images.py                              # report on assets/images
+    python3 tool/optimize_images.py                              # report on all of assets/
     python3 tool/optimize_images.py --in-place                   # lossless, in place
+    python3 tool/optimize_images.py assets/images/logos          # one folder
+    python3 tool/optimize_images.py --min-size 30kb --exclude app_logo.png --in-place
     python3 tool/optimize_images.py --in-place --backup-dir /tmp/img-backup
     python3 tool/optimize_images.py assets/images --format webp --in-place
     python3 tool/optimize_images.py "assets/**/*.jpg" --quality 80 --max-width 1600 --in-place
@@ -40,6 +45,7 @@ import re
 import shutil
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -48,11 +54,24 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("Pillow is not installed. Run: pip install pillow")
 
-SUPPORTED = {".png", ".jpg", ".jpeg", ".webp"}
+SUPPORTED = {
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif",
+    ".bmp", ".tif", ".tiff", ".heic", ".heif", ".svg",
+}
 EXTENSIONS = {"png": ".png", "jpeg": ".jpg", "webp": ".webp"}
 PIL_FORMAT = {"png": "PNG", "jpeg": "JPEG", "webp": "WEBP"}
-SOURCE_FORMAT = {"PNG": "png", "JPEG": "jpeg", "MPO": "jpeg", "WEBP": "webp"}
-SUFFIXES = {"png": {".png"}, "jpeg": {".jpg", ".jpeg"}, "webp": {".webp"}}
+SOURCE_FORMAT = {
+    "PNG": "png", "JPEG": "jpeg", "MPO": "jpeg", "WEBP": "webp", "GIF": "gif",
+    "AVIF": "avif", "BMP": "bmp", "TIFF": "tiff", "HEIF": "heif",
+}
+SUFFIXES = {
+    "png": {".png"}, "jpeg": {".jpg", ".jpeg"}, "webp": {".webp"}, "gif": {".gif"},
+    "avif": {".avif"}, "bmp": {".bmp"}, "tiff": {".tif", ".tiff"}, "heif": {".heic", ".heif"},
+}
+# Kept only as a source: re-saving them in place doesn't help (BMP has no
+# real compression, Flutter can't show TIFF, HEIC needs pillow-heif).
+CONVERT_ONLY = {"bmp", "tiff", "heif"}
+LOSSLESS_SOURCES = {"png", "gif", "bmp", "tiff"}
 DEFAULT_QUALITY = 85
 VARIANT_DIR = re.compile(r"^\d+(\.\d+)?x$")  # Flutter's 1.5x, 2.0x, 3.0x folders
 
@@ -99,6 +118,15 @@ def quality(value: str) -> int:
     return number
 
 
+def byte_size(value: str) -> int:
+    """30kb, 1.5mb, 500b or a plain number of bytes."""
+    match = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*([kmg]?i?b?)?\s*", value.lower())
+    if not match:
+        raise argparse.ArgumentTypeError(f"not a size: {value!r} (try 30kb or 1.5mb)")
+    number, unit = float(match.group(1)), (match.group(2) or "b")[0]
+    return int(number * {"b": 1, "k": 1024, "m": 1024**2, "g": 1024**3}[unit])
+
+
 def positive(value: str) -> int:
     number = int(value)
     if number < 1:
@@ -116,7 +144,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "paths",
         nargs="*",
         help="files, folders or glob patterns (quote globs, e.g. 'assets/**/*.png'); "
-        "default: assets/images",
+        "default: assets",
     )
     parser.add_argument(
         "--recursive",
@@ -129,7 +157,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="append",
         default=[],
         metavar="PATTERN",
-        help="skip files whose path or name matches this pattern; repeatable",
+        help="skip files whose path or name matches this pattern, e.g. app_logo.png "
+        "or 'assets/icons/*'; repeatable",
+    )
+    parser.add_argument(
+        "--min-size",
+        type=byte_size,
+        metavar="SIZE",
+        help="only touch files at least this big, e.g. 30kb or 1.5mb",
     )
 
     encode = parser.add_argument_group("encoding")
@@ -143,8 +178,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--quality",
         type=quality,
         metavar="Q",
-        help=f"1-100 for JPEG and lossy WebP; allows re-encoding lossy sources "
-        f"(default when a lossy encode is needed: {DEFAULT_QUALITY})",
+        help=f"1-100 for JPEG, WebP and AVIF; means lossy output, and allows "
+        f"re-encoding lossy sources (default when a lossy encode is needed: {DEFAULT_QUALITY})",
     )
     mode = encode.add_mutually_exclusive_group()
     mode.add_argument(
@@ -236,7 +271,7 @@ def relative_to_cwd(path: Path) -> Path | None:
 
 
 def collect(args: argparse.Namespace) -> tuple[list[Item], list[str]]:
-    inputs = args.paths or ["assets/images"]
+    inputs = args.paths or ["assets"]
     found: dict[Path, Item] = {}
     problems: list[str] = []
 
@@ -347,6 +382,14 @@ def encode(im: Image.Image, target: str, *, lossless: bool, q: int, colors: int 
             im = im.convert("RGB")
         im.save(buffer, "JPEG", quality=q, optimize=True, progressive=True, **extra)
 
+    elif target == "gif":
+        im.save(buffer, "GIF", optimize=True)
+
+    elif target == "avif":
+        if im.mode not in ("RGB", "RGBA"):
+            im = im.convert("RGBA" if has_transparency(im) else "RGB")
+        im.save(buffer, "AVIF", quality=q, **extra)
+
     else:  # webp
         if im.mode not in ("RGB", "RGBA"):
             im = im.convert("RGBA" if has_transparency(im) else "RGB")
@@ -387,13 +430,21 @@ def process(item: Item, args: argparse.Namespace) -> Result:
     result = Result(item, "", before)
 
     if item.path.suffix.lower() not in SUPPORTED:
-        result.status = "skip: not a PNG, JPEG or WebP"
+        result.status = "skip: not an image this tool knows"
         return result
+    if args.min_size and before < args.min_size:
+        result.status = f"skip: under {human(args.min_size)}"
+        return result
+    if item.path.suffix.lower() == ".svg":
+        return process_svg(item, data, args, result)
 
     try:
         im = Image.open(io.BytesIO(data))
         im.load()
     except UnidentifiedImageError:
+        if item.path.suffix.lower() in SUFFIXES["heif"]:
+            result.status = "skip: HEIC needs `pip install pillow-heif`"
+            return result
         result.status, result.error = "error: not an image, or a damaged file", True
         return result
     except Exception as error:  # noqa: BLE001 - report any decoder failure
@@ -411,6 +462,9 @@ def process(item: Item, args: argparse.Namespace) -> Result:
         actual = f" ({source.upper()} data in a {item.path.suffix} file)"
     if getattr(im, "is_animated", False):
         result.status = "skip: animated"
+        return result
+    if source in CONVERT_ONLY and args.format == "keep":
+        result.status = f"keep: {source.upper()}, pass --format png or webp to convert it"
         return result
     if source == "png" and png_bit_depth(data) == 16:
         result.status = "skip: 16-bit PNG"
@@ -455,13 +509,14 @@ def process(item: Item, args: argparse.Namespace) -> Result:
             size, note = None, " (resize skipped: resolution variant)"
 
     # Lossless or lossy output?
-    source_lossless = source == "png" or (source == "webp" and webp_is_lossless(data))
-    if target == "png":
+    source_lossless = source in LOSSLESS_SOURCES or (source == "webp" and webp_is_lossless(data))
+    if target in ("png", "gif"):
         lossless = colors is None
-    elif target == "jpeg":
+    elif target in ("jpeg", "avif"):
         lossless = False
     else:
-        lossless = args.lossless or (not args.lossy and source_lossless)
+        # Asking for a quality means accepting loss.
+        lossless = args.lossless or (not args.lossy and args.quality is None and source_lossless)
     lossless_result = lossless and size is None
 
     asked_for_loss = (
@@ -491,21 +546,96 @@ def process(item: Item, args: argparse.Namespace) -> Result:
         result.status, result.error = f"error: cannot encode ({error})", True
         return result
 
-    after = len(encoded)
-    result.after = after
-
+    result.after = len(encoded)
     if lossless_result and args.verify:
         with Image.open(io.BytesIO(encoded)) as check:
             if rgba(check) != rgba(reference):
                 result.status = "keep: lossless result differs, not used"
                 return result
 
+    action = "convert" if converting else ("resize" if size else "compress")
+    detail = f"{action} {'lossless' if lossless_result else 'lossy'}"
+    if size:
+        detail += f" to {size[0]}x{size[1]}"
+    ext = EXTENSIONS[target] if converting else item.path.suffix
+    return finish(item, args, result, encoded, ext=ext, detail=f"{detail}{note}{actual}", converting=converting)
+
+
+# --------------------------------------------------------------------------
+# SVG: minified as text, never rasterised
+# --------------------------------------------------------------------------
+
+SVG_DROP = ("metadata", "namedview")  # <metadata>, Inkscape's <sodipodi:namedview>
+
+
+def minify_svg(text: str) -> str:
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    text = re.sub(r"<metadata\b.*?</metadata>|<metadata\b[^>]*/>", "", text, flags=re.S)
+    text = re.sub(r"<sodipodi:namedview\b[^>]*/>|<sodipodi:namedview\b.*?</sodipodi:namedview>", "", text, flags=re.S)
+    # Whitespace between tags is noise, except where text is laid out.
+    if not re.search(r"<(text|tspan|textPath)\b|xml:space", text):
+        text = re.sub(r">\s+<", "><", text)
+    return text.strip() + "\n"
+
+
+def svg_shape(data: bytes) -> list | None:
+    """Every element with its attributes, leaving out the parts minify drops."""
+    try:
+        root = ET.fromstring(data)
+    except ET.ParseError:
+        return None
+    dropped: set[int] = set()
+    for element in root.iter():
+        if element.tag.rsplit("}", 1)[-1] in SVG_DROP:
+            dropped.update(id(e) for e in element.iter())
+    return [(e.tag, sorted(e.attrib.items())) for e in root.iter() if id(e) not in dropped]
+
+
+def process_svg(item: Item, data: bytes, args: argparse.Namespace, result: Result) -> Result:
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            with Image.open(io.BytesIO(data)) as im:
+                result.status = f"skip: {im.format} data in a .svg file, not an SVG"
+        except Exception:  # noqa: BLE001 - not a raster image either
+            result.status = "skip: SVG isn't UTF-8"
+        return result
+    original = svg_shape(data)
+    if original is None:
+        result.status = "skip: SVG doesn't parse as XML"
+        return result
+    encoded = minify_svg(text).encode("utf-8")
+    if svg_shape(encoded) != original:
+        result.after = len(encoded)
+        result.status = "keep: minified SVG differs, not used"
+        return result
+    return finish(item, args, result, encoded, ext=item.path.suffix, detail="minify", converting=False)
+
+
+# --------------------------------------------------------------------------
+# Writing
+# --------------------------------------------------------------------------
+
+
+def finish(
+    item: Item,
+    args: argparse.Namespace,
+    result: Result,
+    encoded: bytes,
+    *,
+    ext: str,
+    detail: str,
+    converting: bool,
+) -> Result:
+    """Keeps [encoded] only when it saves --min-saving, then writes it where
+    the options say (or only reports it)."""
+    before, after = result.before, len(encoded)
+    result.after = after
     if after > before * (1 - args.min_saving / 100):
         result.status = "keep: not smaller" if after >= before else f"keep: saves under {args.min_saving:g}%"
         return result
 
-    # Where does it go?
-    ext = EXTENSIONS[target] if converting else item.path.suffix
     if args.out_dir:
         destination = args.out_dir / item.rel.with_suffix(ext)
     else:
@@ -517,13 +647,9 @@ def process(item: Item, args: argparse.Namespace) -> Result:
         result.target = None
         return result
 
-    action = "convert" if converting else ("resize" if size else "compress")
-    detail = f"{action} {'lossless' if lossless_result else 'lossy'}"
-    if size:
-        detail += f" to {size[0]}x{size[1]}"
     result.changed = True
     if args.dry_run:
-        result.status = f"would {detail}{note}{actual}"
+        result.status = f"would {detail}"
         return result
 
     if args.in_place and args.backup_dir:
@@ -534,7 +660,7 @@ def process(item: Item, args: argparse.Namespace) -> Result:
     write_atomically(destination, encoded)
     if args.in_place and converting and not args.keep_original:
         item.path.unlink()
-    result.status = f"{detail}{note}{actual}"
+    result.status = detail
     return result
 
 
@@ -574,7 +700,7 @@ def main(argv: list[str] | None = None) -> int:
     for problem in problems:
         print(f"warning: {problem}", file=sys.stderr)
     if not items:
-        print("No PNG, JPEG or WebP files found.")
+        print("No images found.")
         return 1 if problems else 0
 
     results = [process(item, args) for item in items]

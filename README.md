@@ -12,6 +12,7 @@ A production-ready Flutter starting point: feature-first clean architecture, BLo
 - **Storage**: Hive (a box per module), secure storage for tokens, HydratedBloc.
 - **Lists**: a pagination module with one page size, typed pages and auto-loading list widgets.
 - **Optional modules**: push (FCM), local notifications, in-app update alerts, image picker, QR, ads, onboarding, settings, about, web view.
+- **Release tools**: a store screenshot generator, an image optimizer, and CI/CD templates with step-by-step guides for Firebase App Distribution, Codemagic and Fastlane. See [below](#release-tools).
 
 ## Quick start
 
@@ -29,6 +30,28 @@ A production-ready Flutter starting point: feature-first clean architecture, BLo
 5. `flutter run`
 
 Needs Flutter 3.47+ (Dart 3.13). Details and the optional Firebase setup: [getting started](doc/getting_started.md).
+
+## Release tools
+
+Shipping takes more than the app code, so the starter comes with the tools for it as well.
+
+<p align="center">
+  <img src="doc/tools/images/screenshots/ios-iphone-6.9-01_scoreboard.jpg" width="160" alt="iPhone 6.9 inch screenshot">
+  <img src="doc/tools/images/screenshots/ios-iphone-6.9-02_new_game.jpg" width="160" alt="iPhone 6.9 inch screenshot with its own colours">
+  <img src="doc/tools/images/screenshots/android-phone-01_scoreboard.jpg" width="160" alt="Play Store phone screenshot">
+  <img src="doc/tools/images/screenshots/ios-ipad-13-01_scoreboard.jpg" width="215" alt="iPad 13 inch screenshot">
+</p>
+<p align="center"><sub>Made by <code>tool/marketing/make_screenshots.py</code> from two plain app captures, a title and a description each.</sub></p>
+
+| Tool | What you get | Start here |
+|---|---|---|
+| [Store screenshots](doc/tools/screenshots.md) | Framed screenshots for every App Store and Play Store size, from your captures, a title and a description each, in your brand colour or one per shot | `python3 tool/marketing/make_screenshots.py` |
+| [Image optimizer](doc/tools/optimize_images.md) | Smaller `assets/`: PNG, JPEG, WebP, GIF, AVIF and SVG, lossless by default, a report before anything changes, filters by folder, name and size | `python3 tool/optimize_images.py` |
+| [Firebase App Distribution](doc/cicd/firebase_app_distribution/README.md) | A GitHub Actions workflow that checks the code, builds a signed APK and sends it to your testers | copy the workflow into `.github/workflows/` |
+| [Codemagic](doc/cicd/codemagic/README.md) | Signed `.aab` and `.ipa` builds uploaded to Play internal testing and App Store Connect, built on Codemagic's Macs | copy `codemagic.yaml` to the repo root |
+| [Fastlane](doc/cicd/fastlane/README.md) | Your store listings (text, screenshots, release notes) kept as files and uploaded with one command | `fastlane supply init` / `deliver init` |
+
+The CI/CD files are templates: nothing runs until you copy one into place. [Which one fits when](doc/cicd/README.md).
 
 ## Documentation
 
@@ -56,6 +79,8 @@ Everything is in [`doc/`](doc/README.md), one topic per page. Go through it in t
 [Upgrading](doc/upgrading.md): moving to newer Flutter and packages, and what is held back and why.
 
 ### Step 5: Release it
+
+The starter's [release tools](#release-tools), in the order you'd use them:
 
 1. [Optimize images](doc/tools/optimize_images.md): shrink `assets/` before a release with `tool/optimize_images.py` (report first, lossless by default).
 2. [Store screenshots](doc/tools/screenshots.md): give each shot an image, a title and a description; get framed screenshots for every App Store and Play Store size.

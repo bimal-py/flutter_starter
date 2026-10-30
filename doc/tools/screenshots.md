@@ -234,3 +234,51 @@ Margins, text and frame scale with the canvas, so a new portrait size needs no t
 | `Devanagari text needs Pillow's raqm layout` | Install FriBiDi (see [Setup](#setup)). |
 | `unknown field "..."` | Fix the typo in `shots.json`. |
 | `no image at ...` | Check the path. It is relative to `tool/marketing/`. |
+
+## Samples
+
+Two captures from Callbreak Score Tracker, rendered for every size with this config (the app's green as the default colour; the second shot sets its own two colours):
+
+```json
+{
+  "background": "#3B7A4C",
+  "shots": [
+    {
+      "name": "01_scoreboard",
+      "image": "3_en-US.png",
+      "title": "Every round, scored for you",
+      "description": "Totals and the leader update as you play."
+    },
+    {
+      "name": "02_new_game",
+      "image": "2_en-US.png",
+      "title": "Start a game in seconds",
+      "description": "Add the players, pick the rounds and play.",
+      "background": ["#1F2937", "#3B7A4C"]
+    }
+  ]
+}
+```
+
+```sh
+python3 tool/marketing/make_screenshots.py --config path/to/shots.json --out path/to/out
+```
+
+The previews below are shrunk for this page; the tool writes each size at full resolution.
+
+### App Store
+
+| iPhone 6.9" (1320 × 2868) | iPhone 6.5" (1284 × 2778) | iPhone 6.3" (1206 × 2622) |
+|---|---|---|
+| ![ios iphone-6.9](images/screenshots/ios-iphone-6.9-01_scoreboard.jpg) | ![ios iphone-6.5](images/screenshots/ios-iphone-6.5-01_scoreboard.jpg) | ![ios iphone-6.3](images/screenshots/ios-iphone-6.3-01_scoreboard.jpg) |
+
+| iPad 13" (2064 × 2752) | iPhone 6.9", its own colours |
+|---|---|
+| ![ios ipad-13](images/screenshots/ios-ipad-13-01_scoreboard.jpg) | ![ios iphone-6.9](images/screenshots/ios-iphone-6.9-02_new_game.jpg) |
+
+### Google Play
+
+| Phone (1080 × 1920) | 7" tablet (1440 × 2560) | 10" tablet (2160 × 3840) | Phone, its own colours |
+|---|---|---|---|
+| ![android phone](images/screenshots/android-phone-01_scoreboard.jpg) | ![android tablet-7](images/screenshots/android-tablet-7-01_scoreboard.jpg) | ![android tablet-10](images/screenshots/android-tablet-10-01_scoreboard.jpg) | ![android phone](images/screenshots/android-phone-02_new_game.jpg) |
+
