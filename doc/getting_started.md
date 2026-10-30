@@ -5,7 +5,7 @@ Turn this starter into your app: rename it, pick the modules you need, run it.
 ## Requirements
 
 - Flutter 3.47 or newer (Dart 3.13). Check with `flutter --version`.
-- Android Studio with Android SDK 37 (the build asks for it; Gradle downloads the rest).
+- Android Studio Panda 2 (2025.3.2) or newer, which is needed to sync AGP 9.1, with Android SDK 37 (the build asks for it; Gradle downloads the rest).
 - Xcode 26 and CocoaPods for iOS.
 - JDK 17 or newer.
 

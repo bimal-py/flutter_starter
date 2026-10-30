@@ -1,6 +1,10 @@
 # Uncomment this line to define a global platform for your project
 platform :ios, '15.0'
 
+# firebase_core 5.1.0 pins 12.19.3, but FirebaseAnalytics was never published
+# at 12.19.3 (latest on CocoaPods is 12.19.0). Remove once FlutterFire fixes it.
+$FirebaseSDKVersion = '12.19.0'
+
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
