@@ -40,6 +40,10 @@ How to move the starter (or an app built from it) to newer Flutter and packages,
 
 Flutter is moving Material and Cupertino out of the SDK into `material_ui` / `cupertino_ui`. When the packages the app uses (flutter_scale_kit, loader_overlay, flutter_colorpicker, ...) have moved too, migrate the app (`dart fix` ships the import changes) and lift these three holds together.
 
+## On a beta on purpose
+
+`flutter_inappwebview` is on `^6.2.0-beta.3` because the latest stable, 6.1.5 from 2024, doesn't build on AGP 9: `flutter_inappwebview_android` 1.1.3 calls `getDefaultProguardFile('proguard-android.txt')`, which AGP 9 rejects. Move to a stable release once one is out.
+
 ## Deprecations left in place
 
 - `firebase_messaging` 17 deprecates `getToken()` and `onTokenRefresh` in favour of `register()` / `onRegistered`, and `deleteToken()` in favour of `unregister()` / `onUnregistered`. The new APIs hand out a Firebase Installation ID for FCM's direct send instead of the registration token backends store today. `FcmService` keeps the token APIs with a note until the backend sends by installation ID.
