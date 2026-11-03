@@ -6,8 +6,8 @@ The rule: page insets and gaps from `AppSpacing`, other sizes as `16.w`, `8.h`, 
 ## Where it lives
 
 ```
-lib/main.dart                                   ScreenSizeGuard > ScaleKitBuilder(designWidth: 425, designHeight: 691)
-lib/common/widgets/screen_size_guard.dart       ScreenSizeGuard: never lets a 0 x 0 screen through
+lib/main.dart                                   ScaleKitBuilder(designWidth: 425, designHeight: 691)
+lib/core/scale_size/                            flutter_scale_kit 2.0.2, copied in with the zero-size fix
 lib/app/app_view.dart                           system text scale capped at 1.2
 lib/core/theme/spacing/app_spacing.dart         AppSpacing: the gutter and the spacing scale
 lib/core/theme/typography/app_text_style.dart   AppTextStyle.applyTo: size, weight, line height per role
@@ -16,7 +16,7 @@ pubspec.yaml (flutter: fonts:)                  Inter (100 to 900), NotoSansDeva
 assets/fonts/                                   the .ttf files
 ```
 
-`core.dart` re-exports flutter_scale_kit and the `context.colorScheme` / `context.textTheme` getters (`lib/core/utils/extensions/context_extension.dart`), so `import 'package:flutter_starter/core/core.dart';` brings in every extension below. Colors and component themes: [theme](theme.md).
+`core.dart` re-exports the scale kit (`lib/core/scale_size/`) and the `context.colorScheme` / `context.textTheme` getters (`lib/core/utils/extensions/context_extension.dart`), so `import 'package:flutter_starter/core/core.dart';` brings in every extension below. Colors and component themes: [theme](theme.md).
 
 ## How to use
 
@@ -110,5 +110,6 @@ Fonts per language (`LocalizedFonts.defaults()`):
 - In landscape, flutter_scale_kit swaps the design width and height, so sizes don't shrink to the short edge. On phones and tablets it also multiplies sizes and font sizes by 1.2 (`ScaleKitBuilder`'s landscape boosts, on by default): an 820 × 1180 iPad gives `16.w` = 20.8 in portrait, 26.9 in landscape.
 - `main.dart` locks phones to portrait. iPad ignores the lock while multitasking is on (Info.plist allows every iPad orientation), and so does Android 16+ on tablets and unfolded foldables (smallest width 600dp and up), because the app targets SDK 36 (`flutter.targetSdkVersion`).
 - `ScaleKitBuilder.designType` is accepted but not used yet by flutter_scale_kit 2.0.2.
-- **Blank text after the app comes back from the background.** Android reports a 0 × 0 view while the app is in the background (iOS can before the first frame). flutter_scale_kit 2.0.2 turns that into a zero scale and, measuring the next change as a share of a zero width, never recomputes it: every `.sp` stays 0. `ScreenSizeGuard` in `lib/main.dart` passes the last real size down instead, so the scale never sees zero, and builds nothing until the first real size. Keep it above `ScaleKitBuilder`. `test/common/screen_size_guard_test.dart` checks the fix and pins the package's behaviour; when a release fixes it, that test fails and the guard can go.
+- **Blank text after a 0 × 0 screen.** Android reports a 0 × 0 view while the app is in the background, and iOS can before the first frame. Published flutter_scale_kit turns that into a zero scale and, measuring the next change as a share of a zero width, never recomputes it: every `.w`, `.h`, `.r` and `.sp` stays 0. (Theme text hides some of this, because `spClamp` floors it at its minimum.) So `lib/core/scale_size/` is a copy of 2.0.2 with guards that ignore a zero size and rebuild once the first real size arrives, and the package is no longer a dependency. The code differs from 2.0.2 only in those guards and `dart format`; `test/core/scale_size/` covers them.
+- **Taking a newer flutter_scale_kit.** As of 2026-11-03, 2.0.2 is the latest release and GitHub `master` has the same code, without a fix. If a release adds one, remove `lib/core/scale_size/`, depend on the package and point the imports and `core.dart` back at it. Otherwise copy the new `lib/src` in and reapply the guards. Keep `test/core/scale_size/` either way: it must pass against whichever one the app uses.
 - `AppTextStyle.applyTo` copies onto Material's text theme, so Material's text colors stay. Building a `TextTheme` from scratch with null colors would lose them.

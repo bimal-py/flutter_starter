@@ -94,7 +94,7 @@ Theme playground: Settings → "Customize theme" (`ThemePlaygroundScreen`, route
 
    ```dart
    import 'package:flutter/material.dart';
-   import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+   import 'package:flutter_starter/core/scale_size/scale_size.dart';
 
    class ChipThemeBuilder {
      ChipThemeBuilder._();

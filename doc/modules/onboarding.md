@@ -15,7 +15,7 @@ The first screens of the app: a splash, then a short swipeable intro on the firs
 - The app_setting module: `AppSettingCubit` (a `HydratedCubit`, provided in `lib/app/global_bloc_config.dart`) stores whether onboarding is done.
 - `Routes.dashboard`: where both screens go next.
 - `AppConstants.splashDuration` (`lib/core/utils/constants/app_constants.dart`) and `AssetRoutes.appLogo` (`assets/images/logos/app_logo.png`).
-- Packages: flutter_bloc, equatable, hydrated_bloc (through app_setting), go_router, lucide_icons_flutter, flutter_scale_kit (through `core.dart`).
+- Packages: flutter_bloc, equatable, hydrated_bloc (through app_setting), go_router, lucide_icons_flutter.
 
 ## Setup
 

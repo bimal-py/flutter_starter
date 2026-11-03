@@ -26,9 +26,6 @@ dependencies:
   # Routing
   go_router: ^17.5.0
 
-  # Sizing (responsive scaling)
-  flutter_scale_kit: ^2.0.2
-
   # Theming
   dynamic_color: ^1.9.0
   flutter_colorpicker: ^1.1.0

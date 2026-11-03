@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+import 'package:flutter_starter/core/scale_size/scale_size.dart';
 import 'package:flutter_starter/core/utils/constants/constants.dart';
 import 'package:flutter_starter/core/utils/helpers/dialog/dialog.dart';
 

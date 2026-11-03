@@ -12,7 +12,7 @@ The dashboard's first tab: a welcome banner over a grid of demo tiles (About, Op
 
 - The dashboard module, which shows it as tab 0 (`DashboardBody`). It has no route of its own.
 - The demo tiles: `Routes.about` (about module), `Routes.websiteView` with `AppUrls.demoSite` (website_view module), and `QrPopup` (qr module) with `AppUrls.appDownload`.
-- Packages: go_router, lucide_icons_flutter, flutter_scale_kit (through `core.dart`).
+- Packages: go_router, lucide_icons_flutter.
 
 ## Setup
 

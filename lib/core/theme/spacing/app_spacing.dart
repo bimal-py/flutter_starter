@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+import 'package:flutter_starter/core/scale_size/scale_size.dart';
 
 /// The app's spacing scale. Use these instead of literal paddings so every
 /// screen shares one gutter and one vertical rhythm; change a value here and

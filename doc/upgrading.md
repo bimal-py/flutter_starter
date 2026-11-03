@@ -38,7 +38,11 @@ How to move the starter (or an app built from it) to newer Flutter and packages,
 | `dynamic_color` | 1.x | 2 returns `material_ui` `ColorScheme`s, a different type from the SDK's, so the theme won't compile. |
 | `cached_network_image` | 3.x | 4 also moved to `material_ui`. |
 
-Flutter is moving Material and Cupertino out of the SDK into `material_ui` / `cupertino_ui`. When the packages the app uses (flutter_scale_kit, loader_overlay, flutter_colorpicker, ...) have moved too, migrate the app (`dart fix` ships the import changes) and lift these three holds together.
+Flutter is moving Material and Cupertino out of the SDK into `material_ui` / `cupertino_ui`. When the packages the app uses (loader_overlay, flutter_colorpicker, ...) have moved too, migrate the app (`dart fix` ships the import changes) and lift these three holds together.
+
+## Copied in on purpose
+
+`flutter_scale_kit` lives in `lib/core/scale_size/`, not `pubspec.yaml`, because the published package leaves all text invisible after a 0 × 0 screen. It imports `package:flutter/material.dart`, so it moves to `material_ui` with the app. To take a new release: [sizing and fonts](core/sizing_and_fonts.md).
 
 ## On a beta on purpose
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_scale_kit/flutter_scale_kit.dart';
+import 'package:flutter_starter/core/scale_size/scale_size.dart';
 
 class ButtonThemes {
   ButtonThemes._();
